@@ -1,0 +1,5 @@
+// Vela: security updates are installed automatically (unattended-upgrades, Debian-Security origin only,
+// as configured in 50unattended-upgrades). Turn off in Impostazioni > Aggiornamenti automatici or set both to "0".
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Unattended-Upgrade "1";
+APT::Periodic::AutocleanInterval "7";

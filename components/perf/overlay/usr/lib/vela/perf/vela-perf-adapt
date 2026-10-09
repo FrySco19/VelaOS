@@ -1,0 +1,96 @@
+#!/bin/sh
+# Vela perf — adapt desktop effects to the graphics actually in use (runs at login, user session).
+# GPU accelerated  -> keep the theme defaults (blur, full animations).
+# Software (llvmpipe, e.g. VirtualBox without 3D) -> no blur/contrast, shorter animations.
+# Only keys written by this script are ever touched; a value the user changed is left alone.
+set -u
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/vela"
+STATE="$STATE_DIR/perf-adapt"
+CFG="${XDG_CONFIG_HOME:-$HOME/.config}"
+mkdir -p "$STATE_DIR"
+log() { printf '%s %s\n' "$(date '+%F %T')" "$*" >> "$STATE_DIR/perf-adapt.log"; }
+
+QDBUS=$(command -v qdbus6 || command -v qdbus || true)
+[ -n "${VELA_PERF_RENDERER:-}" ] && QDBUS=""  # test mode: no KWin
+info=""
+if [ -n "$QDBUS" ]; then
+  i=0
+  while [ $i -lt 30 ]; do
+    info=$("$QDBUS" org.kde.KWin /KWin org.kde.KWin.supportInformation 2>/dev/null) && [ -n "$info" ] && break
+    sleep 0.5; i=$((i+1))
+  done
+fi
+renderer=$(printf '%s\n' "$info" | sed -n 's/^OpenGL renderer string: //p' | head -n1)
+# test hook: VELA_PERF_RENDERER overrides detection
+[ -n "${VELA_PERF_RENDERER:-}" ] && renderer="$VELA_PERF_RENDERER"
+ctype=$(printf '%s\n' "$info" | sed -n 's/^Compositing Type: //p;s/^Compositing type: //p' | head -n1)
+
+# fallback: boot-time detection
+virt=none; controller=other; accel=unknown
+if [ -r /run/vela/gpu ]; then . /run/vela/gpu; fi
+
+case "$renderer" in
+  *llvmpipe*|*softpipe*|*swrast*|*"Software Rasterizer"*) mode=software ;;
+  "") case "$ctype" in *QPainter*) mode=software ;; *) case "$accel" in yes) mode=gpu ;; no) mode=software ;; *) mode=unknown ;; esac ;; esac ;;
+  *) mode=gpu ;;
+esac
+log "renderer='$renderer' compositing='$ctype' boot_accel=$accel controller=$controller virt=$virt -> mode=$mode"
+printf '%s\n' "$mode" > "$STATE_DIR/graphics-mode"
+[ "$mode" = unknown ] && exit 0
+
+# key list: file group key software-value
+KEYS="kwinrc|Plugins|blurEnabled|false
+kwinrc|Plugins|contrastEnabled|false
+kwinrc|Plugins|wobblywindowsEnabled|false
+kwinrc|Plugins|magiclampEnabled|false
+kwinrc|Plugins|translucencyEnabled|false
+kdeglobals|KDE|AnimationDurationFactor|0.5"
+
+user_val() { kreadconfig6 --file "$CFG/$1" --group "$2" --key "$3" 2>/dev/null; }
+ours() { sed -n "s/^$1|$2|$3=//p" "$STATE" 2>/dev/null | tail -n1; }
+set_ours() { touch "$STATE"; grep -v "^$1|$2|$3=" "$STATE" > "$STATE.tmp" 2>/dev/null || true; [ -n "$4" ] && printf '%s|%s|%s=%s\n' "$1" "$2" "$3" "$4" >> "$STATE.tmp"; mv "$STATE.tmp" "$STATE"; }
+
+# user's explicit choices made with `vela-theme effects light` / `vela-theme motion reduced` (theme component)
+APPEAR="$CFG/vela/appearance.json"
+user_effects=""; user_motion=""
+if [ -r "$APPEAR" ]; then
+  user_effects=$(tr -d ' \n' < "$APPEAR" | sed -n 's/.*"effects":"\([a-z]*\)".*/\1/p')
+  user_motion=$(tr -d ' \n' < "$APPEAR" | sed -n 's/.*"motion":"\([a-z]*\)".*/\1/p')
+fi
+
+printf '%s\n' "$KEYS" | while IFS='|' read -r f g k v; do
+  # keys the user set through vela-theme are theirs: forget our ownership, never touch
+  if { [ "$k" = AnimationDurationFactor ] && [ -n "$user_motion" ] && [ "$user_motion" != default ]; } || \
+     { [ "$k" != AnimationDurationFactor ] && [ -n "$user_effects" ] && [ "$user_effects" != default ] && [ "$user_effects" != auto ]; }; then
+    set_ours "$f" "$g" "$k" ""; continue
+  fi
+  cur=$(user_val "$f" "$g" "$k"); mine=$(ours "$f" "$g" "$k")
+  if [ "$mode" = software ]; then
+    if [ -z "$cur" ] || [ "$cur" = "$mine" ]; then
+      if [ "$cur" != "$v" ]; then kwriteconfig6 --notify --file "$CFG/$f" --group "$g" --key "$k" "$v"; log "set $f[$g]$k=$v"; fi
+      set_ours "$f" "$g" "$k" "$v"
+    fi
+  else
+    if [ -n "$mine" ] && [ "$cur" = "$mine" ]; then
+      kwriteconfig6 --notify --file "$CFG/$f" --group "$g" --key "$k" --delete; log "restored $f[$g]$k"
+    fi
+    set_ours "$f" "$g" "$k" ""
+  fi
+done
+
+if [ -n "$QDBUS" ]; then
+  if [ "$mode" = software ]; then
+    for e in blur contrast wobblywindows magiclamp; do "$QDBUS" org.kde.KWin /Effects org.kde.kwin.Effects.unloadEffect "$e" >/dev/null 2>&1 || true; done
+  fi
+  "$QDBUS" org.kde.KWin /KWin org.kde.KWin.reconfigure >/dev/null 2>&1 || true
+fi
+
+# one-time hint: VirtualBox VMSVGA with 3D switched off
+if [ "$mode" = software ] && [ "$virt" = oracle ] && [ "$controller" = vmsvga ] && [ ! -e "$STATE_DIR/hint-3d-shown" ]; then
+  if command -v notify-send >/dev/null 2>&1; then
+    notify-send -a "Vela" -i video-display "Grafica non accelerata" \
+      "Vela funziona, ma più lento. Per renderlo fluido: spegni Vela, poi in VirtualBox apri Impostazioni › Schermo e attiva «Abilita accelerazione 3D»." || true
+  fi
+  touch "$STATE_DIR/hint-3d-shown"
+fi
+exit 0

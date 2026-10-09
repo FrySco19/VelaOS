@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+NoDisplay=true
+X-KDE-AliasFor=systemsettings
+Exec=systemsettings kcm_vela_privacy
+Icon=vela-privacy
+Name=Privacy and memory
+Name[it]=Privacy e memoria

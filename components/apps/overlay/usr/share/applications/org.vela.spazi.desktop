@@ -1,0 +1,25 @@
+[Desktop Entry]
+Type=Application
+Name=Spazi
+Name[it]=Spazi
+Name[en]=Spaces
+GenericName=Spazi per progetto
+GenericName[it]=Spazi per progetto
+GenericName[en]=Project spaces
+Comment=Tieni separate finestre, cartella e browser di ogni progetto
+Comment[it]=Tieni separate finestre, cartella e browser di ogni progetto
+Comment[en]=Keep each project's windows, folder and browser separate
+Exec=vela-spazi
+Icon=vela-spazi
+Terminal=false
+Categories=Utility;Qt;KDE;
+Keywords=spazi;progetti;desktop virtuali;scrivanie;spaces;projects;virtual desktops;
+Keywords[it]=spazi;progetti;desktop virtuali;scrivanie;
+StartupNotify=true
+X-KDE-StartupNotify=true
+Actions=nuovo;
+
+[Desktop Action nuovo]
+Name=Nuovo spazio
+Name[en]=New space
+Exec=vela-spazi --nuovo

@@ -1,0 +1,14 @@
+{
+    "KPackageStructure": "Plasma/LayoutTemplate",
+    "KPlugin": {
+        "Authors": [ { "Name": "Vela" } ],
+        "Description": "Vela layout: top bar with app menu, tray and clock; floating dock at the bottom",
+        "Description[it]": "Layout Vela: barra in alto con menu dell'app, area di notifica e orologio; dock in basso",
+        "Id": "org.vela.desktop.defaultPanels",
+        "License": "GPL-2.0-or-later",
+        "Name": "Vela (top bar + dock)",
+        "Name[it]": "Vela (barra in alto + dock)"
+    },
+    "X-Plasma-ContainmentCategories": [ "panel" ],
+    "X-Plasma-Shell": "plasmashell"
+}

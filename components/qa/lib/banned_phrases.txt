@@ -1,0 +1,22 @@
+# one case-insensitive regex per line; matches in UI copy = bug (R7 / P-IT-2)
+meno rumore
+più possibilità
+un pensiero\. un punto di partenza
+punto di partenza
+lorem ipsum
+placeholder text|testo segnaposto|segnaposto
+\bTODO\b
+\bFIXME\b
+\bXXX\b
+coming soon
+in arrivo presto
+rivoluzionari
+next[- ]gen
+magia|magico
+esperienza (unica|straordinaria|senza precedenti)
+il futuro (è|del)
+reimmagina
+potenzia la tua
+senza limiti
+tutto tuo
+il tuo spazio

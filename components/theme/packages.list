@@ -1,0 +1,13 @@
+# theme: visual identity (all in trixie main)
+papirus-icon-theme
+bibata-cursor-theme
+fonts-inter
+fonts-jetbrains-mono
+fonts-noto-core
+breeze-gtk-theme
+kde-config-gtk-style
+sddm-theme-breeze
+plymouth
+plymouth-themes
+libkf6config-bin
+qt6-svg-plugins

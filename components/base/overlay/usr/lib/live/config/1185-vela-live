@@ -1,0 +1,42 @@
+#!/bin/sh
+# Vela live session setup (runs only on the live ISO via live-config; never in installed systems).
+. /usr/lib/live/config.sh
+LIVE_USERNAME=${LIVE_USERNAME:-vela}
+for _P in ${LIVE_CONFIG_CMDLINE}; do
+  case "$_P" in
+    live-config.username=*|username=*) LIVE_USERNAME="${_P#*username=}";;
+    live-config.noautologin|noautologin|nox11autologin) NOAUTO=1;;
+    vela.session=*) VELA_SESSION="${_P#vela.session=}";;
+  esac
+done
+component_was_executed "vela-live" && exit 0
+echo -n " vela-live"
+# Session: plasma (Wayland, default) or plasmax11; override with /etc/vela/live-session or vela.session=
+[ -n "${VELA_SESSION:-}" ] || VELA_SESSION=$(cat /etc/vela/live-session 2>/dev/null || echo plasma)
+if [ -z "${NOAUTO:-}" ]; then
+  # /etc/sddm.conf has priority over sddm.conf.d; live-config's 0085-sddm wrote it already.
+  cat > /etc/sddm.conf <<EOT
+[Autologin]
+User=${LIVE_USERNAME}
+Session=${VELA_SESSION}
+Relogin=false
+EOT
+fi
+# No password prompts for admin actions in the live session (installer, Discover, settings).
+mkdir -p /etc/polkit-1/rules.d
+cat > /etc/polkit-1/rules.d/49-vela-live.rules <<EOT
+polkit.addRule(function(action, subject) {
+    if (subject.user == "${LIVE_USERNAME}") { return polkit.Result.YES; }
+});
+EOT
+# Installer icon on the live desktop
+HOME_DIR=/home/${LIVE_USERNAME}
+if [ -d "$HOME_DIR" ] && [ -f /usr/share/applications/vela-install.desktop ]; then
+  DESK=$(su - "$LIVE_USERNAME" -c 'xdg-user-dir DESKTOP' 2>/dev/null || true)
+  [ -n "$DESK" ] && [ "$DESK" != "$HOME_DIR" ] || DESK=$HOME_DIR/Scrivania
+  mkdir -p "$DESK"
+  cp /usr/share/applications/vela-install.desktop "$DESK/"
+  chmod +x "$DESK/vela-install.desktop"
+  chown -R "$LIVE_USERNAME:$LIVE_USERNAME" "$DESK"
+fi
+touch /var/lib/live/config/vela-live

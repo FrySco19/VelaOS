@@ -1,0 +1,59 @@
+#!/bin/sh
+# Vela perf — detect graphics at boot (root). Writes /run/vela/gpu (shell key=value).
+# accel=yes : real GPU / VirtualBox 3D (SVGA3D) / virgl -> full effects
+# accel=no  : software rendering (llvmpipe)          -> light effects
+set -u
+OUT_DIR=${VELA_GPU_OUT:-/run/vela}
+mkdir -p "$OUT_DIR"
+virt=$(systemd-detect-virt 2>/dev/null || true); [ -n "$virt" ] || virt=none
+
+controller=other
+for d in /sys/bus/pci/devices/*; do
+  [ -r "$d/class" ] || continue
+  case "$(cat "$d/class")" in 0x03*) ;; *) continue ;; esac
+  id="$(cat "$d/vendor"):$(cat "$d/device")"
+  case "$id" in
+    0x15ad:0x0405) controller=vmsvga ;;
+    0x80ee:0xbeef) controller=vboxsvga ;;
+    0x1af4:0x1050) controller=virtio-gpu ;;
+    0x1b36:0x0100) controller=qxl ;;
+    0x1234:0x1111) controller=bochs ;;
+    *) controller="pci-$id" ;;
+  esac
+  break
+done
+
+# wait (max 5 s) for the DRM driver (vmwgfx/vboxvideo/virtio) to appear
+i=0; while [ $i -lt 50 ] && ! ls /dev/dri/card* >/dev/null 2>&1; do sleep 0.1; i=$((i+1)); done
+
+drm_driver=""
+for c in /sys/class/drm/card[0-9]; do
+  [ -e "$c/device/driver" ] || continue
+  drm_driver=$(basename "$(readlink -f "$c/device/driver")"); break
+done
+
+renderer=""
+if command -v eglinfo >/dev/null 2>&1; then
+  for plat in surfaceless gbm; do
+    renderer=$(timeout 10 eglinfo -B -p "$plat" 2>/dev/null | sed -n 's/^OpenGL core profile renderer: //p;s/^OpenGL ES profile renderer: //p' | head -n1)
+    [ -n "$renderer" ] && break
+  done
+fi
+
+case "$renderer" in
+  "") accel=unknown ;;
+  *llvmpipe*|*softpipe*|*swrast*|*"Software Rasterizer"*) accel=no ;;
+  *) accel=yes ;;
+esac
+
+tmp="$OUT_DIR/gpu.tmp"
+{
+  printf 'virt=%s\n' "$virt"
+  printf 'controller=%s\n' "$controller"
+  printf 'drm_driver=%s\n' "$drm_driver"
+  printf "renderer='%s'\n" "$(printf '%s' "$renderer" | tr -d "'")"
+  printf 'accel=%s\n' "$accel"
+} > "$tmp"
+mv "$tmp" "$OUT_DIR/gpu"
+chmod 0644 "$OUT_DIR/gpu"
+exit 0

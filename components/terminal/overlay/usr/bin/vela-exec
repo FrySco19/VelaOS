@@ -1,0 +1,54 @@
+#!/usr/bin/python3
+"""vela-exec — command-line access to the Vela safe executor.
+
+  vela-exec classify "<cmd>"          risk + reasons (JSON)
+  vela-exec preview  "<cmd>" [--cwd D] what would change (text)
+  vela-exec run      "<cmd>" [--cwd D] [--yes]
+       asks for confirmation on the terminal (dangerous commands require typing "sì"),
+       then runs the command through the executor rules.
+"""
+import argparse
+import json
+import os
+import sys
+
+sys.path.insert(0, os.environ.get("VELA_TERMINAL_LIB", "/usr/lib/vela/terminal"))
+from vela_terminal import safe_exec  # noqa: E402
+
+
+def main():
+    ap = argparse.ArgumentParser(prog="vela-exec")
+    ap.add_argument("action", choices=["classify", "preview", "run"])
+    ap.add_argument("command")
+    ap.add_argument("--cwd", default=os.getcwd())
+    ap.add_argument("--yes", action="store_true", help="skip the question for non-dangerous commands")
+    a = ap.parse_args()
+    if a.action == "classify":
+        print(json.dumps(safe_exec.classify(a.command), ensure_ascii=False, indent=1))
+        return 0
+    if a.action == "preview":
+        print(safe_exec.preview(a.command, a.cwd)["text"])
+        return 0
+    info = safe_exec.classify(a.command)
+    print(f"Rischio: {info['risk']} — {info['summary']}")
+    print(safe_exec.preview(a.command, a.cwd)["text"])
+    danger = info["risk"] == "dangerous"
+    if not sys.stdin.isatty():
+        print("Serve un terminale interattivo per confermare.", file=sys.stderr)
+        return 2
+    if danger:
+        ans = input("Comando PERICOLOSO. Scrivi «sì» per eseguirlo: ").strip().lower()
+        if ans not in ("sì", "si", "yes"):
+            print("Annullato.")
+            return 1
+    elif not a.yes:
+        if input("Eseguire? [s/N] ").strip().lower() not in ("s", "si", "sì", "y", "yes"):
+            print("Annullato.")
+            return 1
+    r = safe_exec.run(a.command, cwd=a.cwd, confirmed=True, confirmed_danger=danger, caller="vela-exec",
+                      on_output=lambda s, d: (sys.stdout if s == "stdout" else sys.stderr).write(d))
+    return r["rc"]
+
+
+if __name__ == "__main__":
+    sys.exit(main())

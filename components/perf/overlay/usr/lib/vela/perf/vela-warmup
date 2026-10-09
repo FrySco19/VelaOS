@@ -1,0 +1,21 @@
+#!/bin/sh
+# Vela perf — after login, quietly load the most used apps into the page cache (idle I/O priority),
+# so the first launch of Files, Terminal, Settings, Store and Firefox is fast. Skipped when RAM is low.
+set -u
+avail_kb=$(awk '/^MemAvailable:/{print $2}' /proc/meminfo)
+[ "${avail_kb:-0}" -gt 1500000 ] || exit 0
+command -v vmtouch >/dev/null 2>&1 || exit 0
+LIST=$(mktemp); trap 'rm -f "$LIST"' EXIT
+for bin in dolphin konsole systemsettings plasma-discover firefox-esr kate kwrite okular gwenview \
+           /usr/lib/vela/*/vela-* ; do
+  p=$(command -v "$bin" 2>/dev/null || true); [ -n "$p" ] || continue
+  printf '%s\n' "$p" >> "$LIST"
+  case "$(head -c 4 "$p" 2>/dev/null)" in *ELF*) ldd "$p" 2>/dev/null | awk '/=> \//{print $3}' >> "$LIST" ;; esac
+done
+Q=/usr/lib/x86_64-linux-gnu/qt6
+for d in "$Q/qml/QtQuick" "$Q/qml/org/kde/kirigami" "$Q/qml/org/kde/kcmutils" "$Q/plugins/platforms" \
+         "$Q/plugins/kf6/kio" "$Q/plugins/styles" "/usr/lib/firefox-esr"; do
+  [ -d "$d" ] && printf '%s\n' "$d" >> "$LIST"
+done
+sort -u "$LIST" | xargs -r -d '\n' ionice -c3 nice -n19 vmtouch -q -t -m 64M >/dev/null 2>&1 || true
+exit 0

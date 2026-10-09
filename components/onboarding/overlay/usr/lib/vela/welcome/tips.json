@@ -1,0 +1,75 @@
+{
+ "_comment": "One tip per day during the first week (vela-tips). Plain, useful, no slogans (STYLE_GUIDE_COPY.md).",
+ "tips": [
+  {
+   "it": [
+    "Cerca qualsiasi cosa",
+    "Premi Meta+Spazio e scrivi il nome di un'app, di un file o di un'impostazione."
+   ],
+   "en": [
+    "Search for anything",
+    "Press Meta+Space and type the name of an app, file or setting."
+   ]
+  },
+  {
+   "it": [
+    "Chiedi all'assistente",
+    "Premi @assistant e scrivi una domanda. Prima di cambiare qualcosa ti chiede conferma."
+   ],
+   "en": [
+    "Ask the assistant",
+    "Press @assistant and type a question. It asks for confirmation before changing anything."
+   ]
+  },
+  {
+   "it": [
+    "Ritrova ciò che hai copiato",
+    "Premi Meta+V per vedere la cronologia degli appunti."
+   ],
+   "en": [
+    "Find what you copied",
+    "Press Meta+V to see your clipboard history."
+   ]
+  },
+  {
+   "it": [
+    "Screenshot di un'area",
+    "Premi Meta+Maiusc+S e seleziona un'area. Lo screenshot va negli appunti e in Immagini."
+   ],
+   "en": [
+    "Screenshot of an area",
+    "Press Meta+Shift+S and select an area. The screenshot goes to the clipboard and to Pictures."
+   ]
+  },
+  {
+   "it": [
+    "Vedi tutte le finestre",
+    "Premi Meta o porta il puntatore nell'angolo in alto a sinistra per la Panoramica di finestre e spazi."
+   ],
+   "en": [
+    "See all your windows",
+    "Press Meta or move the pointer to the top-left corner to open the Overview of windows and spaces."
+   ]
+  },
+  {
+   "it": [
+    "Installa nuove app",
+    "Apri lo Store dal Dock: trovi migliaia di app gratuite."
+   ],
+   "en": [
+    "Install new apps",
+    "Open the Store from the Dock to find thousands of free apps."
+   ]
+  },
+  {
+   "it": [
+    "Annulla le modifiche al sistema",
+    "Prima di ogni aggiornamento Vela salva un'istantanea del sistema. Puoi ripristinarla da Istantanee di sistema, nel menu delle app."
+   ],
+   "en": [
+    "Undo system changes",
+    "Before every update Vela saves a system snapshot. You can restore it from System snapshots in the app menu."
+   ]
+  }
+ ]
+}

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Service
+X-KDE-ServiceTypes=SystemSettingsCategory
+X-KDE-System-Settings-Category=vela-ai
+X-KDE-System-Settings-Parent-Category=
+X-KDE-Weight=5
+Icon=vela-settings-ai
+Name=Artificial intelligence
+Name[it]=Intelligenza artificiale
+Comment=Assistant, models and privacy
+Comment[it]=Assistente, modelli e privacy

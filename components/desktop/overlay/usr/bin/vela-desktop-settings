@@ -1,0 +1,63 @@
+#!/bin/sh
+# Vela: options for desktop icons and new apps (component "desktop").
+# GUI: kdialog checklist. CLI:
+#   vela-desktop-settings --get                       print settings (+ Dock.Position / Dock.AutoHide)
+#   vela-desktop-settings --set Section.Key=true|false ...
+#   vela-desktop-settings --dock left|bottom|right [--dock-autohide true|false]
+#   vela-desktop-settings --dock-autohide true|false
+CONF="${XDG_CONFIG_HOME:-$HOME/.config}/vela/desktop.conf"
+mkdir -p "$(dirname "$CONF")"
+get() { # section key default
+  v=$(kreadconfig6 --file "$CONF" --group "$1" --key "$2" --default "$3" 2>/dev/null)
+  [ -n "$v" ] || v=$3; echo "$v"
+}
+set_() { kwriteconfig6 --file "$CONF" --group "$1" --key "$2" --type bool "$3"; }
+# Dock = the panel that contains the icon task manager.
+dock_js() { # $1 = JS statements using p (the dock panel)
+  qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript \
+    "panels().forEach(function (p) { if (p.widgets('org.kde.plasma.icontasks').length || p.widgets('org.kde.plasma.taskmanager').length) { $1 } });"
+}
+case "$1" in
+--dock|--dock-autohide)
+  while [ $# -gt 0 ]; do
+    case "$1" in
+    --dock) case "$2" in left|bottom|right) dock_js "p.location = '$2'; p.alignment = 'center';" ;;
+            *) echo "uso: --dock left|bottom|right" >&2; exit 2;; esac; shift 2;;
+    --dock-autohide) case "$2" in true) dock_js "p.hiding = 'autohide';";; false) dock_js "p.hiding = 'none';";;
+            *) echo "uso: --dock-autohide true|false" >&2; exit 2;; esac; shift 2;;
+    *) shift;;
+    esac
+  done; exit 0;;
+--get)
+  for k in NewApps.AddToDesktop:true NewApps.AddToDock:false NewApps.Notify:true DesktopIcons.Home:true DesktopIcons.Trash:true DesktopIcons.Drives:true; do
+    sk=${k%%:*}; d=${k#*:}; echo "$sk=$(get "${sk%%.*}" "${sk#*.}" "$d")"
+  done
+  dock_js "print('Dock.Position=' + p.location + '\\nDock.AutoHide=' + (p.hiding == 'autohide'));" 2>/dev/null
+  exit 0;;
+--set)
+  shift
+  for a in "$@"; do sk=${a%%=*}; v=${a#*=}; set_ "${sk%%.*}" "${sk#*.}" "$v"; done
+  exec /usr/lib/vela/desktop/vela-desktop-sync --drives;;
+esac
+onoff() { [ "$(get "$1" "$2" "$3")" = true ] && echo on || echo off; }
+sel=$(kdialog --title "Scrivania e Dock" --separate-output --checklist "Scegli cosa mostrare:" \
+  newdesk "Aggiungi un'icona sulla Scrivania per ogni nuova app" "$(onoff NewApps AddToDesktop true)" \
+  newdock "Aggiungi ogni nuova app al Dock" "$(onoff NewApps AddToDock false)" \
+  notify "Avvisa quando un'app viene installata" "$(onoff NewApps Notify true)" \
+  home "Mostra Home sulla Scrivania" "$(onoff DesktopIcons Home true)" \
+  trash "Mostra il Cestino sulla Scrivania" "$(onoff DesktopIcons Trash true)" \
+  drives "Mostra dischi e chiavette sulla Scrivania" "$(onoff DesktopIcons Drives true)") || exit 0
+has() { echo "$sel" | grep -qx "$1" && echo true || echo false; }
+set_ NewApps AddToDesktop "$(has newdesk)"
+set_ NewApps AddToDock "$(has newdock)"
+set_ NewApps Notify "$(has notify)"
+set_ DesktopIcons Home "$(has home)"
+set_ DesktopIcons Trash "$(has trash)"
+set_ DesktopIcons Drives "$(has drives)"
+DD=$(xdg-user-dir DESKTOP 2>/dev/null || echo "$HOME/Desktop")
+for pair in home:vela-home trash:vela-trash; do
+  key=${pair%%:*}; f="$DD/${pair#*:}.desktop"
+  if [ "$(has "$key")" = false ]; then rm -f "$f"; fi
+done
+/usr/lib/vela/desktop/vela-desktop-sync --reset-icons
+/usr/lib/vela/desktop/vela-desktop-sync --drives

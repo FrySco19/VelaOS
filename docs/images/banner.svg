@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="520" viewBox="0 0 1600 520">
+<defs><linearGradient id="sea" x2="1" y2="1"><stop stop-color="#123b4d"/><stop offset="1" stop-color="#06161f"/></linearGradient></defs>
+<rect width="1600" height="520" rx="24" fill="url(#sea)"/>
+<circle cx="1280" cy="270" r="320" fill="#e68b75" opacity=".06"/>
+<g transform="translate(1160 100) scale(2.3)"><path d="M60 14 C38 40 28 72 26 100 L60 100 Z" fill="#fff"/><path d="M68 26 C84 48 96 74 102 100 L68 100 Z" fill="#e68b75"/><path d="M22 104 L106 104 C100 109 92 110 84 110 L44 110 C36 110 28 109 22 104 Z" fill="#fff"/></g>
+<text x="110" y="225" fill="#f2f8f8" font-family="Inter,Segoe UI,sans-serif" font-size="114" font-weight="600">VelaOS</text>
+<text x="115" y="290" fill="#b9ced4" font-family="Inter,Segoe UI,sans-serif" font-size="30">Un desktop aperto. Un progetto da costruire insieme.</text>
+<rect x="115" y="350" width="385" height="48" rx="24" fill="#e68b75"/>
+<text x="142" y="382" fill="#16252d" font-family="Inter,Segoe UI,sans-serif" font-size="22">DEBIAN 13 · PLASMA 6 · PREVIEW</text>
+</svg>

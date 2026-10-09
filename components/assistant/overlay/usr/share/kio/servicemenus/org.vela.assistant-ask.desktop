@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Service
+MimeType=all/all;
+Actions=askAssistant;
+X-KDE-Priority=TopLevel
+X-KDE-StartupNotify=false
+
+[Desktop Action askAssistant]
+Name=Chiedi all'assistente
+Name[it]=Chiedi all'assistente
+Name[en]=Ask the assistant
+Icon=vela-assistant
+Exec=vela-assistant --files %F

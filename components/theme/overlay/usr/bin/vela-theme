@@ -1,0 +1,221 @@
+#!/usr/bin/python3
+"""vela-theme — Vela appearance helper (light/dark/auto, accent, effects, motion, contrast).
+
+  vela-theme apply --mode light|dark|auto [--accent #RRGGBB|default]
+  vela-theme mode light|dark|auto
+  vela-theme accent #RRGGBB|default
+  vela-theme effects full|light
+  vela-theme motion reduced|normal
+  vela-theme high-contrast on|off
+  vela-theme text large|normal         (all UI fonts +25% / back)
+  vela-theme schedule HH:MM HH:MM      (auto: light from, dark from)
+  vela-theme status                    (JSON)
+  vela-theme auto-tick                 (used by the systemd user timer)
+
+State: ~/.config/vela/appearance.json (shared with Vela Welcome and Settings).
+"""
+import json, os, re, shutil, subprocess, sys, time
+
+CONF = os.path.join(os.environ.get('XDG_CONFIG_HOME') or os.path.expanduser('~/.config'), 'vela', 'appearance.json')
+DEFAULTS = {"mode": "light", "accent": "default", "effects": "full", "motion": "normal",
+            "high_contrast": False, "text": "normal", "day": "07:00", "night": "19:30"}
+DRY = os.environ.get('VELA_THEME_DRYRUN') == '1'
+
+def load():
+    try:
+        with open(CONF, encoding='utf-8') as f:
+            d = json.load(f)
+    except (OSError, ValueError):
+        d = {}
+    out = dict(DEFAULTS); out.update({k: v for k, v in d.items()})
+    return out, d
+
+def save(changes):
+    _, raw = load()
+    raw.update(changes)
+    os.makedirs(os.path.dirname(CONF), exist_ok=True)
+    tmp = CONF + '.tmp'
+    with open(tmp, 'w', encoding='utf-8') as f:
+        json.dump(raw, f, indent=1, ensure_ascii=False)
+    os.replace(tmp, CONF)
+
+def run(*cmd):
+    if DRY:
+        print('+', ' '.join(cmd)); return 0
+    exe = shutil.which(cmd[0]) or (cmd[0] if os.path.exists(cmd[0]) else None)
+    if not exe:
+        return 127
+    try:
+        return subprocess.run(list(cmd), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=20).returncode
+    except Exception:
+        return 1
+
+def kw(file, group, key, value=None):
+    groups = []
+    for g in group.split('/'):
+        groups += ['--group', g]
+    if value is None:
+        return run('kwriteconfig6', '--file', file, *groups, '--key', key, '--delete')
+    return run('kwriteconfig6', '--file', file, *groups, '--key', key, str(value))
+
+def kr(file, group, key):
+    try:
+        return subprocess.run(['kreadconfig6', '--file', file, '--group', group, '--key', key],
+                              capture_output=True, text=True, timeout=5).stdout.strip()
+    except Exception:
+        return ''
+
+def hm(s):
+    m = re.match(r'^(\d{1,2}):(\d{2})$', str(s))
+    return int(m.group(1)) * 60 + int(m.group(2)) if m else None
+
+def is_dark(st):
+    if st['mode'] == 'dark':
+        return True
+    if st['mode'] != 'auto':
+        return False
+    now = time.localtime(); t = now.tm_hour * 60 + now.tm_min
+    day, night = hm(st['day']) or 420, hm(st['night']) or 1170
+    return not (day <= t < night)
+
+def reconfigure_kwin():
+    run('dbus-send', '--session', '--type=signal', '/KWin', 'org.kde.KWin.reloadConfig')
+    run('qdbus6', 'org.kde.KWin', '/KWin', 'reconfigure')
+
+def apply_look(st):
+    dark = is_dark(st)
+    hc = bool(st.get('high_contrast'))
+    scheme = ('VelaHighContrastDark' if dark else 'VelaHighContrast') if hc else ('VelaDark' if dark else 'VelaLight')
+    acc = st.get('accent') or 'default'
+    if acc != 'default' and re.match(r'^#[0-9A-Fa-f]{6}$', acc):
+        rc = run('plasma-apply-colorscheme', '--accent-color', acc, scheme)
+    else:
+        kw('kdeglobals', 'General', 'AccentColor', None)
+        kw('kdeglobals', 'General', 'LastUsedCustomAccentColor', None)
+        rc = run('plasma-apply-colorscheme', scheme)
+    kw('kdeglobals', 'KDE', 'LookAndFeelPackage', 'org.vela.desktop.dark' if dark else 'org.vela.desktop')
+    kw('kwinrc', 'org.kde.kdecoration2', 'library', 'org.kde.kwin.aurorae')
+    kw('kwinrc', 'org.kde.kdecoration2', 'theme', '__aurorae__svg__VelaDark' if dark else '__aurorae__svg__VelaLight')
+    icons = 'Vela-Dark' if dark else 'Vela'
+    changer = '/usr/lib/x86_64-linux-gnu/libexec/plasma-changeicons'
+    if os.path.exists(changer) and run(changer, icons) == 0:
+        pass
+    else:
+        kw('kdeglobals', 'Icons', 'Theme', icons)
+        run('dbus-send', '--session', '--type=signal', '/KIconLoader', 'org.kde.KIconLoader.iconChanged', 'int32:0')
+    reconfigure_kwin()
+    # followers: Konsole profiles  switch with the rest of the desktop
+    if shutil.which('vela-terminal-theme') or DRY:
+        run('vela-terminal-theme', 'sync')
+    return rc
+
+def apply_effects(st):
+    if st.get('effects') == 'light':
+        for k in ('blurEnabled', 'contrastEnabled', 'magiclampEnabled', 'translucencyEnabled', 'wobblywindowsEnabled'):
+            kw('kwinrc', 'Plugins', k, 'false')
+    else:
+        for k in ('blurEnabled', 'contrastEnabled', 'magiclampEnabled', 'translucencyEnabled', 'wobblywindowsEnabled'):
+            kw('kwinrc', 'Plugins', k, None)
+    if st.get('motion') == 'reduced':
+        kw('kdeglobals', 'KDE', 'AnimationDurationFactor', '0')
+    elif st.get('effects') == 'light':
+        kw('kdeglobals', 'KDE', 'AnimationDurationFactor', '0.6')
+    else:
+        kw('kdeglobals', 'KDE', 'AnimationDurationFactor', None)
+    run('dbus-send', '--session', '--type=signal', '/KGlobalSettings', 'org.kde.KGlobalSettings.notifyChange', 'int32:3', 'int32:0')
+    reconfigure_kwin()
+
+FONT_KEYS = (('General', 'font'), ('General', 'menuFont'), ('General', 'toolBarFont'),
+             ('General', 'smallestReadableFont'), ('General', 'fixed'), ('WM', 'activeFont'))
+SYS_FONTS = {'font': 'Inter,10', 'menuFont': 'Inter,10', 'toolBarFont': 'Inter,9',
+             'smallestReadableFont': 'Inter,8', 'fixed': 'JetBrains Mono,10', 'activeFont': 'Inter,10'}
+
+def scaled(fontstr, factor):
+    parts = fontstr.split(',')
+    try:
+        size = float(parts[1])
+    except (IndexError, ValueError):
+        return None
+    new = round(size * factor * 2) / 2   # half-point steps
+    parts[1] = ('%g' % new)
+    return ','.join(parts)
+
+def apply_text(st):
+    large = st.get('text') == 'large'
+    for grp, key in FONT_KEYS:
+        cur = kr('kdeglobals', grp, key) or (SYS_FONTS[key] + ',-1,5,%d,0,0,0,0,0,0,0,0,0,0,1' % (600 if key == 'activeFont' else 400))
+        mark = st.get('text_written', {}).get(key)
+        if large:
+            if mark and cur == mark:
+                continue                      # already enlarged by us
+            new = scaled(cur, 1.25)
+            if new:
+                kw('kdeglobals', grp, key, new)
+                st.setdefault('text_written', {})[key] = new
+                st.setdefault('text_orig', {})[key] = cur
+        else:
+            if mark and cur == mark:          # only undo what we wrote; keep user's own font choices
+                orig = st.get('text_orig', {}).get(key)
+                kw('kdeglobals', grp, key, orig if orig and not orig.startswith(SYS_FONTS[key] + ',') else None)
+    if not large:
+        st['text_written'] = {}; st['text_orig'] = {}
+    save({'text': st.get('text', 'normal'), 'text_written': st.get('text_written', {}), 'text_orig': st.get('text_orig', {})})
+    run('dbus-send', '--session', '--type=signal', '/KGlobalSettings', 'org.kde.KGlobalSettings.notifyChange', 'int32:1', 'int32:0')
+    reconfigure_kwin()
+
+def usage(code=2):
+    sys.stderr.write(__doc__); sys.exit(code)
+
+def main(a):
+    if not a:
+        usage()
+    cmd = a[0]
+    st, _ = load()
+    if cmd == 'apply':
+        ch = {}
+        i = 1
+        while i < len(a):
+            if a[i] == '--mode' and i + 1 < len(a): ch['mode'] = a[i + 1]; i += 2
+            elif a[i] == '--accent' and i + 1 < len(a): ch['accent'] = a[i + 1]; i += 2
+            else: usage()
+        if ch.get('mode') not in (None, 'light', 'dark', 'auto'):
+            usage()
+        save(ch); st.update(ch)
+        sys.exit(0 if apply_look(st) in (0, 127) else 1)
+    if cmd == 'mode' and len(a) == 2 and a[1] in ('light', 'dark', 'auto', 'chiaro', 'scuro'):
+        m = {'chiaro': 'light', 'scuro': 'dark'}.get(a[1], a[1])
+        save({'mode': m}); st['mode'] = m; apply_look(st); return
+    if cmd == 'accent' and len(a) == 2:
+        if a[1] != 'default' and not re.match(r'^#[0-9A-Fa-f]{6}$', a[1]):
+            usage()
+        save({'accent': a[1]}); st['accent'] = a[1]; apply_look(st); return
+    if cmd == 'effects' and len(a) == 2 and a[1] in ('full', 'light'):
+        save({'effects': a[1]}); st['effects'] = a[1]; apply_effects(st); return
+    if cmd == 'motion' and len(a) == 2 and a[1] in ('reduced', 'normal'):
+        save({'motion': a[1]}); st['motion'] = a[1]; apply_effects(st); return
+    if cmd == 'high-contrast' and len(a) == 2 and a[1] in ('on', 'off'):
+        save({'high_contrast': a[1] == 'on'}); st['high_contrast'] = a[1] == 'on'; apply_look(st); return
+    if cmd == 'text' and len(a) == 2 and a[1] in ('large', 'normal'):
+        st['text'] = a[1]; apply_text(st); return
+    if cmd == 'schedule' and len(a) == 3 and hm(a[1]) is not None and hm(a[2]) is not None:
+        save({'day': a[1], 'night': a[2]}); st.update(day=a[1], night=a[2])
+        if st['mode'] == 'auto': apply_look(st)
+        return
+    if cmd == 'status':
+        st['effective'] = 'dark' if is_dark(st) else 'light'
+        st['color_scheme'] = kr('kdeglobals', 'General', 'ColorScheme')
+        st.pop('text_written', None); st.pop('text_orig', None)
+        print(json.dumps(st, ensure_ascii=False)); return
+    if cmd == 'auto-tick':
+        if st['mode'] != 'auto':
+            return
+        want_dark = is_dark(st)
+        cur = kr('kdeglobals', 'General', 'ColorScheme')
+        cur_dark = cur.endswith('Dark')
+        if cur and cur.startswith('Vela') and cur_dark == want_dark:
+            return
+        apply_look(st); return
+    usage()
+
+if __name__ == '__main__':
+    main(sys.argv[1:])

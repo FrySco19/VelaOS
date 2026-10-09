@@ -1,0 +1,6 @@
+[Unit]
+Description=Vela: icone di dischi e chiavette sulla Scrivania
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/vela/desktop/vela-desktop-sync --drives

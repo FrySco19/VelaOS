@@ -1,0 +1,27 @@
+[Desktop Entry]
+Type=Application
+Name=Terminale IA
+Name[it]=Terminale IA
+Name[en]=AI Terminal
+GenericName=Terminale con assistente
+GenericName[it]=Terminale con assistente
+GenericName[en]=Terminal with assistant
+Comment=Descrivi cosa vuoi fare: propone i comandi e li esegue solo dopo la tua conferma
+Comment[it]=Descrivi cosa vuoi fare: propone i comandi e li esegue solo dopo la tua conferma
+Comment[en]=Describe what you want to do: it proposes commands and runs them only after you confirm
+Icon=vela-terminal-ai
+Exec=vela-ai-terminal
+TryExec=vela-ai-terminal
+Terminal=false
+StartupNotify=true
+StartupWMClass=vela-ai-terminal
+Categories=System;Qt;
+Keywords=terminale;shell;comandi;console;bash;ia;assistente;terminal;command;ai;
+Keywords[it]=terminale;shell;comandi;console;bash;ia;assistente;
+Actions=NuovaFinestra;
+
+[Desktop Action NuovaFinestra]
+Name=Nuova finestra
+Name[it]=Nuova finestra
+Name[en]=New window
+Exec=vela-ai-terminal

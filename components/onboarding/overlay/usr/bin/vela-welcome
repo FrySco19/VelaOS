@@ -1,0 +1,2 @@
+#!/bin/sh
+exec python3 /usr/lib/vela/welcome/vela_welcome.py "$@"

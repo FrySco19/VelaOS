@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Vela
+Description=Vela boot splash
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/vela
+ScriptFile=/usr/share/plymouth/themes/vela/vela.script

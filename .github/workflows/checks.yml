@@ -1,0 +1,30 @@
+name: Source checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    container: debian:trixie
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install test dependencies
+        run: |
+          apt-get update
+          apt-get install -y python3 python3-pytest locales git
+          echo 'it_IT.UTF-8 UTF-8' >> /etc/locale.gen
+          locale-gen
+      - name: Shell syntax and Python compilation
+        run: |
+          python3 tools/check_syntax.py
+          python3 -m compileall -q components tools archive
+      - name: Terminal protocol and executor tests
+        env:
+          LANG: it_IT.UTF-8
+        run: python3 -m pytest -q components/terminal/tests
+      - name: Assistant tests with simulated model
+        run: python3 -m pytest -q components/assistant/tests
+      - name: Browser protocol checks with simulated model
+        run: PYTHONPATH="$PWD/components/settings-store/overlay/usr/lib/vela/python" python3 components/apps/tests/test_host.py

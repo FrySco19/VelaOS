@@ -1,0 +1,150 @@
+{
+ "extName": {
+  "message": "Assistente per il browser"
+ },
+ "extShort": {
+  "message": "Assistente"
+ },
+ "extDesc": {
+  "message": "Riassume le pagine, risponde a domande sul loro contenuto, salva note e compila moduli dopo la tua conferma."
+ },
+ "toggleTitle": {
+  "message": "Mostra o nascondi l'assistente (Ctrl+Alt+A)"
+ },
+ "menuSummarize": {
+  "message": "Riassumi questa pagina"
+ },
+ "menuAskSel": {
+  "message": "Chiedi all'assistente sul testo selezionato"
+ },
+ "summarize": {
+  "message": "Riassumi"
+ },
+ "saveNote": {
+  "message": "Salva come nota"
+ },
+ "fillForm": {
+  "message": "Compila modulo"
+ },
+ "askPlaceholder": {
+  "message": "Chiedi qualcosa su questa pagina"
+ },
+ "send": {
+  "message": "Invia"
+ },
+ "stop": {
+  "message": "Ferma"
+ },
+ "copy": {
+  "message": "Copia"
+ },
+ "copied": {
+  "message": "Copiato"
+ },
+ "newChat": {
+  "message": "Nuova conversazione"
+ },
+ "you": {
+  "message": "Tu"
+ },
+ "assistant": {
+  "message": "Assistente"
+ },
+ "reading": {
+  "message": "Lettura della pagina…"
+ },
+ "thinking": {
+  "message": "Sto scrivendo…"
+ },
+ "stopped": {
+  "message": "Risposta interrotta."
+ },
+ "localModel": {
+  "message": "Modello locale"
+ },
+ "onlineService": {
+  "message": "Servizio online"
+ },
+ "onlineWarn": {
+  "message": "Il contenuto della pagina viene inviato a un servizio online."
+ },
+ "disabled": {
+  "message": "L'assistente non è disponibile"
+ },
+ "openSettings": {
+  "message": "Apri Impostazioni"
+ },
+ "noHost": {
+  "message": "Il componente dell'assistente non risponde. Riavvia il browser; se il problema resta, reinstalla il pacchetto di Vela."
+ },
+ "restricted": {
+  "message": "Questa pagina non si può leggere. Le pagine interne del browser e i PDF non sono accessibili all'assistente."
+ },
+ "emptyTitle": {
+  "message": "Pagina attuale"
+ },
+ "emptyHint": {
+  "message": "Scegli un'azione o fai una domanda. L'assistente legge la pagina solo quando glielo chiedi."
+ },
+ "noteSaved": {
+  "message": "Nota salvata in Documenti > Note."
+ },
+ "openFolder": {
+  "message": "Apri cartella"
+ },
+ "noteSaveFailed": {
+  "message": "Impossibile salvare la nota."
+ },
+ "formNone": {
+  "message": "In questa pagina non ci sono moduli da compilare."
+ },
+ "formFound": {
+  "message": "Campi trovati: $N$. Scrivi i dati da usare: l'assistente propone i valori e tu li controlli prima di inserirli.",
+  "placeholders": {
+   "n": {
+    "content": "$1"
+   }
+  }
+ },
+ "formPlaceholder": {
+  "message": "Es. Mario Rossi, mario.rossi@example.com, via Roma 1, Milano"
+ },
+ "formPropose": {
+  "message": "Proponi valori"
+ },
+ "formNoValues": {
+  "message": "L'assistente non ha trovato valori adatti. Aggiungi più dettagli e riprova."
+ },
+ "formPreview": {
+  "message": "Controlla i valori. Vengono inseriti solo i campi selezionati; il modulo non viene inviato."
+ },
+ "formApply": {
+  "message": "Compila"
+ },
+ "cancel": {
+  "message": "Annulla"
+ },
+ "formDone": {
+  "message": "Campi compilati: $N$. Controlla la pagina e invia tu il modulo.",
+  "placeholders": {
+   "n": {
+    "content": "$1"
+   }
+  }
+ },
+ "formSkipped": {
+  "message": "Password e dati di pagamento non vengono mai compilati."
+ },
+ "field": {
+  "message": "Campo"
+ },
+ "value": {
+  "message": "Valore"
+ },
+ "errorGeneric": {
+  "message": "Impossibile completare la richiesta. Riprova."
+ },
+ "explainSel": {
+  "message": "Spiega il testo selezionato."
+ }
+}

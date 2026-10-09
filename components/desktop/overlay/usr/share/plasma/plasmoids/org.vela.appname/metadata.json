@@ -1,0 +1,15 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [ { "Name": "Vela" }, { "Name": "Eike Hein (Window List)" } ],
+        "Category": "Windows and Tasks",
+        "Description": "Name of the active app; click to list open windows",
+        "Description[it]": "Nome dell'app attiva; clic per vedere le finestre aperte",
+        "Icon": "preferences-system-windows",
+        "Id": "org.vela.appname",
+        "License": "GPL-2.0+",
+        "Name": "Active app name",
+        "Name[it]": "Nome dell'app attiva"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

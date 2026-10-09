@@ -1,0 +1,411 @@
+#!/usr/bin/python3
+"""Vela desktop integration (component "desktop").
+
+Keeps the desktop and the dock in sync with the system:
+  --session   at login: first-time Home/Cestino icons, then --apps and --drives
+  --apps      new apps (apt, Store/Flatpak, ~/.local) -> desktop icon, dock, notification
+  --drives    mounted drives / USB sticks / VirtualBox shared folders -> desktop icons
+  --status    print what is configured and known (for tests)
+
+Settings: ~/.config/vela/desktop.conf  (edited by vela-desktop-settings)
+State:    ~/.local/state/vela/desktop-sync.json
+Only files this tool created are ever removed (tracked in the state file).
+"""
+import configparser
+import hashlib
+import json
+import os
+import shutil
+import subprocess
+import sys
+import time
+
+HOME = os.path.expanduser("~")
+CONF = os.path.join(os.environ.get("XDG_CONFIG_HOME", os.path.join(HOME, ".config")), "vela", "desktop.conf")
+STATE = os.path.join(os.environ.get("XDG_STATE_HOME", os.path.join(HOME, ".local", "state")), "vela", "desktop-sync.json")
+DATA_HOME = os.environ.get("XDG_DATA_HOME", os.path.join(HOME, ".local", "share"))
+
+DEFAULTS = {
+    "NewApps": {"AddToDesktop": "true", "AddToDock": "false", "Notify": "true"},
+    "DesktopIcons": {"Home": "true", "Trash": "true", "Drives": "true"},
+}
+
+# Apps that are part of the system and should never get automatic icons.
+IGNORE_PREFIXES = ("org.kde.kcm", "kcm_", "vela-desktop-")
+
+
+def log(*a):
+    print("vela-desktop-sync:", *a, file=sys.stderr)
+
+
+def load_conf():
+    cp = configparser.ConfigParser(interpolation=None)
+    cp.optionxform = str
+    cp.read_dict(DEFAULTS)
+    cp.read(CONF)
+    return cp
+
+
+def flag(cp, sec, key):
+    return cp.get(sec, key, fallback=DEFAULTS[sec][key]).strip().lower() in ("1", "true", "yes", "on")
+
+
+def load_state():
+    try:
+        with open(STATE) as f:
+            st = json.load(f)
+    except (OSError, ValueError):
+        st = {}
+    st.setdefault("seeded", False)
+    st.setdefault("apps", [])
+    st.setdefault("created", {})      # desktop-id -> {"path":..., "sha":...}
+    st.setdefault("drives", {})       # mountpoint -> link path
+    st.setdefault("dock_added", [])
+    st.setdefault("dock_pending", [])
+    st.setdefault("first_icons_done", False)
+    return st
+
+
+def save_state(st):
+    os.makedirs(os.path.dirname(STATE), exist_ok=True)
+    tmp = STATE + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(st, f, indent=1, sort_keys=True)
+    os.replace(tmp, STATE)
+
+
+def desktop_dir():
+    try:
+        out = subprocess.run(["xdg-user-dir", "DESKTOP"], capture_output=True, text=True, timeout=5).stdout.strip()
+        if out and out != HOME:
+            return out
+    except (OSError, subprocess.SubprocessError):
+        pass
+    # parse user-dirs.dirs ourselves
+    try:
+        with open(os.path.join(HOME, ".config", "user-dirs.dirs")) as f:
+            for line in f:
+                if line.startswith("XDG_DESKTOP_DIR="):
+                    return line.split("=", 1)[1].strip().strip('"').replace("$HOME", HOME)
+    except OSError:
+        pass
+    return os.path.join(HOME, "Desktop")
+
+
+def app_dirs():
+    dirs = [os.path.join(DATA_HOME, "applications")]
+    xdd = os.environ.get("XDG_DATA_DIRS") or "/usr/local/share:/usr/share"
+    for d in xdd.split(":") + [
+        "/var/lib/flatpak/exports/share",
+        os.path.join(DATA_HOME, "flatpak", "exports", "share"),
+        "/usr/share",
+        "/usr/local/share",
+    ]:
+        if d:
+            p = os.path.join(d, "applications")
+            if p not in dirs:
+                dirs.append(p)
+    return dirs
+
+
+def parse_entry(path):
+    cp = configparser.ConfigParser(interpolation=None, strict=False)
+    cp.optionxform = str
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            cp.read_file(f)
+    except (OSError, configparser.Error):
+        return None
+    if not cp.has_section("Desktop Entry"):
+        return None
+    return dict(cp.items("Desktop Entry"))
+
+
+def visible_app(e):
+    if not e or e.get("Type", "") != "Application":
+        return False
+    for k in ("NoDisplay", "Hidden"):
+        if e.get(k, "false").strip().lower() == "true":
+            return False
+    only = [x for x in e.get("OnlyShowIn", "").split(";") if x]
+    if only and "KDE" not in only:
+        return False
+    if "KDE" in [x for x in e.get("NotShowIn", "").split(";") if x]:
+        return False
+    if not e.get("Exec"):
+        return False
+    tryexec = e.get("TryExec")
+    if tryexec and not (shutil.which(tryexec) or os.path.exists(tryexec)):
+        return False
+    return True
+
+
+def scan_apps():
+    """Return {desktop_id: path} of visible apps; first directory wins (XDG precedence)."""
+    found = {}
+    shadowed = set()
+    for d in app_dirs():
+        if not os.path.isdir(d):
+            continue
+        for root, _dirs, files in os.walk(d, followlinks=True):
+            for fn in files:
+                if not fn.endswith(".desktop"):
+                    continue
+                path = os.path.join(root, fn)
+                did = os.path.relpath(path, d).replace(os.sep, "-")
+                if did in found or did in shadowed:
+                    continue
+                e = parse_entry(path)
+                if visible_app(e):
+                    found[did] = path
+                else:
+                    shadowed.add(did)  # a user override hiding a system app hides it everywhere
+    return {k: v for k, v in found.items() if not k.startswith(IGNORE_PREFIXES)}
+
+
+def sha(path):
+    try:
+        with open(path, "rb") as f:
+            return hashlib.sha256(f.read()).hexdigest()
+    except OSError:
+        return ""
+
+
+def app_name(path):
+    e = parse_entry(path) or {}
+    lang = (os.environ.get("LANG") or "it").split(".")[0]
+    for k in ("Name[%s]" % lang, "Name[%s]" % lang.split("_")[0], "Name"):
+        if e.get(k):
+            return e[k], e.get("Icon", "application-x-executable")
+    return os.path.basename(path), "application-x-executable"
+
+
+def plasma_eval(js):
+    for tool in (["qdbus6"], ["qdbus"]):
+        if shutil.which(tool[0]):
+            try:
+                r = subprocess.run(tool + ["org.kde.plasmashell", "/PlasmaShell", "org.kde.PlasmaShell.evaluateScript", js],
+                                   capture_output=True, text=True, timeout=15)
+                if r.returncode == 0:
+                    return r.stdout.strip()
+                log("evaluateScript failed:", r.stderr.strip())
+            except (OSError, subprocess.SubprocessError) as ex:
+                log("evaluateScript error:", ex)
+            return None
+    return None
+
+
+DOCK_JS = """
+var ids = %s, mode = "%s", out = [];
+panels().forEach(function (p) {
+  p.widgets("org.kde.plasma.icontasks").concat(p.widgets("org.kde.plasma.taskmanager")).forEach(function (w) {
+    w.currentConfigGroup = ["General"];
+    var l = w.readConfig("launchers", []);
+    if (typeof l === "string") { l = l.length ? l.split(",") : []; }
+    ids.forEach(function (id) {
+      var u = "applications:" + id, i = l.indexOf(u);
+      if (mode === "add" && i < 0) { l.push(u); }
+      if (mode === "remove" && i >= 0) { l.splice(i, 1); }
+    });
+    w.writeConfig("launchers", l);
+    w.reloadConfig();
+    out.push(l.join(","));
+  });
+});
+print(out.join("|"));
+"""
+
+
+def dock(ids, mode):
+    if not ids:
+        return True
+    res = plasma_eval(DOCK_JS % (json.dumps(sorted(ids)), mode))
+    return res is not None
+
+
+def notify(title, body, icon):
+    if shutil.which("notify-send"):
+        subprocess.run(["notify-send", "-a", "Vela", "-i", icon, title, body], timeout=10, check=False)
+
+
+def write_link(path, name, name_en, icon, url, extra=""):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write("[Desktop Entry]\nType=Link\nName=%s\nName[it]=%s\nName[en]=%s\nIcon=%s\n%s\n%s"
+                % (name, name, name_en, icon, url, extra))
+    os.chmod(path, 0o755)
+
+
+def repair_links():
+    # Pre-fix builds wrote "URL=trash:/EmptyIcon=..." on one line (drops failed).
+    p = os.path.join(desktop_dir(), "vela-trash.desktop")
+    try:
+        with open(p, encoding="utf-8") as f:
+            broken = "trash:/EmptyIcon" in f.read()
+    except OSError:
+        return
+    if broken:
+        write_link(p, "Cestino", "Trash", "user-trash-full", "URL=trash:/", "EmptyIcon=user-trash\n")
+
+
+def first_icons(st, cp):
+    repair_links()
+    if st["first_icons_done"]:
+        return
+    dd = desktop_dir()
+    if flag(cp, "DesktopIcons", "Home"):
+        p = os.path.join(dd, "vela-home.desktop")
+        if not os.path.exists(p):
+            write_link(p, "Home", "Home", "user-home", "URL[$e]=file:$HOME")
+    if flag(cp, "DesktopIcons", "Trash"):
+        p = os.path.join(dd, "vela-trash.desktop")
+        if not os.path.exists(p):
+            write_link(p, "Cestino", "Trash", "user-trash-full", "URL=trash:/", "EmptyIcon=user-trash\n")
+    # Live session: "Installa Vela" on the desktop
+    if is_live():
+        for src in ("/usr/share/applications/vela-install.desktop",):
+            dst = os.path.join(dd, os.path.basename(src))
+            if os.path.exists(src) and not os.path.exists(dst):
+                os.makedirs(dd, exist_ok=True)
+                shutil.copyfile(src, dst)
+                os.chmod(dst, 0o755)
+    st["first_icons_done"] = True
+
+
+def is_live():
+    if os.path.isdir("/run/live/medium"):
+        return True
+    try:
+        with open("/proc/cmdline") as f:
+            return "boot=live" in f.read()
+    except OSError:
+        return False
+
+
+def sync_apps(st, cp):
+    # coalesce bursts (apt/flatpak write many files): rescan until stable
+    apps = scan_apps()
+    for _ in range(5):
+        time.sleep(1.5)
+        again = scan_apps()
+        if again.keys() == apps.keys():
+            break
+        apps = again
+    known = set(st["apps"])
+    current = set(apps)
+    if not st["seeded"]:
+        st["apps"] = sorted(current)
+        st["seeded"] = True
+        log("seeded %d apps" % len(current))
+        return
+    new = sorted(current - known)
+    gone = sorted(known - current)
+    dd = desktop_dir()
+    to_dock = []
+    for did in new:
+        name, icon = app_name(apps[did])
+        placed = []
+        if flag(cp, "NewApps", "AddToDesktop"):
+            dst = os.path.join(dd, did)
+            if not os.path.exists(dst):
+                os.makedirs(dd, exist_ok=True)
+                shutil.copyfile(apps[did], dst)
+                os.chmod(dst, 0o755)
+                st["created"][did] = {"path": dst, "sha": sha(dst)}
+                placed.append("sulla Scrivania")
+        if flag(cp, "NewApps", "AddToDock"):
+            to_dock.append(did)
+            placed.append("nel Dock")
+        log("new app:", did, placed)
+        if flag(cp, "NewApps", "Notify"):
+            where = (" e ".join(placed)) if placed else "in Tutte le app"
+            notify("%s è installata" % name, "La trovi %s." % where, icon)
+    if to_dock:
+        st["dock_pending"] = sorted(set(st["dock_pending"]) | set(to_dock))
+    for did in gone:
+        c = st["created"].pop(did, None)
+        if c and os.path.exists(c["path"]) and sha(c["path"]) == c["sha"]:
+            os.remove(c["path"])
+            log("removed desktop icon of uninstalled app", did)
+    gone_dock = [d for d in gone if d in st["dock_added"]]
+    if gone_dock and dock(gone_dock, "remove"):
+        st["dock_added"] = [d for d in st["dock_added"] if d not in gone_dock]
+    st["dock_pending"] = [d for d in st["dock_pending"] if d in current]
+    if st["dock_pending"] and dock(st["dock_pending"], "add"):
+        st["dock_added"] = sorted(set(st["dock_added"]) | set(st["dock_pending"]))
+        st["dock_pending"] = []
+    st["apps"] = sorted(current)
+
+
+def mounts():
+    user = os.environ.get("USER") or os.path.basename(HOME)
+    roots = ("/media/%s/" % user, "/run/media/%s/" % user, "/media/sf_", "/mnt/")
+    res = {}
+    try:
+        with open("/proc/self/mounts") as f:
+            for line in f:
+                parts = line.split()
+                mp = parts[1].replace("\\040", " ")
+                fstype = parts[2]
+                if mp.startswith(roots) and os.path.isdir(mp):
+                    res[mp] = fstype
+    except OSError:
+        pass
+    return res
+
+
+def sync_drives(st, cp):
+    dd = desktop_dir()
+    want = mounts() if flag(cp, "DesktopIcons", "Drives") else {}
+    for mp, fstype in want.items():
+        if mp in st["drives"] and os.path.exists(st["drives"][mp]):
+            continue
+        label = os.path.basename(mp.rstrip("/")) or mp
+        icon = "drive-removable-media-usb"
+        if fstype == "vboxsf" or label.startswith("sf_"):
+            label = label[3:] if label.startswith("sf_") else label
+            icon = "folder-network"
+        elif fstype in ("iso9660", "udf"):
+            icon = "media-optical"
+        safe = "".join(ch if ch.isalnum() else "_" for ch in mp.strip("/"))
+        p = os.path.join(dd, "vela-drive-%s.desktop" % safe)
+        url = "URL=file://" + mp.replace(" ", "%20")
+        write_link(p, label, label, icon, url)
+        st["drives"][mp] = p
+        log("drive icon:", mp)
+    for mp in list(st["drives"]):
+        if mp not in want:
+            p = st["drives"].pop(mp)
+            if os.path.exists(p):
+                os.remove(p)
+            log("drive removed:", mp)
+
+
+def main(argv):
+    mode = argv[1] if len(argv) > 1 else "--session"
+    cp = load_conf()
+    st = load_state()
+    if mode == "--status":
+        print(json.dumps({"config": {s: dict(cp.items(s)) for s in cp.sections()},
+                          "desktop_dir": desktop_dir(), "state": st}, indent=1))
+        return 0
+    if mode in ("--session",):
+        first_icons(st, cp)
+        sync_apps(st, cp)
+        sync_drives(st, cp)
+    elif mode == "--apps":
+        sync_apps(st, cp)
+    elif mode == "--drives":
+        sync_drives(st, cp)
+    elif mode == "--reset-icons":
+        st["first_icons_done"] = False
+        first_icons(st, cp)
+    else:
+        print(__doc__)
+        return 2
+    save_state(st)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

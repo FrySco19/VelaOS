@@ -1,0 +1,224 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: kcm_vela_privacy\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-08 21:37+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+
+msgid "Cannot delete the action history."
+msgstr "Impossibile eliminare la cronologia delle azioni."
+
+msgid "Cannot delete the assistant memory completely."
+msgstr "Impossibile eliminare del tutto la memoria dell'assistente."
+
+msgid "Data that leaves this computer"
+msgstr "Dati che escono dal computer"
+
+msgid "Now:"
+msgstr "Adesso:"
+
+msgid "The assistant is off. Nothing is sent."
+msgstr "L'assistente è disattivato. Non viene inviato nulla."
+
+msgid ""
+"The assistant uses a model on this computer. Your requests are not sent "
+"anywhere."
+msgstr ""
+"L'assistente usa un modello su questo computer. Le tue richieste non vengono"
+" inviate a nessuno."
+
+#, qt-format
+msgid ""
+"The assistant uses an online service. Your requests and the context you "
+"allow are sent to %1."
+msgstr ""
+"L'assistente usa un servizio online. Le tue richieste e il contesto che "
+"consenti vengono inviati a %1."
+
+#, qt-format
+msgid ""
+"An online service (%1) is selected, but sending is not allowed, so nothing "
+"is sent."
+msgstr ""
+"È scelto un servizio online (%1), ma l'invio non è consentito: non viene "
+"inviato nulla."
+
+msgid "Online services:"
+msgstr "Servizi online:"
+
+msgid "Allow sending requests to online services"
+msgstr "Consenti l'invio delle richieste ai servizi online"
+
+msgid "Remove passwords and keys from text before sending it"
+msgstr "Togli password e chiavi dal testo prima di inviarlo"
+
+#, qt-format
+msgid "In the history, %1 action sent data off this computer."
+msgid_plural "In the history, %1 actions sent data off this computer."
+msgstr[0] "Nella cronologia, %1 azione ha inviato dati fuori dal computer."
+msgstr[1] "Nella cronologia, %1 azioni hanno inviato dati fuori dal computer."
+
+msgid "What the assistant can do"
+msgstr "Cosa può fare l'assistente"
+
+msgid "Never"
+msgstr "Mai"
+
+msgid "Ask every time"
+msgstr "Chiedi ogni volta"
+
+msgid "Allow without asking"
+msgstr "Consenti senza chiedere"
+
+msgid "Run commands:"
+msgstr "Eseguire comandi:"
+
+msgid "Browse the web for you:"
+msgstr "Navigare sul web per te:"
+
+msgid "Change network settings:"
+msgstr "Modificare la rete:"
+
+msgid "Install apps or change the system:"
+msgstr "Installare app o modificare il sistema:"
+
+msgid ""
+"With «Ask every time» you see a preview and confirm before anything runs."
+msgstr ""
+"Con «Chiedi ogni volta» vedi un'anteprima e confermi prima che parta "
+"qualsiasi azione."
+
+msgid "Action history"
+msgstr "Cronologia delle azioni"
+
+msgid "History:"
+msgstr "Cronologia:"
+
+msgid "Keep a history of what the assistant does"
+msgstr "Tieni una cronologia di ciò che fa l'assistente"
+
+msgid "Keep for:"
+msgstr "Conserva per:"
+
+msgid "1 week"
+msgstr "1 settimana"
+
+msgid "1 month"
+msgstr "1 mese"
+
+msgid "3 months"
+msgstr "3 mesi"
+
+msgid "1 year"
+msgstr "1 anno"
+
+msgid "Always"
+msgstr "Sempre"
+
+msgid "Recent actions:"
+msgstr "Azioni recenti:"
+
+msgid "Sent to an online service"
+msgstr "Inviata a un servizio online"
+
+msgid "Stayed on this computer"
+msgstr "Rimasta su questo computer"
+
+msgid "confirmed"
+msgstr "confermata"
+
+msgid "No actions yet"
+msgstr "Ancora nessuna azione"
+
+msgid "What the assistant does will appear here."
+msgstr "Qui compare ciò che fa l'assistente."
+
+msgid "Refresh"
+msgstr "Aggiorna"
+
+msgid "Open file"
+msgstr "Apri file"
+
+msgid "Clear history…"
+msgstr "Cancella cronologia…"
+
+msgid "Assistant memory"
+msgstr "Memoria dell'assistente"
+
+msgid "Memory:"
+msgstr "Memoria:"
+
+msgid "Remember files, pages and commands so you can find them by asking"
+msgstr "Ricorda file, pagine e comandi per ritrovarli chiedendo"
+
+msgid "Pause memory"
+msgstr "Metti in pausa la memoria"
+
+msgid "Memory stays on this computer, in your home folder."
+msgstr "La memoria resta su questo computer, nella tua cartella Home."
+
+msgid "Never remember:"
+msgstr "Non ricordare mai:"
+
+msgid "Remove"
+msgstr "Rimuovi"
+
+msgid "Add folder…"
+msgstr "Aggiungi cartella…"
+
+msgid "Site, e.g. bank.example.com"
+msgstr "Sito, ad esempio banca.esempio.it"
+
+msgid "Add site"
+msgstr "Aggiungi sito"
+
+msgid "Space used:"
+msgstr "Spazio occupato:"
+
+msgid "Delete memory…"
+msgstr "Elimina memoria…"
+
+msgid "Choose a folder the assistant must not remember"
+msgstr "Scegli una cartella che l'assistente non deve ricordare"
+
+msgid "Clear the action history?"
+msgstr "Cancellare la cronologia delle azioni?"
+
+msgid ""
+"The list of what the assistant has done will be deleted. This cannot be "
+"undone."
+msgstr ""
+"L'elenco di ciò che ha fatto l'assistente verrà eliminato. L'operazione non "
+"si può annullare."
+
+msgid "Clear"
+msgstr "Cancella"
+
+msgid "Cancel"
+msgstr "Annulla"
+
+msgid "Delete the assistant memory?"
+msgstr "Eliminare la memoria dell'assistente?"
+
+msgid ""
+"Everything the assistant remembers will be deleted. Your files are not "
+"touched. This cannot be undone."
+msgstr ""
+"Tutto ciò che l'assistente ricorda verrà eliminato. I tuoi file non vengono "
+"toccati. L'operazione non si può annullare."
+
+msgid "Delete"
+msgstr "Elimina"

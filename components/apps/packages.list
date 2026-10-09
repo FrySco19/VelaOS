@@ -1,0 +1,88 @@
+# Vela default applications (agent: apps). All verified present in Debian 13 trixie main (apt-cache policy, 2026-10-08).
+# Lines starting with # are comments.
+
+# Browser (AI browser = Firefox ESR + Vela AI sidebar extension, see overlay/)
+firefox-esr
+firefox-esr-l10n-it
+webext-ublock-origin-firefox
+plasma-browser-integration
+
+# Office: Writer, Calc, Impress (+Draw as dependency). Help files NOT installed (33 MB) — LibreOffice opens online help.
+libreoffice-writer
+libreoffice-calc
+libreoffice-impress
+libreoffice-l10n-it
+libreoffice-kf6
+libreoffice-qt6
+libreoffice-style-breeze
+hunspell-it
+hyphen-it
+mythes-it
+
+# Documents, images, media
+okular
+okular-extra-backends
+gwenview
+kimageformat6-plugins
+qt6-image-formats-plugins
+haruna
+elisa
+
+# Thumbnails in Dolphin (video, PDF, RAW, office)
+ffmpegthumbs
+kdegraphics-thumbnailers
+kio-extras
+
+# Codecs
+ffmpeg
+libavcodec-extra
+gstreamer1.0-plugins-good
+gstreamer1.0-plugins-bad
+gstreamer1.0-plugins-ugly
+gstreamer1.0-libav
+gstreamer1.0-vaapi
+
+# Utilities
+kcalc
+kclock
+kweather
+marknote
+ark
+7zip
+unar
+kwrite
+kate
+kde-spectacle
+partitionmanager
+plasma-systemmonitor
+filelight
+kcharselect
+
+# Printing and scanning
+cups
+ipp-usb
+print-manager
+printer-driver-gutenprint
+foomatic-db-compressed-ppds
+skanpage
+sane-utils
+
+# Phone integration (Continuity-like)
+kdeconnect
+
+# Workspaces (Spazi) — Plasma Activities + helper (overlay/usr/bin/vela-spazi)
+kactivitymanagerd
+plasma-activities-bin
+python3-pyside6.qtwidgets
+python3-pyside6.qtgui
+python3-pyside6.qtcore
+python3-dbus
+
+# Memory: file search (Baloo) + snapshots / restore
+baloo6
+snapper
+btrfs-assistant
+
+# Needed by hook.chroot.sh (kwriteconfig6) and vela-istantanee (kdialog)
+libkf6config-bin
+kdialog

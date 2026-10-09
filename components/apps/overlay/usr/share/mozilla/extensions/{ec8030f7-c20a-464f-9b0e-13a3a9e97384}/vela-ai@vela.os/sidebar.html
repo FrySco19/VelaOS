@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="light dark">
+<link rel="stylesheet" href="sidebar.css">
+</head>
+<body>
+<header id="top">
+  <div id="model" class="model" title=""><span class="dot"></span><span id="modelText"></span></div>
+  <button id="newChat" class="icon" data-i18n-title="newChat" aria-label="">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg>
+  </button>
+</header>
+<div id="banner" class="banner" hidden></div>
+
+<section id="page" class="card">
+  <img id="favicon" alt="" width="16" height="16">
+  <div class="pagetext">
+    <div class="label" data-i18n="emptyTitle"></div>
+    <div id="pageTitle" class="title"></div>
+  </div>
+</section>
+
+<nav id="actions">
+  <button id="btnSummarize" class="chip" data-i18n="summarize"></button>
+  <button id="btnNote" class="chip" data-i18n="saveNote"></button>
+  <button id="btnForm" class="chip" data-i18n="fillForm"></button>
+</nav>
+
+<main id="log" aria-live="polite">
+  <p id="hint" class="hint" data-i18n="emptyHint"></p>
+</main>
+
+<section id="formPanel" class="panel" hidden>
+  <p id="formIntro"></p>
+  <textarea id="formData" rows="3" data-i18n-placeholder="formPlaceholder"></textarea>
+  <div id="formPreview" hidden>
+    <p class="small" data-i18n="formPreview"></p>
+    <div id="formRows"></div>
+  </div>
+  <p class="small muted" data-i18n="formSkipped"></p>
+  <div class="row end">
+    <button id="formCancel" class="secondary" data-i18n="cancel"></button>
+    <button id="formGo" class="primary" data-i18n="formPropose"></button>
+  </div>
+</section>
+
+<footer id="composer">
+  <textarea id="input" rows="1" data-i18n-placeholder="askPlaceholder"></textarea>
+  <button id="send" class="primary round" data-i18n-title="send" aria-label="">
+    <svg id="sendIcon" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 16V4M5 9l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+    <svg id="stopIcon" viewBox="0 0 20 20" aria-hidden="true" hidden><rect x="6" y="6" width="8" height="8" rx="1.5" fill="currentColor"/></svg>
+  </button>
+</footer>
+<script src="markdown.js"></script>
+<script src="sidebar.js"></script>
+</body>
+</html>

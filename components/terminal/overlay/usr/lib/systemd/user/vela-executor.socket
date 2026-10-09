@@ -1,0 +1,12 @@
+[Unit]
+Description=Vela: esecutore sicuro dei comandi (socket)
+Documentation=file:///usr/share/doc/vela-terminal/EXECUTOR_API.md
+
+[Socket]
+ListenStream=%t/vela/executor.sock
+SocketMode=0600
+DirectoryMode=0700
+RemoveOnStop=true
+
+[Install]
+WantedBy=sockets.target

@@ -1,0 +1,12 @@
+[Unit]
+Description=Vela: icone della Scrivania all'accesso
+PartOf=graphical-session.target
+After=graphical-session.target plasma-plasmashell.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/vela/desktop/vela-desktop-sync --session
+Nice=10
+
+[Install]
+WantedBy=plasma-workspace.target

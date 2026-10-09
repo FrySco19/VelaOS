@@ -1,0 +1,17 @@
+[Wallpaper]
+defaultWallpaperTheme=Vela
+defaultFileSuffix=.jpg
+defaultWidth=3840
+defaultHeight=2160
+
+[ContrastEffect]
+enabled=true
+contrast=0.25
+intensity=1.0
+saturation=1.6
+
+[AdaptiveTransparency]
+enabled=true
+
+[BlurBehindEffect]
+enabled=true

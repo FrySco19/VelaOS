@@ -1,0 +1,13 @@
+#!/bin/sh
+# Start the Vela installer (Calamares) as root. Works in Wayland and X11 sessions.
+if ! [ -d /run/live/medium ]; then
+  kdialog --title "Installa Vela" --msgbox "Vela è già installato su questo computer." 2>/dev/null || echo "Vela è già installato."
+  exit 0
+fi
+xhost +si:localuser:root >/dev/null 2>&1 || true
+# Debian's live /etc/fstab confuses the partition module (same as calamares-install-debian)
+sudo -n mv /etc/fstab /etc/fstab.orig.calamares 2>/dev/null || true
+sudo -n -E env QT_QPA_PLATFORM=xcb QT_AUTO_SCREEN_SCALE_FACTOR=1 LANG="${LANG:-it_IT.UTF-8}" calamares "$@" \
+  || pkexec env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" QT_QPA_PLATFORM=xcb calamares "$@"
+sudo -n mv /etc/fstab.orig.calamares /etc/fstab 2>/dev/null || true
+xhost -si:localuser:root >/dev/null 2>&1 || true

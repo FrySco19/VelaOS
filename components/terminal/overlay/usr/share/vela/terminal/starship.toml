@@ -1,0 +1,83 @@
+# Vela: prompt for fish (starship). Personalise by copying to ~/.config/starship.toml.
+"$schema" = 'https://starship.rs/config-schema.json'
+add_newline = true
+command_timeout = 400
+scan_timeout = 20
+format = "$directory$git_branch$git_state$git_status$python$nodejs$rust$golang$container$sudo$cmd_duration$line_break$jobs$character"
+right_format = ""
+
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+truncation_symbol = "…/"
+read_only = " (sola lettura)"
+style = "bold cyan"
+home_symbol = "~"
+
+[git_branch]
+format = "[$symbol$branch]($style) "
+symbol = ""
+style = "purple"
+
+[git_status]
+format = '([$all_status$ahead_behind]($style) )'
+style = "yellow"
+conflicted = "≠"
+ahead = "↑${count}"
+behind = "↓${count}"
+diverged = "↕"
+untracked = "?"
+stashed = ""
+modified = "•"
+staged = "+"
+renamed = "»"
+deleted = "−"
+
+[git_state]
+format = '[\($state( $progress_current/$progress_total)\)]($style) '
+rebase = "rebase"
+merge = "merge"
+cherry_pick = "cherry-pick"
+
+[python]
+format = '[(\($virtualenv\) )]($style)'
+style = "green"
+detect_extensions = []
+detect_files = []
+
+[nodejs]
+format = "[node $version]($style) "
+style = "green"
+detect_files = ["package.json"]
+detect_extensions = []
+detect_folders = []
+
+[rust]
+format = "[rust $version]($style) "
+style = "red"
+
+[golang]
+format = "[go $version]($style) "
+style = "cyan"
+
+[container]
+format = '[\[$name\]]($style) '
+
+[sudo]
+disabled = true
+
+[cmd_duration]
+min_time = 3000
+format = "[in $duration]($style) "
+style = "bright-black"
+show_notifications = false
+
+[jobs]
+symbol = "+"
+style = "blue"
+number_threshold = 1
+
+[character]
+success_symbol = "[❯](bold blue)"
+error_symbol = "[❯](bold red)"
+vimcmd_symbol = "[❮](bold green)"

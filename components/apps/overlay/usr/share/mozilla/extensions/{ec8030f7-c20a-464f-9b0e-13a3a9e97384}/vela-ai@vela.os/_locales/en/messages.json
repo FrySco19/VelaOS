@@ -1,0 +1,150 @@
+{
+ "extName": {
+  "message": "Browser assistant"
+ },
+ "extShort": {
+  "message": "Assistant"
+ },
+ "extDesc": {
+  "message": "Summarizes pages, answers questions about them, saves notes and fills in forms after you confirm."
+ },
+ "toggleTitle": {
+  "message": "Show or hide the assistant (Ctrl+Alt+A)"
+ },
+ "menuSummarize": {
+  "message": "Summarize this page"
+ },
+ "menuAskSel": {
+  "message": "Ask the assistant about the selected text"
+ },
+ "summarize": {
+  "message": "Summarize"
+ },
+ "saveNote": {
+  "message": "Save as note"
+ },
+ "fillForm": {
+  "message": "Fill in form"
+ },
+ "askPlaceholder": {
+  "message": "Ask something about this page"
+ },
+ "send": {
+  "message": "Send"
+ },
+ "stop": {
+  "message": "Stop"
+ },
+ "copy": {
+  "message": "Copy"
+ },
+ "copied": {
+  "message": "Copied"
+ },
+ "newChat": {
+  "message": "New conversation"
+ },
+ "you": {
+  "message": "You"
+ },
+ "assistant": {
+  "message": "Assistant"
+ },
+ "reading": {
+  "message": "Reading the page…"
+ },
+ "thinking": {
+  "message": "Writing…"
+ },
+ "stopped": {
+  "message": "Answer stopped."
+ },
+ "localModel": {
+  "message": "Local model"
+ },
+ "onlineService": {
+  "message": "Online service"
+ },
+ "onlineWarn": {
+  "message": "The page content is sent to an online service."
+ },
+ "disabled": {
+  "message": "The assistant is not available"
+ },
+ "openSettings": {
+  "message": "Open Settings"
+ },
+ "noHost": {
+  "message": "The assistant component is not responding. Restart the browser; if the problem persists, reinstall the Vela package."
+ },
+ "restricted": {
+  "message": "This page can't be read. Internal browser pages and PDFs are not accessible to the assistant."
+ },
+ "emptyTitle": {
+  "message": "Current page"
+ },
+ "emptyHint": {
+  "message": "Pick an action or ask a question. The assistant reads the page only when you ask."
+ },
+ "noteSaved": {
+  "message": "Note saved in Documents › Notes."
+ },
+ "openFolder": {
+  "message": "Open folder"
+ },
+ "noteSaveFailed": {
+  "message": "Couldn't save the note."
+ },
+ "formNone": {
+  "message": "There are no forms to fill in on this page."
+ },
+ "formFound": {
+  "message": "Fields found: $N$. Type the details to use: the assistant suggests values and you check them before they are entered.",
+  "placeholders": {
+   "n": {
+    "content": "$1"
+   }
+  }
+ },
+ "formPlaceholder": {
+  "message": "E.g. Jane Smith, jane.smith@example.com, 1 Main St, London"
+ },
+ "formPropose": {
+  "message": "Suggest values"
+ },
+ "formNoValues": {
+  "message": "The assistant found no suitable values. Add more details and try again."
+ },
+ "formPreview": {
+  "message": "Check the values. Only the selected fields are filled in; the form is not submitted."
+ },
+ "formApply": {
+  "message": "Fill in"
+ },
+ "cancel": {
+  "message": "Cancel"
+ },
+ "formDone": {
+  "message": "Fields filled in: $N$. Check the page and submit the form yourself.",
+  "placeholders": {
+   "n": {
+    "content": "$1"
+   }
+  }
+ },
+ "formSkipped": {
+  "message": "Passwords and payment details are never filled in."
+ },
+ "field": {
+  "message": "Field"
+ },
+ "value": {
+  "message": "Value"
+ },
+ "errorGeneric": {
+  "message": "Something went wrong."
+ },
+ "explainSel": {
+  "message": "Explain the selected text."
+ }
+}

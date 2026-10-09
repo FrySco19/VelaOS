@@ -1,0 +1,15 @@
+# perf (Vela 2) — speed, VM integration. Names verified against trixie / trixie-fasttrack (2026-10-08).
+# VirtualBox Guest Additions userland 7.2.20 = same version as the host (needs trixie-fasttrack contrib, see README)
+virtualbox-guest-utils
+virtualbox-guest-x11
+# compressed swap in RAM
+systemd-zram-generator
+# eglinfo: detects GPU-accelerated vs software (llvmpipe) rendering
+mesa-utils
+# kwriteconfig6/kreadconfig6 + qdbus6 for the runtime effect adapter
+libkf6config-bin
+qdbus-qt6
+# notify-send for the one-time "attiva l'accelerazione 3D" hint
+libnotify-bin
+# page-cache warm-up of common apps after login
+vmtouch

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Community e domande / Questions
+    url: https://github.com/FrySco19/VelaOS/discussions
+    about: Idee, supporto e coordinamento
+  - name: Vulnerabilità / Security vulnerability
+    url: https://github.com/FrySco19/VelaOS/security/advisories/new
+    about: Segnalazione privata, senza dettagli sensibili in issue pubbliche

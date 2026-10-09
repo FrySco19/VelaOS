@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Scrivania e Dock
+Name[it]=Scrivania e Dock
+Name[en]=Desktop and Dock
+Comment=Icone sulla Scrivania e nuove app
+Comment[it]=Icone sulla Scrivania e nuove app
+Comment[en]=Desktop icons and new apps
+Exec=vela-desktop-settings
+Icon=preferences-desktop
+Categories=Settings;DesktopSettings;
+Keywords=desktop;scrivania;icone;dock;nuove app;
+Keywords[it]=scrivania;icone;dock;nuove app;cestino;chiavette;

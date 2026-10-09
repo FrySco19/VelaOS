@@ -1,0 +1,13 @@
+[Unit]
+Description=Vela: rileva accelerazione grafica
+After=systemd-udev-settle.service systemd-udevd.service systemd-modules-load.service
+ConditionPathExists=/usr/lib/vela/perf/vela-gpu-detect
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/lib/vela/perf/vela-gpu-detect
+Nice=10
+
+[Install]
+WantedBy=multi-user.target

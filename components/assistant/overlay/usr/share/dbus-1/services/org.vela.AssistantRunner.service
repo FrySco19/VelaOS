@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=org.vela.AssistantRunner
+Exec=/usr/bin/python3 /usr/lib/vela/assistant/krunner_runner.py

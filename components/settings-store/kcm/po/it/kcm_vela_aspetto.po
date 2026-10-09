@@ -1,0 +1,128 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: kcm_vela_aspetto\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-08 21:37+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+
+msgid "The change could not be applied completely."
+msgstr "Impossibile applicare del tutto la modifica."
+
+msgid ""
+"The Vela appearance tool is not installed. Use Global theme and Colors "
+"below."
+msgstr ""
+"Lo strumento per l'aspetto di Vela non è installato. Usa Tema globale e "
+"Colori qui sotto."
+
+msgid "Mode:"
+msgstr "Modalità:"
+
+msgid "Light"
+msgstr "Chiaro"
+
+msgid "Dark"
+msgstr "Scuro"
+
+msgid "Automatic"
+msgstr "Automatico"
+
+msgid "Light from"
+msgstr "Chiaro dalle"
+
+msgid "dark from"
+msgstr "scuro dalle"
+
+msgid "Accent color:"
+msgstr "Colore principale:"
+
+msgid "Coral (default)"
+msgstr "Corallo (predefinito)"
+
+msgid "Sea blue"
+msgstr "Blu mare"
+
+msgid "Blue"
+msgstr "Blu"
+
+msgid "Green"
+msgstr "Verde"
+
+msgid "Purple"
+msgstr "Viola"
+
+msgid "Pink"
+msgstr "Rosa"
+
+msgid "Orange"
+msgstr "Arancione"
+
+msgid "Graphite"
+msgstr "Grafite"
+
+msgid "Other…"
+msgstr "Altro…"
+
+msgid "Wallpaper:"
+msgstr "Sfondo:"
+
+msgid "Choose wallpaper…"
+msgstr "Scegli sfondo…"
+
+msgid "Transparency and effects:"
+msgstr "Trasparenze ed effetti:"
+
+msgid "Full"
+msgstr "Completi"
+
+msgid "Light (faster on older computers)"
+msgstr "Leggeri (più veloci su computer datati)"
+
+msgid "Accessibility:"
+msgstr "Accessibilità:"
+
+msgid "Reduce motion"
+msgstr "Riduci animazioni"
+
+msgid "Larger text"
+msgstr "Testo più grande"
+
+msgid "High contrast"
+msgstr "Contrasto elevato"
+
+msgid "More options:"
+msgstr "Altre opzioni:"
+
+msgid "Desktop and Dock…"
+msgstr "Scrivania e Dock…"
+
+msgid "Global theme"
+msgstr "Tema globale"
+
+msgid "Colors"
+msgstr "Colori"
+
+msgid "Text and fonts"
+msgstr "Testo e caratteri"
+
+msgid "Icons"
+msgstr "Icone"
+
+msgid "Cursor"
+msgstr "Puntatore"
+
+msgid "Choose an accent color"
+msgstr "Scegli un colore principale"

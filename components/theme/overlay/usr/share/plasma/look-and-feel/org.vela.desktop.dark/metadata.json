@@ -1,0 +1,18 @@
+{
+  "KPackageStructure": "Plasma/LookAndFeel",
+  "KPlugin": {
+    "Authors": [
+      {
+        "Name": "Vela"
+      }
+    ],
+    "Id": "org.vela.desktop.dark",
+    "License": "GPL-2.0-or-later",
+    "Name": "Vela Dark",
+    "Name[it]": "Vela scuro",
+    "Description": "Vela desktop dark",
+    "Description[it]": "Vela con tema scuro",
+    "Website": "https://vela.invalid/"
+  },
+  "X-Plasma-APIVersion": "2"
+}

@@ -1,0 +1,30 @@
+#!/bin/sh
+# Vela perf — start VirtualBox Guest Additions session services (clipboard, resize helper, drag&drop).
+# Replaces Debian's /etc/X11/Xsession.d/98vboxadd-xclient, which never runs in a Wayland session
+# and starts the clipboard without the Wayland mode. Works in both Plasma sessions.
+set -u
+[ "$(systemd-detect-virt 2>/dev/null)" = oracle ] || exit 0
+command -v VBoxClient >/dev/null 2>&1 || exit 0
+LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/vela"; mkdir -p "$LOG_DIR"
+log() { printf '%s %s\n' "$(date '+%F %T')" "$*" >> "$LOG_DIR/vboxclient.log"; }
+if [ ! -c /dev/vboxuser ] && [ ! -c /dev/vboxguest ]; then
+  log "vboxguest kernel module not loaded: guest services not started"; exit 0
+fi
+# stale, non-writable pid files block VBoxClient
+for f in "$HOME"/.vboxclient-*.pid; do [ -e "$f" ] && [ ! -w "$f" ] && rm -f "$f"; done
+
+case "${XDG_SESSION_TYPE:-}" in
+  wayland) st=wayland ;;
+  x11) st=x11 ;;
+  *) if [ -n "${WAYLAND_DISPLAY:-}" ]; then st=wayland; else st=x11; fi ;;
+esac
+log "session=$st desktop=${XDG_CURRENT_DESKTOP:-} VBoxClient $(VBoxClient --version 2>/dev/null | head -n1)"
+
+VBoxClient --clipboard --session-type "$st" >>"$LOG_DIR/vboxclient.log" 2>&1 || log "clipboard failed rc=$?"
+VBoxClient --vmsvga-session >>"$LOG_DIR/vboxclient.log" 2>&1 || log "vmsvga-session failed rc=$?"
+if [ "$st" = x11 ]; then
+  # VirtualBox implements host<->guest drag&drop and seamless mode only for X11 sessions
+  VBoxClient --draganddrop >>"$LOG_DIR/vboxclient.log" 2>&1 || log "draganddrop failed rc=$?"
+  VBoxClient --seamless >>"$LOG_DIR/vboxclient.log" 2>&1 || log "seamless failed rc=$?"
+fi
+exit 0

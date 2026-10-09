@@ -1,0 +1,13 @@
+[Unit]
+Description=Vela: controlla dischi e chiavette collegati
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Path]
+PathChanged=/media
+PathChanged=/media/%u
+PathChanged=/run/media/%u
+Unit=vela-desktop-drives.service
+
+[Install]
+WantedBy=plasma-workspace.target

@@ -1,0 +1,14 @@
+{
+    "KPlugin": {
+        "Description": "Action history, assistant memory and data sent to online services",
+        "Description[it]": "Cronologia delle azioni, memoria dell'assistente e dati inviati ai servizi online",
+        "Icon": "vela-privacy",
+        "Name": "Privacy and memory",
+        "Name[it]": "Privacy e memoria"
+    },
+    "X-KDE-Keywords": "privacy,memory,history,log,permissions,cloud,data,assistant",
+    "X-KDE-Keywords[it]": "privacy,memoria,cronologia,registro,permessi,cloud,dati,assistente,IA",
+    "X-KDE-System-Settings-Parent-Category": "vela-ai",
+    "X-KDE-Weight": 20,
+    "X-DocPath": ""
+}

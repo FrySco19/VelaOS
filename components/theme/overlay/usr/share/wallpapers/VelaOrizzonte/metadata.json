@@ -1,0 +1,14 @@
+{
+  "KPlugin": {
+    "Authors": [
+      {
+        "Name": "Vela"
+      }
+    ],
+    "Id": "VelaOrizzonte",
+    "License": "CC-BY-SA-4.0",
+    "Name": "Orizzonte",
+    "Name[it]": "Orizzonte",
+    "Description": "Sfondo Vela (chiaro e scuro)"
+  }
+}

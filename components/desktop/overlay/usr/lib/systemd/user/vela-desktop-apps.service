@@ -1,0 +1,8 @@
+[Unit]
+Description=Vela: aggiunge le nuove app a Scrivania e Dock
+After=plasma-plasmashell.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/vela/desktop/vela-desktop-sync --apps
+Nice=10

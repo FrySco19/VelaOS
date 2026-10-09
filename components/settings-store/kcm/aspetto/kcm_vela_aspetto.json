@@ -1,0 +1,13 @@
+{
+    "KPlugin": {
+        "Description": "Light or dark, accent color, wallpaper and effects",
+        "Description[it]": "Chiaro o scuro, colore principale, sfondo ed effetti",
+        "Icon": "preferences-desktop-theme-global",
+        "Name": "Appearance",
+        "Name[it]": "Aspetto"
+    },
+    "X-KDE-Keywords": "appearance,dark,light,dark mode,accent,color,wallpaper,effects,animations,contrast",
+    "X-KDE-Keywords[it]": "aspetto,scuro,chiaro,modalità scura,tema,colore principale,accento,sfondo,effetti,animazioni,trasparenza,contrasto",
+    "X-KDE-System-Settings-Parent-Category": "appearance",
+    "X-KDE-Weight": 1
+}

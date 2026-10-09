@@ -1,0 +1,15 @@
+.local/
+build/out/
+*.iso
+*.qcow2
+*.squashfs
+*.pyc
+__pycache__/
+.pytest_cache/
+.venv/
+coordination/*.lock
+.env
+.env.*
+!.env.example
+id_ed25519*
+*.pem

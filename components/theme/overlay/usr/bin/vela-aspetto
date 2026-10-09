@@ -1,0 +1,22 @@
+#!/bin/sh
+# vela-aspetto — Italian front-end for vela-theme (used by Benvenuto). Verbi:
+#   modo chiaro|scuro|auto          accento <#rrggbb>|predefinito
+#   effetti completi|leggeri        movimento ridotto|normale
+#   contrasto alto|normale          testo grande|normale
+#   orari HH:MM HH:MM               stato   (JSON: mode, accent, effects, motion, high_contrast, text, day, night)
+set -e
+T=/usr/bin/vela-theme
+[ -x "$T" ] || T=vela-theme
+verb=${1:-}; arg=${2:-}
+case "$verb" in
+  modo)      case "$arg" in chiaro) exec "$T" mode light;; scuro) exec "$T" mode dark;; auto|automatico) exec "$T" mode auto;; esac;;
+  accento)   case "$arg" in predefinito|default) exec "$T" accent default;; \#??????) exec "$T" accent "$arg";; esac;;
+  effetti)   case "$arg" in completi) exec "$T" effects full;; leggeri) exec "$T" effects light;; esac;;
+  movimento) case "$arg" in ridotto) exec "$T" motion reduced;; normale) exec "$T" motion normal;; esac;;
+  contrasto) case "$arg" in alto) exec "$T" high-contrast on;; normale) exec "$T" high-contrast off;; esac;;
+  testo)     case "$arg" in grande) exec "$T" text large;; normale) exec "$T" text normal;; esac;;
+  orari)     [ $# -eq 3 ] && exec "$T" schedule "$2" "$3";;
+  stato)     exec "$T" status;;
+esac
+sed -n '2,6p' "$0" | sed 's/^# \{0,1\}//' >&2
+exit 2

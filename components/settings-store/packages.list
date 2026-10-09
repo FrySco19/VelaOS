@@ -1,0 +1,49 @@
+# --- Impostazioni (Plasma System Settings + modules) ---
+systemsettings
+kinfocenter
+plasma-workspace
+plasma-desktop
+plasma-nm
+bluedevil
+plasma-pa
+kscreen
+powerdevil
+print-manager
+cups
+kde-config-screenlocker
+kde-config-sddm
+kde-config-gtk-style
+kde-config-updates
+kde-config-flatpak
+plasma-disks
+plasma-firewall
+ufw
+plasma-thunderbolt
+accountsservice
+baloo6
+xdg-desktop-portal-kde
+kmenuedit
+# --- Vela KCMs runtime (kcm_vela_ai / kcm_vela_privacy, QML KCMs) ---
+libkf6kcmutils6
+libkf6kcmutilsquick6
+libkf6i18n6
+libkf6coreaddons6
+libkf6configcore6
+libqt6network6
+qml6-module-org-kde-kcmutils
+qml6-module-org-kde-kirigami
+qml6-module-qtquick-layouts
+qml6-module-qtquick-controls
+python3
+libkf6config-bin
+# --- Store (Plasma Discover) ---
+plasma-discover
+plasma-discover-backend-flatpak
+plasma-discover-backend-fwupd
+flatpak
+packagekit
+packagekit-tools
+appstream
+fwupd
+# --- Updates ---
+unattended-upgrades

@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=org.vela.Assistant
+Exec=/usr/bin/vela-assistant --background

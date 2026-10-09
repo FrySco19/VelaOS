@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Assistente
+Name[it]=Assistente
+Name[en]=Assistant
+Comment=Icona dell'assistente nell'area di notifica
+Comment[it]=Icona dell'assistente nell'area di notifica
+Comment[en]=Assistant icon in the system tray
+Exec=vela-assistant --background
+Icon=vela-assistant
+OnlyShowIn=KDE;
+NoDisplay=true
+X-KDE-autostart-phase=2

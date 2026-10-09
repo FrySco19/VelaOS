@@ -1,0 +1,27 @@
+# Vela AI Terminal — bash shell integration (loaded with: bash --rcfile this-file -i)
+# Loads your normal ~/.bashrc, then adds OSC 133/7 marks so the AI panel knows when a
+# command starts and ends, its exit code and the current folder. Nothing is sent anywhere.
+[ -f /etc/bash.bashrc ] && . /etc/bash.bashrc
+[ -f "$HOME/.bashrc" ] && . "$HOME/.bashrc"
+
+__vela_git_branch() {
+    local b
+    b=$(git symbolic-ref --short HEAD 2>/dev/null) || return 0
+    printf ' \001\033[38;2;127;180;158m\002%s\001\033[0m\002' "$b"
+}
+__vela_prompt_cmd() {
+    local rc=$?
+    printf '\033]133;D;%s\007' "$rc"
+    printf '\033]7;file://%s%s\007' "${HOSTNAME:-localhost}" "$PWD"
+    local mark='\[\033[38;2;212;98;74m\]❯\[\033[0m\]'
+    [ "$rc" != 0 ] && mark='\[\033[38;2;230;106;106m\]❯\[\033[0m\]'
+    PS1='\[\033]133;A\007\]\[\033[1;38;2;111;183;196m\]\w\[\033[0m\]$(__vela_git_branch) '"$mark"' \[\033]133;B\007\]'
+    return $rc
+}
+if [[ "$(declare -p PROMPT_COMMAND 2>/dev/null)" == "declare -a"* ]]; then
+    PROMPT_COMMAND=(__vela_prompt_cmd "${PROMPT_COMMAND[@]}")
+else
+    PROMPT_COMMAND="__vela_prompt_cmd${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
+fi
+PS0=$'\033]133;C\007'
+export VELA_AI_TERMINAL=1

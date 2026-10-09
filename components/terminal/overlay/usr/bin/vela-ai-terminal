@@ -1,0 +1,5 @@
+#!/bin/sh
+# Vela AI Terminal (Terminale IA)
+LIB=${VELA_TERMINAL_LIB:-/usr/lib/vela/terminal}
+export PYTHONPATH="$LIB${PYTHONPATH:+:$PYTHONPATH}"
+exec /usr/bin/python3 -m vela_terminal.app "$@"

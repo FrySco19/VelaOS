@@ -1,0 +1,5 @@
+#!/bin/sh
+# Vela safe command executor service (per-user, normally started by vela-executor.socket)
+LIB=${VELA_TERMINAL_LIB:-/usr/lib/vela/terminal}
+export PYTHONPATH="$LIB${PYTHONPATH:+:$PYTHONPATH}"
+exec /usr/bin/python3 -m vela_terminal.executor_service "$@"

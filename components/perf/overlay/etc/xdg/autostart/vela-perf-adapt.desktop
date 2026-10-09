@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Vela adattamento grafica
+Name[it]=Vela adattamento grafica
+Comment=Adatta gli effetti alla scheda grafica in uso
+Exec=/usr/lib/vela/perf/vela-perf-adapt
+OnlyShowIn=KDE;
+NoDisplay=true
+X-KDE-autostart-phase=1
+X-KDE-StartupNotify=false

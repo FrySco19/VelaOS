@@ -1,0 +1,37 @@
+#!/bin/sh
+# vela-terminal-theme — make Konsole follow the Vela light/dark appearance.
+#   vela-terminal-theme sync          follow the current system colour scheme (kdeglobals)
+#   vela-terminal-theme light|dark    force one
+# Changes the default profile only if it is a Vela profile (or unset): a profile you chose
+# yourself is left alone. Open Konsole windows using a Vela profile switch immediately.
+set -u
+mode=${1:-sync}
+case "$mode" in
+  sync|"")
+    scheme=$(kreadconfig6 --file kdeglobals --group General --key ColorScheme 2>/dev/null)
+    case "$scheme" in *Dark|*dark|*Scuro) mode=dark ;; *) mode=light ;; esac ;;
+  light|chiaro) mode=light ;;
+  dark|scuro) mode=dark ;;
+  -h|--help) sed -n '2,6p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+  *) echo "uso: vela-terminal-theme [sync|light|dark]" >&2; exit 2 ;;
+esac
+if [ "$mode" = dark ]; then file=VelaDark.profile; name="Vela scuro"; else file=VelaLight.profile; name="Vela chiaro"; fi
+
+cur=$(kreadconfig6 --file konsolerc --group "Desktop Entry" --key DefaultProfile 2>/dev/null)
+case "$cur" in
+  ""|Vela*.profile)
+    [ "$cur" = "$file" ] || kwriteconfig6 --file konsolerc --group "Desktop Entry" --key DefaultProfile "$file" ;;
+esac
+
+# Running Konsole windows (each process registers org.kde.konsole-PID on the session bus).
+command -v busctl >/dev/null 2>&1 || exit 0
+for svc in $(busctl --user list --no-legend 2>/dev/null | awk '$1 ~ /^org\.kde\.konsole-[0-9]+$/ {print $1}'); do
+  for path in $(busctl --user tree "$svc" --list 2>/dev/null | grep -E '^/Sessions/[0-9]+$'); do
+    p=$(busctl --user call "$svc" "$path" org.kde.konsole.Session profile 2>/dev/null | sed 's/^s "\(.*\)"$/\1/')
+    case "$p" in
+      "Vela chiaro"|"Vela scuro")
+        [ "$p" = "$name" ] || busctl --user call "$svc" "$path" org.kde.konsole.Session setProfile s "$name" >/dev/null 2>&1 ;;
+    esac
+  done
+done
+exit 0

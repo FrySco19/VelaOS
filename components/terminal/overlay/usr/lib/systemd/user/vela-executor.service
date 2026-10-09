@@ -1,0 +1,12 @@
+[Unit]
+Description=Vela: esecutore sicuro dei comandi
+Documentation=file:///usr/share/doc/vela-terminal/EXECUTOR_API.md
+Requires=vela-executor.socket
+After=vela-executor.socket
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/vela-executor --idle-exit 600
+Nice=5
+Restart=on-failure
+RestartSec=2

@@ -1,0 +1,8 @@
+[Unit]
+Description=Vela: tema chiaro/scuro automatico
+After=plasma-workspace.target
+PartOf=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/vela-theme auto-tick

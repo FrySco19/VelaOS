@@ -1,0 +1,13 @@
+{
+    "KPlugin": {
+        "Description": "Security updates and system snapshots",
+        "Description[it]": "Aggiornamenti di sicurezza e istantanee del sistema",
+        "Icon": "vela-snapshots",
+        "Name": "Automatic updates",
+        "Name[it]": "Aggiornamenti automatici"
+    },
+    "X-KDE-Keywords": "updates,security,unattended,snapshot,snapper,btrfs,restore",
+    "X-KDE-Keywords[it]": "aggiornamenti,sicurezza,automatici,istantanee,snapshot,ripristino,snapper,btrfs",
+    "X-KDE-System-Settings-Parent-Category": "system-administration",
+    "X-KDE-Weight": 15
+}

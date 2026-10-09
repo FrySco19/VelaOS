@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Benvenuto (primo avvio)
+Name[it]=Benvenuto (primo avvio)
+Name[en]=Welcome (first run)
+Exec=vela-welcome --first-run
+Icon=vela-welcome
+NoDisplay=true
+OnlyShowIn=KDE;
+X-KDE-autostart-phase=2
+X-GNOME-Autostart-enabled=true

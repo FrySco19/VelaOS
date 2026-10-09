@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Suggerimenti
+Name[it]=Suggerimenti
+Name[en]=Tips
+Exec=vela-tips
+NoDisplay=true
+OnlyShowIn=KDE;
+X-KDE-autostart-phase=2

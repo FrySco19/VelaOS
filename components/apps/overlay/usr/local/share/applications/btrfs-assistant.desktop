@@ -1,0 +1,17 @@
+[Desktop Entry]
+# Vela override of the btrfs-assistant entry (same desktop id, /usr/local/share wins in XDG_DATA_DIRS).
+Type=Application
+Name=Istantanee di sistema
+Name[it]=Istantanee di sistema
+Name[en]=System snapshots
+GenericName=Ripristino
+GenericName[it]=Ripristino
+GenericName[en]=Restore
+Comment=Torna a uno stato precedente del sistema o recupera file da un'istantanea
+Comment[it]=Torna a uno stato precedente del sistema o recupera file da un'istantanea
+Comment[en]=Go back to an earlier state of the system or recover files from a snapshot
+Exec=vela-istantanee
+Icon=vela-snapshots
+Terminal=false
+Categories=System;
+Keywords=istantanee;snapshot;ripristino;backup;btrfs;snapper;restore;

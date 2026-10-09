@@ -1,0 +1,20 @@
+[Desktop Entry]
+Type=Service
+Name=Assistente
+Name[it]=Assistente
+Name[en]=Assistant
+Comment=Domande all'assistente e comandi rapidi dalla ricerca
+Comment[it]=Domande all'assistente e comandi rapidi dalla ricerca
+Comment[en]=Ask the assistant and run quick commands from search
+Icon=vela-assistant
+X-KDE-ServiceTypes=Plasma/Runner
+X-KDE-PluginInfo-Author=Vela
+X-KDE-PluginInfo-Name=org.vela.assistant
+X-KDE-PluginInfo-Version=2.0
+X-KDE-PluginInfo-License=GPL-3.0-or-later
+X-KDE-PluginInfo-EnabledByDefault=true
+X-Plasma-API=DBus
+X-Plasma-DBusRunner-Service=org.vela.AssistantRunner
+X-Plasma-DBusRunner-Path=/runner
+X-Plasma-Request-Actions-Once=true
+X-Plasma-Runner-Min-Letter-Count=3

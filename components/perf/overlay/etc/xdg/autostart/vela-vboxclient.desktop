@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=VirtualBox appunti condivisi
+Name[it]=VirtualBox appunti condivisi
+Comment=Copia e incolla tra Windows e Vela, ridimensionamento automatico
+Exec=/usr/lib/vela/perf/vela-vboxclient
+NoDisplay=true
+X-KDE-autostart-phase=1
+X-KDE-StartupNotify=false

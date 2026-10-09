@@ -1,0 +1,13 @@
+[Unit]
+Description=Vela: no file indexing in the live session
+# Live only: the index would live in the RAM overlay and cost CPU right after boot. The installed system
+# (copied from the squashfs, not from this RAM overlay) keeps indexing on.
+ConditionKernelCommandLine=boot=live
+Before=display-manager.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/kwriteconfig6 --file /etc/xdg/baloofilerc --group "Basic Settings" --key "Indexing-Enabled" false
+
+[Install]
+WantedBy=multi-user.target

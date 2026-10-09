@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+NoDisplay=true
+X-KDE-AliasFor=systemsettings
+Exec=systemsettings kcm_vela_aspetto
+Icon=preferences-desktop-theme-global
+Name=Appearance
+Name[it]=Aspetto

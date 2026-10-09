@@ -1,0 +1,18 @@
+{
+  "KPlugin": {
+    "Authors": [
+      {
+        "Name": "Vela"
+      }
+    ],
+    "Id": "vela",
+    "License": "LGPL-2.1-or-later",
+    "Name": "Vela",
+    "Name[it]": "Vela",
+    "Description": "Pannelli in vetro, angoli arrotondati",
+    "Description[it]": "Pannelli in vetro, angoli arrotondati",
+    "Version": "2.0",
+    "EnabledByDefault": true
+  },
+  "X-Plasma-API": "5.0"
+}

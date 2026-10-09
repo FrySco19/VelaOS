@@ -1,0 +1,17 @@
+[Desktop Entry]
+Type=Application
+Name=Guida e scorciatoie
+Name[it]=Guida e scorciatoie
+Name[en]=Help and shortcuts
+Comment=Scorciatoie da tastiera e suggerimenti per usare Vela
+Comment[it]=Scorciatoie da tastiera e suggerimenti per usare Vela
+Comment[en]=Keyboard shortcuts and tips for using Vela
+Exec=vela-help
+Icon=vela-help
+Terminal=false
+Categories=Utility;Documentation;
+Keywords=guida;aiuto;scorciatoie;tasti;suggerimenti;help;shortcuts;keyboard;tips;
+Keywords[it]=guida;aiuto;scorciatoie;tasti;suggerimenti;
+Keywords[en]=help;shortcuts;keyboard;tips;
+StartupNotify=true
+StartupWMClass=vela-welcome

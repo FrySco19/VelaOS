@@ -1,0 +1,253 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: kcm_vela_ai\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-08 21:37+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+
+msgid ""
+"Sending data to online services is turned off. Turn it on below or in "
+"Privacy and memory."
+msgstr ""
+"L'invio di dati ai servizi online è disattivato. Attivalo prima qui sotto o "
+"in Privacy e memoria."
+
+msgid "The server address is not valid."
+msgstr "L'indirizzo del server non è valido."
+
+msgid "Checking connection…"
+msgstr "Verifica della connessione…"
+
+msgid "The service rejected the API key. Check that it is correct."
+msgstr "Il servizio ha rifiutato la chiave API. Controlla che sia corretta."
+
+msgid ""
+"The local model is not running. Make sure Ollama is installed and started."
+msgstr ""
+"Il modello locale non è attivo. Controlla che Ollama sia installato e "
+"avviato."
+
+msgid ""
+"Cannot reach the service. Check the address and the internet connection."
+msgstr ""
+"Impossibile raggiungere il servizio. Controlla l'indirizzo e la connessione "
+"a Internet."
+
+msgid "Connected. No model is installed yet: download one below."
+msgstr "Connesso. Nessun modello installato: scaricane uno qui sotto."
+
+#, qt-format
+msgid "Connected. %1 model available."
+msgid_plural "Connected. %1 models available."
+msgstr[0] "Connesso. %1 modello disponibile."
+msgstr[1] "Connesso. %1 modelli disponibili."
+
+#, qt-format
+msgid "Downloading %1…"
+msgstr "Download di %1…"
+
+#, qt-format
+msgid "Download failed: %1"
+msgstr "Download non riuscito: %1"
+
+#, qt-format
+msgid "Downloading %1… %2%"
+msgstr "Download di %1… %2%"
+
+#, qt-format
+msgid "%1 is ready."
+msgstr "%1 è pronto."
+
+msgid "Download cancelled."
+msgstr "Download annullato."
+
+msgid ""
+"Download failed. Check the internet connection and that Ollama is running."
+msgstr ""
+"Download non riuscito. Controlla la connessione a Internet e che Ollama sia "
+"attivo."
+
+msgid "Cannot start the installer of the local model."
+msgstr "Impossibile avviare l'installazione del modello locale."
+
+#, qt-format
+msgid "Cannot save the settings: %1"
+msgstr "Impossibile salvare le impostazioni: %1"
+
+msgid ""
+"The assistant will not work until you allow sending data to the online "
+"service."
+msgstr ""
+"L'assistente non funzionerà finché non consenti l'invio dei dati al servizio"
+" online."
+
+msgid "Assistant:"
+msgstr "Assistente:"
+
+msgid "Use the assistant"
+msgstr "Usa l'assistente"
+
+#, qt-format
+msgid "Open it with %1 from any app."
+msgstr "Aprilo con %1 da qualsiasi app."
+
+msgid "When it is off, no app can use a model or send anything."
+msgstr "Se è disattivato, nessuna app può usare un modello o inviare dati."
+
+msgid "Show the assistant in the top bar"
+msgstr "Mostra l'assistente nella barra in alto"
+
+msgid "Remember conversations"
+msgstr "Ricorda le conversazioni"
+
+msgid "Model"
+msgstr "Modello"
+
+msgid "Runs on:"
+msgstr "Dove funziona:"
+
+msgid "This computer (local model)"
+msgstr "Su questo computer (modello locale)"
+
+msgid ""
+"Private and works offline. Uses Ollama; answers are slower on modest "
+"hardware."
+msgstr ""
+"Privato e funziona senza Internet. Usa Ollama; su computer poco potenti le "
+"risposte sono più lente."
+
+msgid "An online service (OpenAI-compatible API)"
+msgstr "Su un servizio online (API compatibile OpenAI)"
+
+msgid ""
+"Faster and smarter models. What you ask is sent to the service you choose."
+msgstr ""
+"Modelli più grandi e risposte più rapide. Ciò che chiedi viene inviato al "
+"servizio scelto."
+
+msgid "Ollama address:"
+msgstr "Indirizzo di Ollama:"
+
+msgid "Service:"
+msgstr "Servizio:"
+
+msgid "Other (enter the address)"
+msgstr "Altro (inserisci l'indirizzo)"
+
+msgid "Address:"
+msgstr "Indirizzo:"
+
+msgid "API key:"
+msgstr "Chiave API:"
+
+msgid "Paste the key from your account"
+msgstr "Incolla la chiave del tuo account"
+
+msgid ""
+"The key is stored only on this computer, readable by your account only."
+msgstr ""
+"La chiave resta solo su questo computer ed è leggibile solo dal tuo account."
+
+msgid "Model:"
+msgstr "Modello:"
+
+msgid "Check connection"
+msgstr "Verifica connessione"
+
+msgid "Install Ollama…"
+msgstr "Installa Ollama…"
+
+msgid "Download a model:"
+msgstr "Scarica un modello:"
+
+msgid "small, 1 GB"
+msgstr "piccolo, 1 GB"
+
+msgid "small, 0.8 GB"
+msgstr "piccolo, 0,8 GB"
+
+msgid "medium, 2 GB"
+msgstr "medio, 2 GB"
+
+msgid "large, 4.7 GB, needs 8 GB RAM"
+msgstr "grande, 4,7 GB, richiede 8 GB di RAM"
+
+msgid "Download"
+msgstr "Scarica"
+
+msgid "Cancel"
+msgstr "Annulla"
+
+msgid "Consent:"
+msgstr "Consenso:"
+
+#, qt-format
+msgid "Allow sending my requests to %1"
+msgstr "Consenti l'invio delle mie richieste a %1"
+
+msgid "Answers"
+msgstr "Risposte"
+
+msgid "Language:"
+msgstr "Lingua:"
+
+msgid "Same as the system"
+msgstr "Come il sistema"
+
+msgid "Style:"
+msgstr "Stile:"
+
+msgid "Precise"
+msgstr "Preciso"
+
+msgid "Creative"
+msgstr "Creativo"
+
+msgid "What the assistant can use"
+msgstr "Cosa può usare l'assistente"
+
+msgid "Context:"
+msgstr "Contesto:"
+
+msgid "Name of the active window and app"
+msgstr "Nome della finestra e dell'app in uso"
+
+msgid "Text selected when you open it"
+msgstr "Testo selezionato quando lo apri"
+
+msgid "Clipboard contents, without asking"
+msgstr "Contenuto degli appunti, senza chiedere"
+
+msgid "Never"
+msgstr "Mai"
+
+msgid "Ask every time"
+msgstr "Chiedi ogni volta"
+
+msgid "Home folder, without asking"
+msgstr "Cartella Home, senza chiedere"
+
+msgid "Files:"
+msgstr "File:"
+
+msgid "Screen:"
+msgstr "Schermo:"
+
+msgid "Microphone:"
+msgstr "Microfono:"
+
+msgid "Privacy and memory…"
+msgstr "Privacy e memoria…"

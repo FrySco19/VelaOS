@@ -1,0 +1,7 @@
+{
+  "name": "org.vela.ai",
+  "description": "Vela AI browser helper",
+  "path": "/usr/lib/vela/apps/vela_ai_browser_host.py",
+  "type": "stdio",
+  "allowed_extensions": ["vela-ai@vela.os"]
+}

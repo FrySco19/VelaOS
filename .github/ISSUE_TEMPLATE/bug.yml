@@ -1,0 +1,29 @@
+name: Segnalazione problema / Bug report
+description: Un problema riproducibile in VelaOS
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: textarea
+    id: environment
+    attributes:
+      label: Versione e ambiente / Version and environment
+      description: ISO o commit, VM o macchina fisica, RAM, GPU, sessione. Non includere dati personali.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Passi per riprodurre / Reproduction steps
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Risultato atteso e osservato / Expected and actual result
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Log e schermate / Logs and screenshots
+      description: Rimuovere chiavi, token, nomi, indirizzi e dati privati.

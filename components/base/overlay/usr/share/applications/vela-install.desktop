@@ -1,0 +1,16 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Install Vela
+Name[it]=Installa Vela
+GenericName=System installer
+GenericName[it]=Installa il sistema sul disco
+Comment=Install Vela on this computer's disk
+Comment[it]=Installa Vela sul disco di questo computer
+Exec=vela-install
+Icon=vela-install
+Terminal=false
+Categories=Qt;System;
+Keywords=install;installer;calamares;disk;
+Keywords[it]=installa;installazione;disco;calamares;
+StartupWMClass=calamares

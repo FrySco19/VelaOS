@@ -1,0 +1,29 @@
+{
+  "manifest_version": 2,
+  "name": "__MSG_extName__",
+  "short_name": "__MSG_extShort__",
+  "description": "__MSG_extDesc__",
+  "version": "2.0.0",
+  "default_locale": "it",
+  "browser_specific_settings": { "gecko": { "id": "vela-ai@vela.os", "strict_min_version": "128.0" } },
+  "icons": { "48": "icons/vela-ai.svg", "96": "icons/vela-ai.svg" },
+  "permissions": ["nativeMessaging", "tabs", "<all_urls>", "contextMenus", "clipboardWrite", "storage"],
+  "background": { "scripts": ["background.js"] },
+  "sidebar_action": {
+    "default_title": "__MSG_extShort__",
+    "default_panel": "sidebar.html",
+    "default_icon": "icons/vela-ai.svg",
+    "open_at_install": false
+  },
+  "browser_action": {
+    "default_title": "__MSG_toggleTitle__",
+    "default_icon": "icons/vela-ai.svg",
+    "default_area": "navbar"
+  },
+  "commands": {
+    "_execute_sidebar_action": {
+      "suggested_key": { "default": "Ctrl+Alt+A" },
+      "description": "__MSG_toggleTitle__"
+    }
+  }
+}

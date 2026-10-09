@@ -1,0 +1,31 @@
+#!/bin/sh
+# Root helper for Impostazioni > Aggiornamenti automatici (run through pkexec, polkit action
+# org.vela.settings.updates). Only these fixed operations are possible.
+set -e
+AUTO=/etc/apt/apt.conf.d/20vela-auto-upgrades
+SNAP=/etc/default/snapper
+
+write_auto() { # $1 = 0|1
+  cat > "$AUTO.tmp" <<EOT
+// Vela: security updates are installed automatically (unattended-upgrades, Debian-Security origin only,
+// as configured in 50unattended-upgrades). Changed from Impostazioni > Aggiornamenti automatici.
+APT::Periodic::Update-Package-Lists "$1";
+APT::Periodic::Unattended-Upgrade "$1";
+APT::Periodic::AutocleanInterval "7";
+EOT
+  chmod 644 "$AUTO.tmp"
+  mv "$AUTO.tmp" "$AUTO"
+}
+
+case "$1 $2" in
+  "security on")  write_auto 1 ;;
+  "security off") write_auto 0 ;;
+  "snapshots on"|"snapshots off")
+    [ "$2" = on ] && v=no || v=yes
+    if [ -f "$SNAP" ] && grep -q '^DISABLE_APT_SNAPSHOT=' "$SNAP"; then
+      sed -i "s/^DISABLE_APT_SNAPSHOT=.*/DISABLE_APT_SNAPSHOT=\"$v\"/" "$SNAP"
+    else
+      echo "DISABLE_APT_SNAPSHOT=\"$v\"" >> "$SNAP"
+    fi ;;
+  *) echo "uso: vela-updates-helper security|snapshots on|off" >&2; exit 2 ;;
+esac

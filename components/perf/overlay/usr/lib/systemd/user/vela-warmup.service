@@ -1,0 +1,10 @@
+[Unit]
+Description=Vela: precarica le app più usate
+ConditionPathExists=/usr/lib/vela/perf/vela-warmup
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/vela/perf/vela-warmup
+Nice=19
+IOSchedulingClass=idle
+CPUWeight=10

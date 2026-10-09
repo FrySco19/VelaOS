@@ -1,0 +1,21 @@
+name: Proposta / Feature proposal
+description: Proponi un miglioramento per un caso d'uso concreto
+title: "[Proposal]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: Problema dell'utente / User need
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Comportamento proposto / Proposed behavior
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Come verificarlo / Acceptance checks

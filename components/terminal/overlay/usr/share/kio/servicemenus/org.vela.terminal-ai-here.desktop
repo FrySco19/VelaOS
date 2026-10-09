@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Service
+MimeType=inode/directory;
+Actions=velaAiTerminalHere;
+X-KDE-Priority=TopLevel
+X-KDE-RequiredNumberOfUrls=1
+X-KDE-Protocols=file
+
+[Desktop Action velaAiTerminalHere]
+Name=Apri Terminale IA qui
+Name[it]=Apri Terminale IA qui
+Name[en]=Open AI Terminal here
+Icon=vela-terminal-ai
+Exec=vela-ai-terminal --workdir %f

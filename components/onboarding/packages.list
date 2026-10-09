@@ -1,0 +1,35 @@
+# Benvenuto / Guida e scorciatoie (PySide6 + Qt Quick, Basic style)
+python3-pyside6.qtcore
+python3-pyside6.qtgui
+python3-pyside6.qtqml
+python3-pyside6.qtquick
+python3-pyside6.qtquickcontrols2
+qml6-module-qtquick
+qml6-module-qtquick-controls
+qml6-module-qtquick-templates
+qml6-module-qtquick-layouts
+qml6-module-qtquick-shapes
+qml6-module-qtquick-window
+qml6-module-qtqml-workerscript
+fonts-inter
+# applying choices: kwriteconfig6/kreadconfig6, dbus-send, notifications for Suggerimenti
+libkf6config-bin
+dbus-bin
+libnotify-bin
+network-manager
+# Italian language: spell checking, hyphenation, thesaurus, man pages, Qt translations
+# (Plasma 6 has no kde-l10n-it: translations ship inside each KDE package)
+hunspell-it
+hyphen-it
+mythes-it
+aspell-it
+manpages-it
+qt6-translations-l10n
+# English selectable: dictionaries
+hunspell-en-us
+# Accessibility: screen reader (Meta+Alt+S) with Italian voice
+orca
+speech-dispatcher
+speech-dispatcher-espeak-ng
+espeak-ng
+at-spi2-core

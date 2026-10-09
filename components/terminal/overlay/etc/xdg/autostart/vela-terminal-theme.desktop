@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Tema del terminale
+Name[it]=Tema del terminale
+Name[en]=Terminal theme
+Comment=Allinea i colori di Konsole al tema chiaro o scuro
+Exec=vela-terminal-theme sync
+TryExec=vela-terminal-theme
+NoDisplay=true
+X-KDE-autostart-phase=2
+OnlyShowIn=KDE;

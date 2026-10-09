@@ -1,0 +1,2 @@
+# SSD / virtual disks: no I/O scheduler (lowest latency; the host already schedules)
+ACTION=="add|change", KERNEL=="sd[a-z]|vd[a-z]|nvme[0-9]*n[0-9]*", ATTR{queue/rotational}=="0", ATTR{queue/scheduler}="none"

@@ -1,0 +1,15 @@
+#!/bin/sh
+# Opens Btrfs Assistant (snapper snapshots) when / is Btrfs with a snapper config; otherwise explains why not.
+fstype=$(findmnt -n -o FSTYPE / 2>/dev/null)
+case "$LANG" in en*) en=1 ;; *) en= ;; esac
+if grep -qw 'boot=live' /proc/cmdline 2>/dev/null; then
+  if [ -n "$en" ]; then msg="Snapshots are available after you install Vela on the disk."; title="System snapshots"
+  else msg="Le istantanee sono disponibili dopo aver installato Vela sul disco."; title="Istantanee di sistema"; fi
+  exec kdialog --title "$title" --msgbox "$msg"
+fi
+if [ "$fstype" != "btrfs" ] || [ ! -e /etc/snapper/configs/root ]; then
+  if [ -n "$en" ]; then msg="Snapshots need the system disk to use Btrfs. This installation uses ${fstype:-another file system}."; title="System snapshots"
+  else msg="Le istantanee richiedono che il disco di sistema usi Btrfs. Questa installazione usa ${fstype:-un altro file system}."; title="Istantanee di sistema"; fi
+  exec kdialog --title "$title" --msgbox "$msg"
+fi
+exec btrfs-assistant-launcher "$@"

@@ -1,0 +1,16 @@
+#!/bin/sh
+# Vela assistant launcher. Fast path: if the assistant is already running, forward over D-Bus
+# (passing the Wayland activation token so the panel gets keyboard focus); otherwise start it.
+case "${1:-}" in
+    --toggle|"")
+        action=show
+        [ "${1:-}" = "--toggle" ] && action=toggle
+        if command -v busctl >/dev/null 2>&1 && \
+           busctl --user --auto-start=no call org.vela.Assistant /Assistant org.vela.Assistant \
+               Activate ss "$action" "${XDG_ACTIVATION_TOKEN:-}" >/dev/null 2>&1; then
+            exit 0
+        fi
+        [ "$action" = toggle ] && shift
+        ;;
+esac
+exec /usr/bin/python3 /usr/lib/vela/assistant/vela_assistant.py "$@"

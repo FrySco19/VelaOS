@@ -1,0 +1,51 @@
+# Vela GRUB theme
+title-text: ""
+desktop-image: "background.png"
+desktop-image-scale-method: "stretch"
+desktop-color: "#0B2A3A"
+terminal-font: "Inter Regular 16"
+terminal-box: "terminal_box_*.png"
+
++ boot_menu {
+    left = 50%-320
+    top = 50%+20
+    width = 640
+    height = 300
+    item_font = "Inter Regular 20"
+    selected_item_font = "Inter Medium Regular 20"
+    item_color = "#B9CFD4"
+    selected_item_color = "#FFFFFF"
+    item_height = 44
+    item_padding = 16
+    item_spacing = 6
+    icon_width = 0
+    icon_height = 0
+    item_icon_space = 0
+    selected_item_pixmap_style = "select_*.png"
+    scrollbar = false
+}
+
++ label {
+    top = 100%-70
+    left = 0
+    width = 100%
+    align = "center"
+    color = "#7FA0A8"
+    font = "Inter Regular 16"
+    text = "Frecce ↑ ↓ per scegliere, Invio per avviare"
+}
+
++ progress_bar {
+    id = "__timeout__"
+    top = 100%-110
+    left = 50%-200
+    width = 400
+    height = 22
+    align = "center"
+    font = "Inter Regular 16"
+    text_color = "#9FB8BE"
+    fg_color = "#E68B75"
+    bg_color = "#0B2A3A"
+    border_color = "#0B2A3A"
+    text = "@TIMEOUT_NOTIFICATION_SHORT@"
+}

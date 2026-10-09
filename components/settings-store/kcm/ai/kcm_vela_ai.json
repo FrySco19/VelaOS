@@ -1,0 +1,14 @@
+{
+    "KPlugin": {
+        "Description": "Assistant model, online service and what the assistant can use",
+        "Description[it]": "Modello dell'assistente, servizio online e cosa può usare l'assistente",
+        "Icon": "vela-settings-ai",
+        "Name": "Artificial intelligence",
+        "Name[it]": "Intelligenza artificiale"
+    },
+    "X-KDE-Keywords": "AI,assistant,Ollama,OpenAI,API,model,LLM,chat",
+    "X-KDE-Keywords[it]": "IA,AI,assistente,Ollama,OpenAI,API,chiave API,modello,LLM,chat,intelligenza artificiale",
+    "X-KDE-System-Settings-Parent-Category": "vela-ai",
+    "X-KDE-Weight": 10,
+    "X-DocPath": ""
+}

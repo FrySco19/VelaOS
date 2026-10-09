@@ -1,0 +1,18 @@
+<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vela — anteprima della shell</title><link rel="stylesheet" href="vendor/xterm.css"><link rel="stylesheet" href="style.css"></head><body>
+<svg style="display:none" aria-hidden="true"><defs>
+<symbol id="files" viewBox="0 0 24 24"><path d="M3 7h7l2 2h9v11H3zM3 7V4h7l2 3"/></symbol>
+<symbol id="compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m16 8-3 5-5 3 3-5z"/></symbol>
+<symbol id="spark" viewBox="0 0 24 24"><path d="m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/></symbol>
+<symbol id="terminal" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m6 9 3 3-3 3m6 0h5"/></symbol>
+<symbol id="settings" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="8" cy="6" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="10" cy="18" r="2"/></symbol>
+<symbol id="spaces" viewBox="0 0 24 24"><rect x="2" y="3" width="9" height="8" rx="2"/><rect x="14" y="3" width="8" height="8" rx="2"/><rect x="2" y="14" width="9" height="7" rx="2"/><rect x="14" y="14" width="8" height="7" rx="2"/></symbol>
+<symbol id="note" viewBox="0 0 24 24"><path d="M5 3h14v18H5zM8 8h8M8 12h8M8 16h5"/></symbol>
+</defs></svg>
+<header class="glass"><button id="brand" aria-label="Menu Vela">◭</button><strong id="active">Vela</strong><nav id="appMenus" aria-label="Menu applicazione"></nav><nav id="spaceTabs" aria-label="Spazi"></nav></header>
+<main id="desktop"><button class="desktop-folder" onclick="openApp('files')"><svg><use href="#files"/></svg><span>Documenti</span></button><div id="desktopApps"></div><div id="windows"></div></main>
+<nav class="dock glass" aria-label="Applicazioni"></nav>
+<dialog id="search" class="glass"><div class="searchline"><svg><use href="#spark"/></svg><input id="query" placeholder="Cerca o chiedi a Vela…" aria-label="Ricerca globale"><kbd>esc</kbd></div><div id="results"></div><footer>⌘ / Ctrl + Spazio <span>Un pensiero. Un punto di partenza.</span></footer></dialog>
+<dialog id="actionDialog" class="glass"></dialog><aside id="panel" class="glass" hidden></aside><div id="toast" role="status"></div><div id="overview" hidden></div><div id="snapPreview" hidden></div><aside id="porto" class="glass" hidden></aside><aside id="systemMenu" class="glass" hidden></aside><div id="switcher" class="glass" hidden></div><script src="vendor/xterm.js"></script><script src="vendor/addon-fit.js"></script><script src="app.js"></script><script src="features.js"></script></body></html>
+
+
+

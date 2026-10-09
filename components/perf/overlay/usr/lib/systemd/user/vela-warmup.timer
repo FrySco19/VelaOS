@@ -1,0 +1,8 @@
+[Unit]
+Description=Vela: precarica le app 30 s dopo l'accesso
+
+[Timer]
+OnStartupSec=30s
+
+[Install]
+WantedBy=timers.target

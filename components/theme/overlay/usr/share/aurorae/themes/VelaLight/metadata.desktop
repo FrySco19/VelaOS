@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Vela Light
+Name[it]=Vela chiaro
+Comment=Vela window decoration
+Comment[it]=Bordi finestra Vela
+X-KDE-PluginInfo-Name=VelaLight
+X-KDE-PluginInfo-Author=Vela
+X-KDE-PluginInfo-Version=2.0
+X-KDE-PluginInfo-License=GPL-2.0-or-later
+X-KDE-PluginInfo-Website=https://vela.invalid/

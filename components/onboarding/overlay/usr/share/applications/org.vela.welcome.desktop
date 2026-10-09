@@ -1,0 +1,20 @@
+[Desktop Entry]
+Type=Application
+Name=Benvenuto
+Name[it]=Benvenuto
+Name[en]=Welcome
+GenericName=Configurazione iniziale
+GenericName[it]=Configurazione iniziale
+GenericName[en]=Initial setup
+Comment=Scegli lingua, aspetto, Dock, assistente e privacy
+Comment[it]=Scegli lingua, aspetto, Dock, assistente e privacy
+Comment[en]=Choose language, appearance, Dock, assistant and privacy
+Exec=vela-welcome
+Icon=vela-welcome
+Terminal=false
+Categories=Settings;
+Keywords=benvenuto;configurazione;primo avvio;lingua;tastiera;tema;accessibilità;welcome;setup;
+Keywords[it]=benvenuto;configurazione;primo avvio;lingua;tastiera;tema;accessibilità;
+Keywords[en]=welcome;setup;first run;language;keyboard;theme;accessibility;
+StartupNotify=true
+StartupWMClass=vela-welcome

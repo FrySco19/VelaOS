@@ -1,0 +1,21 @@
+[Desktop Entry]
+Type=Application
+Name=Assistente
+Name[it]=Assistente
+Name[en]=Assistant
+GenericName=Assistente IA
+GenericName[it]=Assistente IA
+GenericName[en]=AI assistant
+Comment=Fai domande e fai eseguire azioni al computer
+Comment[it]=Fai domande e fai eseguire azioni al computer
+Comment[en]=Ask questions and let the computer do things for you
+Keywords=IA;AI;assistente;chat;domande;aiuto;ollama;
+Keywords[it]=IA;assistente;chat;domande;aiuto;ollama;
+Keywords[en]=AI;assistant;chat;questions;help;ollama;
+Exec=vela-assistant --toggle
+Icon=vela-assistant
+Terminal=false
+StartupNotify=false
+Categories=Utility;Qt;
+X-KDE-Shortcuts=Meta+A
+X-KDE-StartupNotify=false

@@ -1,0 +1,38 @@
+# Vela OS 2 — Calamares branding 
+---
+componentName:   vela
+welcomeStyleCalamares: true
+welcomeExpandingLogo: true
+windowExpanding: normal
+windowSize: 960px,640px
+windowPlacement: center
+sidebar: widget
+navigation: widget
+
+strings:
+    productName:         Vela
+    shortProductName:    Vela
+    version:             2
+    shortVersion:        2
+    versionedName:       Vela 2
+    shortVersionedName:  Vela 2
+    bootloaderEntryName: Vela
+    productUrl:          ""
+    supportUrl:          ""
+    knownIssuesUrl:      ""
+    releaseNotesUrl:     ""
+    donateUrl:           ""
+
+images:
+    productLogo:         "vela-logo.png"
+    productIcon:         "vela-logo.png"
+    productWelcome:      "welcome.png"
+
+slideshow:               "show.qml"
+slideshowAPI: 2
+
+style:
+   SidebarBackground:        "#0B2A3A"
+   SidebarText:              "#D7ECEC"
+   SidebarTextCurrent:       "#FFFFFF"
+   SidebarBackgroundCurrent: "#123B4D"

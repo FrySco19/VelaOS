@@ -1,0 +1,107 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: kcm_vela_updates\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-08 21:37+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+
+msgid "Before or after an update"
+msgstr "Prima o dopo un aggiornamento"
+
+msgid "Automatic (hourly)"
+msgstr "Automatica (ogni ora)"
+
+msgid "The change was not made: the password was not confirmed."
+msgstr "Modifica annullata: la password non è stata confermata."
+
+msgid "The change could not be made."
+msgstr "Impossibile applicare la modifica. Riprova."
+
+msgid ""
+"You are trying Vela without installing it: nothing is updated automatically "
+"in this session."
+msgstr ""
+"Stai provando Vela senza installarla: in questa sessione non viene "
+"aggiornato nulla in automatico."
+
+msgid "Security"
+msgstr "Sicurezza"
+
+msgid "Security updates:"
+msgstr "Aggiornamenti di sicurezza:"
+
+msgid "Install automatically"
+msgstr "Installa automaticamente"
+
+#, qt-format
+msgid ""
+"Only security fixes from Debian, in the background. The computer never "
+"restarts on its own. Last check: %1."
+msgstr ""
+"Solo correzioni di sicurezza di Debian, in background. Il computer non si "
+"riavvia mai da solo. Ultimo controllo: %1."
+
+msgid ""
+"Only security fixes from Debian, in the background. The computer never "
+"restarts on its own."
+msgstr ""
+"Solo correzioni di sicurezza di Debian, in background. Il computer non si "
+"riavvia mai da solo."
+
+msgid "Snapshots"
+msgstr "Istantanee"
+
+msgid "Before each update:"
+msgstr "Prima di ogni aggiornamento:"
+
+msgid "Take a system snapshot"
+msgstr "Crea un'istantanea del sistema"
+
+msgid ""
+"If an update causes problems, you can go back to the snapshot. Your personal"
+" files are not affected."
+msgstr ""
+"Se un aggiornamento crea problemi, puoi tornare all'istantanea. I tuoi file "
+"personali non vengono toccati."
+
+msgid ""
+"Snapshots are available when Vela is installed on a disk with the Btrfs file"
+" system."
+msgstr ""
+"Le istantanee sono disponibili quando Vela è installata su un disco con file"
+" system Btrfs."
+
+msgid "Latest snapshots:"
+msgstr "Ultime istantanee:"
+
+msgid "System snapshots…"
+msgstr "Istantanee di sistema…"
+
+msgid "Apps and other updates"
+msgstr "App e altri aggiornamenti"
+
+msgid ""
+"The Store tells you when other updates are ready, at most once a week. They "
+"are installed when you restart."
+msgstr ""
+"Lo Store ti avvisa quando ci sono altri aggiornamenti, al massimo una volta "
+"a settimana. Vengono installati al riavvio."
+
+msgid "Check for updates"
+msgstr "Controlla aggiornamenti"
+
+msgid "More options…"
+msgstr "Altre opzioni…"

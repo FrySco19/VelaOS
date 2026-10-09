@@ -1,0 +1,14 @@
+{
+  "KPlugin": {
+    "Authors": [
+      {
+        "Name": "Vela"
+      }
+    ],
+    "Id": "Vela",
+    "License": "CC-BY-SA-4.0",
+    "Name": "Vela",
+    "Name[it]": "Vela",
+    "Description": "Sfondo Vela (chiaro e scuro)"
+  }
+}

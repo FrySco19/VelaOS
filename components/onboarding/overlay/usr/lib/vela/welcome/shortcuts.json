@@ -1,0 +1,511 @@
+{
+ "_comment": "Shared by Benvenuto (tour), Guida e scorciatoie and vela-tips. Must match components/desktop/hook.chroot.sh (kglobalshortcutsrc/kwinrc) and the assistant shortcut in ai.conf (@assistant is replaced at runtime by assistant.shortcut). Owner: onboarding.",
+ "items": [
+  {
+   "cat": "general",
+   "keys": [
+    [
+     "Meta",
+     "Space"
+    ],
+    [
+     "Alt",
+     "Space"
+    ]
+   ],
+   "it": "Cerca app, file e impostazioni",
+   "en": "Search apps, files and settings",
+   "tour": "search",
+   "tourIt": "Ricerca",
+   "tourEn": "Search",
+   "descIt": "Scrivi il nome di un'app, di un file o di un'impostazione e premi Invio. Fa anche calcoli e conversioni.",
+   "descEn": "Type the name of an app, file or setting and press Enter. It also does calculations and conversions."
+  },
+  {
+   "cat": "general",
+   "keys": [
+    [
+     "@assistant"
+    ]
+   ],
+   "it": "Apri l'assistente",
+   "en": "Open the assistant",
+   "tour": "assistant",
+   "tourIt": "Assistente",
+   "tourEn": "Assistant",
+   "descIt": "Fai una domanda o chiedi di fare qualcosa. Prima di modificare file o impostazioni ti chiede conferma.",
+   "descEn": "Ask a question or ask it to do something. It asks for confirmation before changing files or settings.",
+   "vela": true
+  },
+  {
+   "cat": "general",
+   "keys": [
+    [
+     "Meta",
+     "E"
+    ]
+   ],
+   "it": "Apri File",
+   "en": "Open Files"
+  },
+  {
+   "cat": "general",
+   "keys": [
+    [
+     "Ctrl",
+     "Alt",
+     "T"
+    ]
+   ],
+   "it": "Apri il Terminale",
+   "en": "Open Terminal"
+  },
+  {
+   "cat": "general",
+   "keys": [
+    [
+     "Meta",
+     "L"
+    ]
+   ],
+   "it": "Blocca lo schermo",
+   "en": "Lock the screen"
+  },
+  {
+   "cat": "general",
+   "keys": [
+    [
+     "Meta",
+     "V"
+    ]
+   ],
+   "it": "Cronologia degli appunti",
+   "en": "Clipboard history",
+   "tour": "clipboard",
+   "tourIt": "Cronologia degli appunti",
+   "tourEn": "Clipboard history",
+   "descIt": "Ritrova testi e immagini che hai copiato prima e incollali di nuovo.",
+   "descEn": "Find text and images you copied earlier and paste them again."
+  },
+  {
+   "cat": "general",
+   "keys": [
+    [
+     "Meta",
+     "."
+    ]
+   ],
+   "it": "Inserisci un'emoji",
+   "en": "Insert an emoji"
+  },
+  {
+   "cat": "general",
+   "keys": [
+    [
+     "Ctrl",
+     "Alt",
+     "Del"
+    ]
+   ],
+   "it": "Esci, riavvia o spegni",
+   "en": "Log out, restart or shut down"
+  },
+  {
+   "cat": "windows",
+   "keys": [
+    [
+     "Meta"
+    ],
+    [
+     "Meta",
+     "W"
+    ]
+   ],
+   "it": "Panoramica di finestre e spazi",
+   "en": "Overview of windows and spaces",
+   "tour": "overview",
+   "tourIt": "Panoramica",
+   "tourEn": "Overview",
+   "descIt": "Mostra tutte le finestre aperte e gli spazi. Si apre anche portando il puntatore nell'angolo in alto a sinistra.",
+   "descEn": "Shows all open windows and spaces. It also opens when you move the pointer to the top-left corner."
+  },
+  {
+   "cat": "windows",
+   "keys": [
+    [
+     "Alt",
+     "Tab"
+    ]
+   ],
+   "it": "Passa a un'altra finestra",
+   "en": "Switch to another window"
+  },
+  {
+   "cat": "windows",
+   "keys": [
+    [
+     "Meta",
+     "Left"
+    ],
+    [
+     "Meta",
+     "Right"
+    ]
+   ],
+   "it": "Affianca la finestra a sinistra o a destra",
+   "en": "Tile the window left or right",
+   "tour": "tile",
+   "tourIt": "Finestre affiancate",
+   "tourEn": "Side-by-side windows",
+   "descIt": "Metti due finestre una accanto all'altra. Puoi anche trascinarle sul bordo dello schermo.",
+   "descEn": "Put two windows side by side. You can also drag them to the edge of the screen."
+  },
+  {
+   "cat": "windows",
+   "keys": [
+    [
+     "Meta",
+     "PgUp"
+    ]
+   ],
+   "it": "Ingrandisci la finestra",
+   "en": "Maximize the window"
+  },
+  {
+   "cat": "windows",
+   "keys": [
+    [
+     "Meta",
+     "PgDown"
+    ]
+   ],
+   "it": "Riduci la finestra a icona",
+   "en": "Minimize the window"
+  },
+  {
+   "cat": "windows",
+   "keys": [
+    [
+     "Meta",
+     "D"
+    ]
+   ],
+   "it": "Mostra la scrivania",
+   "en": "Show the desktop"
+  },
+  {
+   "cat": "windows",
+   "keys": [
+    [
+     "Alt",
+     "F4"
+    ]
+   ],
+   "it": "Chiudi la finestra",
+   "en": "Close the window"
+  },
+  {
+   "cat": "spaces",
+   "keys": [
+    [
+     "Ctrl",
+     "Meta",
+     "Left"
+    ],
+    [
+     "Ctrl",
+     "Meta",
+     "Right"
+    ]
+   ],
+   "it": "Passa allo spazio precedente o successivo",
+   "en": "Go to the previous or next space",
+   "tour": "spaces",
+   "tourIt": "Spazi",
+   "tourEn": "Spaces",
+   "descIt": "Tieni separate le finestre di ogni progetto in spazi diversi e passa dall'uno all'altro.",
+   "descEn": "Keep each project's windows in separate spaces and switch between them."
+  },
+  {
+   "cat": "spaces",
+   "keys": [
+    [
+     "Ctrl",
+     "F1"
+    ]
+   ],
+   "it": "Vai allo spazio 1 (F2 per lo spazio 2, e così via)",
+   "en": "Go to space 1 (F2 for space 2, and so on)"
+  },
+  {
+   "cat": "text",
+   "keys": [
+    [
+     "Ctrl",
+     "C"
+    ]
+   ],
+   "it": "Copia",
+   "en": "Copy"
+  },
+  {
+   "cat": "text",
+   "keys": [
+    [
+     "Ctrl",
+     "X"
+    ]
+   ],
+   "it": "Taglia",
+   "en": "Cut"
+  },
+  {
+   "cat": "text",
+   "keys": [
+    [
+     "Ctrl",
+     "V"
+    ]
+   ],
+   "it": "Incolla",
+   "en": "Paste"
+  },
+  {
+   "cat": "text",
+   "keys": [
+    [
+     "Ctrl",
+     "Z"
+    ]
+   ],
+   "it": "Annulla",
+   "en": "Undo"
+  },
+  {
+   "cat": "text",
+   "keys": [
+    [
+     "Ctrl",
+     "Shift",
+     "Z"
+    ]
+   ],
+   "it": "Ripeti",
+   "en": "Redo"
+  },
+  {
+   "cat": "text",
+   "keys": [
+    [
+     "Ctrl",
+     "A"
+    ]
+   ],
+   "it": "Seleziona tutto",
+   "en": "Select all"
+  },
+  {
+   "cat": "text",
+   "keys": [
+    [
+     "Ctrl",
+     "F"
+    ]
+   ],
+   "it": "Trova",
+   "en": "Find"
+  },
+  {
+   "cat": "text",
+   "keys": [
+    [
+     "Ctrl",
+     "S"
+    ]
+   ],
+   "it": "Salva",
+   "en": "Save"
+  },
+  {
+   "cat": "text",
+   "keys": [
+    [
+     "F2"
+    ]
+   ],
+   "it": "Rinomina il file selezionato",
+   "en": "Rename the selected file"
+  },
+  {
+   "cat": "text",
+   "keys": [
+    [
+     "Del"
+    ]
+   ],
+   "it": "Sposta nel Cestino",
+   "en": "Move to Trash"
+  },
+  {
+   "cat": "screenshot",
+   "keys": [
+    [
+     "Print"
+    ]
+   ],
+   "it": "Screenshot di tutto lo schermo",
+   "en": "Screenshot of the whole screen"
+  },
+  {
+   "cat": "screenshot",
+   "keys": [
+    [
+     "Meta",
+     "Shift",
+     "S"
+    ]
+   ],
+   "it": "Screenshot di un'area",
+   "en": "Screenshot of an area",
+   "tour": "screenshot",
+   "tourIt": "Screenshot",
+   "tourEn": "Screenshots",
+   "descIt": "Seleziona un'area: lo screenshot viene copiato negli appunti e salvato in Immagini.",
+   "descEn": "Select an area: the screenshot is copied to the clipboard and saved in Pictures."
+  },
+  {
+   "cat": "screenshot",
+   "keys": [
+    [
+     "Meta",
+     "Print"
+    ]
+   ],
+   "it": "Screenshot della finestra attiva",
+   "en": "Screenshot of the active window"
+  },
+  {
+   "cat": "terminal",
+   "keys": [
+    [
+     "Ctrl",
+     "Shift",
+     "C"
+    ]
+   ],
+   "it": "Copia nel Terminale",
+   "en": "Copy in Terminal"
+  },
+  {
+   "cat": "terminal",
+   "keys": [
+    [
+     "Ctrl",
+     "V"
+    ],
+    [
+     "Ctrl",
+     "Shift",
+     "V"
+    ]
+   ],
+   "it": "Incolla nel Terminale",
+   "en": "Paste in Terminal"
+  },
+  {
+   "cat": "terminal",
+   "keys": [
+    [
+     "Ctrl",
+     "C"
+    ]
+   ],
+   "it": "Interrompi il comando in corso",
+   "en": "Stop the running command"
+  },
+  {
+   "cat": "terminal",
+   "keys": [
+    [
+     "Meta",
+     "Shift",
+     "T"
+    ]
+   ],
+   "it": "Apri il Terminale IA",
+   "en": "Open the AI Terminal"
+  },
+  {
+   "cat": "a11y",
+   "keys": [
+    [
+     "Meta",
+     "Alt",
+     "S"
+    ]
+   ],
+   "it": "Attiva o disattiva il lettore schermo",
+   "en": "Turn the screen reader on or off"
+  },
+  {
+   "cat": "a11y",
+   "keys": [
+    [
+     "Meta",
+     "="
+    ],
+    [
+     "Meta",
+     "-"
+    ]
+   ],
+   "it": "Ingrandisci o riduci lo schermo",
+   "en": "Zoom the screen in or out"
+  },
+  {
+   "cat": "a11y",
+   "keys": [
+    [
+     "Meta",
+     "0"
+    ]
+   ],
+   "it": "Ripristina lo zoom",
+   "en": "Reset zoom"
+  },
+  {
+   "cat": "browser",
+   "keys": [
+    [
+     "Ctrl",
+     "Alt",
+     "A"
+    ]
+   ],
+   "it": "Mostra o nascondi l'assistente nel browser",
+   "en": "Show or hide the assistant in the browser"
+  },
+  {
+   "cat": "browser",
+   "keys": [
+    [
+     "Ctrl",
+     "T"
+    ]
+   ],
+   "it": "Nuova scheda",
+   "en": "New tab"
+  },
+  {
+   "cat": "browser",
+   "keys": [
+    [
+     "Ctrl",
+     "L"
+    ]
+   ],
+   "it": "Vai alla barra degli indirizzi",
+   "en": "Go to the address bar"
+  }
+ ]
+}

@@ -1,0 +1,5 @@
+#!/usr/bin/python3
+import sys
+sys.path.insert(0, "/usr/lib/vela/python")
+import vela_ai_config
+raise SystemExit(vela_ai_config.main())
