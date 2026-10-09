@@ -1,0 +1,10 @@
+<!DOCTYPE gui>
+<!-- Vela: only shortcut overrides. version="1" is lower than Konsole's built-in file,
+     so KXMLGUI keeps Konsole's menus and merges just these ActionProperties.
+     Copy = Ctrl+Shift+C, Paste = Ctrl+Shift+V or Ctrl+V; Ctrl+C stays "interrupt" (SIGINT). -->
+<gui name="session" version="1">
+ <ActionProperties scheme="Default">
+  <Action name="edit_copy" shortcut="Ctrl+Shift+C"/>
+  <Action name="edit_paste" shortcut="Ctrl+Shift+V; Ctrl+V"/>
+ </ActionProperties>
+</gui>

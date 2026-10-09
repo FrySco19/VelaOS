@@ -1,0 +1,11 @@
+<!DOCTYPE gui SYSTEM "kpartgui.dtd">
+<!-- Vela (component desktop): only shortcut overrides. KXMLGUI merges these
+     ActionProperties into Dolphin's own (newer) UI file, so Dolphin updates are safe.
+     Space = quick preview (Information panel with large preview, plays audio/video),
+     like Quick Look on macOS. Selection mode stays in the toolbar/menu. -->
+<gui name="dolphin" version="1">
+ <ActionProperties scheme="Default">
+  <Action name="show_information_panel" shortcut="Space; F11"/>
+  <Action name="toggle_selection_mode" shortcut="none"/>
+ </ActionProperties>
+</gui>
