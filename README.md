@@ -10,6 +10,8 @@
 
 # VelaOS
 
+[![Source checks](https://github.com/FrySco19/VelaOS/actions/workflows/checks.yml/badge.svg)](https://github.com/FrySco19/VelaOS/actions/workflows/checks.yml)
+
 VelaOS è un progetto aperto di sistema operativo per desktop, basato su **Debian 13 e KDE Plasma 6**. Riunisce un ambiente grafico coerente, impostazioni native, applicazioni, un terminale con esecuzione confermata e un assistente configurabile.
 
 **Stato: preview di sviluppo.** Il desktop si avvia in VirtualBox e i componenti Vela sono integrati. Installazione su disco, compatibilità hardware estesa e inferenza con un modello reale richiedono ancora collaudo. Non è una versione stabile per sostituire il sistema principale.
@@ -84,4 +86,4 @@ Sono utili contributi a codice, design, traduzioni, accessibilità, documentazio
 
 ## Licenze
 
-Il codice originale VelaOS 2 senza una licenza specifica nel file è distribuito sotto **GPL-3.0-or-later**; risorse e componenti con licenze proprie conservano tali licenze. Il prototipo storico in `archive/legacy-web-shell` conserva MIT. Debian, KDE, applicazioni, font e firmware mantengono le rispettive condizioni: [LICENSE](LICENSE), [LICENSES](LICENSES/README.md), [THIRD_PARTY.md](THIRD_PARTY.md).
+Il codice originale VelaOS 2 senza una licenza specifica nel file è distribuito sotto **GPL-3.0-or-later**; risorse e componenti con licenze proprie conservano tali licenze. Il prototipo storico e la sua presentazione in [`archive/`](archive/README.md) conservano MIT. Debian, KDE, applicazioni, font e firmware mantengono le rispettive condizioni: [LICENSE](LICENSE), [LICENSES](LICENSES/README.md), [THIRD_PARTY.md](THIRD_PARTY.md).

@@ -1,7 +1,7 @@
 # License map
 
 - `LICENSE`: GPL-3.0-or-later for original VelaOS 2 code and documentation without a more specific existing license.
-- `archive/legacy-web-shell/LICENSE`: original MIT license for the historical prototype.
+- `archive/legacy-web-shell/LICENSE`: original MIT license for the historical prototype; its archived presentation also retains its own MIT LICENSE.
 - Vela wallpapers: CC-BY-SA-4.0, as declared in their metadata; attribution: Vela contributors.
 - Plasma desktop themes: LGPL-2.1-or-later as declared in metadata.
 - Color schemes: LGPL-2.0-or-later as declared by SPDX headers.

@@ -31,3 +31,22 @@ PYTHONPATH="$PWD/components/settings-store/overlay/usr/lib/vela/python" python3 
 ```
 
 La CI esegue queste suite con server simulati e controlli di sintassi. Non avvia un desktop né installa una ISO. La build completa, installer, hardware fisico e inferenza reale devono avere verifiche separate prima di una release stabile.
+
+## Preparazione della ISO pubblica
+
+La ISO `VelaOS-2.0-preview-public.iso` misura 2.103.967.744 byte. SHA256:
+
+```text
+5f51a1c1ce6a224dbd62629a31bf55afe4679f49b605904677d8f515f1672160
+```
+
+Il filesystem è stato estratto dalla ISO finale e confrontato con quello preparato:
+identico. Nel filesystem pubblicato sono assenti chiave autorizzata e marcatore
+di sviluppo; servizi e socket SSH sono mascherati. I launcher sono eseguibili
+e il benvenuto conserva la correzione della prima pagina. Il checksum è stato
+verificato nuovamente dopo la copia su Windows. Le note della release riportano
+eventuali verifiche di avvio aggiuntive su questo specifico file.
+
+I controlli eseguiti sul checkout pubblico in GitHub Actions hanno riprodotto
+401 test terminale passati e 4 saltati, 52 test assistente e 13 controlli browser.
+[Registro dei controlli](https://github.com/FrySco19/VelaOS/actions/runs/37974934167).
