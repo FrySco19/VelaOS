@@ -2,6 +2,8 @@
 
 This is the Rust storage kernel for the LFS + Neural Bus pivot. Objects have content OIDs and opaque handles, never hierarchical addresses. The host backing supplied during unlock is a physical test adapter; it is not an object namespace.
 
+**Verified:** six functional test groups, formatting and Clippy passed. The full local 10,000-process-kill storage gate passed with zero lost commits, duplicates or invalid reads. See [recorded validation](VALIDATION.md) and [raw result](crash-report.json). Service transport and semantic recall remain pending as described below.
+
 The user explicitly requested M1 while the full M0 evaluation remains open. Work proceeds under that instruction; passing storage tests does not retroactively close M0.
 
 ## Implemented
