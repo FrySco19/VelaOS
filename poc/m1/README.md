@@ -14,6 +14,7 @@ The user explicitly requested M1 while the full M0 evaluation remains open. Work
 - Blob durability followed by a durable redb transaction containing both the signed commit and its encrypted idempotency binding. The reply follows the transaction and index update. Reusing a key with different content fails; retries return the original reply after restart.
 - Replay verifies every signature, link, referenced encrypted blob, chunk digest, plaintext OID, deterministic card and idempotency binding before exposing the recovered catalog.
 - Biscuit signature and policy checks inside every object operation. Read, write and list permissions are separate and scoped to the caller and object kind. Attenuation checks remain enforced.
+- Bounded authorization: tokens are at most 16 KiB; Datalog rule-execution limits are configured to 256 facts, 32 iterations and 250 ms. Exhausting a limit denies the request. Standard current-time facts enforce token expiry checks.
 - Read-only, caller-bound handles with a MAC, a maximum lifetime of 120 seconds, monotonic expiry and a random boot session. Restart invalidates old handles. Opening always rechecks capability and content integrity.
 - Deterministic paginated listing by commit order. The catalog is rebuilt in memory from the log and is never authoritative.
 
@@ -32,6 +33,8 @@ cargo run --release --locked --features fault-fixtures --bin crash-gate -- 10000
 The harness uses eight independent test threads, each spawning real child processes against its own temporary backing. Distinct writes accumulate in groups of 32. It randomly selects one of five write phases and forcibly terminates the child; some terminations race the durable log commit, while others interrupt an open uncommitted transaction. Every recovery checks the acknowledged baseline, an independently expected commit count, durable operations, retry identity, object count and verified handle reads for every earlier object in the group. Synthetic fixture credentials are available only with the explicit `fault-fixtures` feature or in unit tests.
 
 The small `crash-smoke.json` is the preliminary 100-kill run with fresh storage per trial, not the 10,000-kill gate. The final `crash-report.json`, when present, records the completed grouped-write gate. A failing run returns an error and does not write a success report. CI runs 200 kills as a regression smoke check; that is not a substitute for the full recorded gate.
+
+An initial full run failed with `Reached Datalog execution limits`: Biscuit's default wall-clock budget is 1 ms and could expire under concurrent test load. This was an authorization denial, not an observed lost commit. The explicit bounded limits above replace that implicit default; unit tests still verify denial of expired, attenuated, forged, oversized and excessive-fact tokens. Existing-storage unlock also validates through a read transaction rather than committing an unchanged format record on every restart.
 
 ## Invariants and boundaries
 

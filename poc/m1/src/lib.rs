@@ -1,6 +1,6 @@
 //! Internal M1 storage engine. No public bus or zero-copy transport is implemented here.
 use anyhow::{Result, anyhow, ensure};
-use biscuit_auth::{Biscuit, PublicKey, builder::AuthorizerBuilder};
+use biscuit_auth::{AuthorizerLimits, Biscuit, PublicKey, builder::AuthorizerBuilder};
 use chacha20poly1305::{
     XChaCha20Poly1305, XNonce,
     aead::{Aead, KeyInit, Payload},
@@ -254,36 +254,55 @@ impl Lfs {
             boot,
             started: Instant::now(),
         };
-        let mut tx = lfs.db.begin_write()?;
-        tx.set_durability(Durability::Immediate)?;
-        {
-            tx.open_table(BLOBS)?;
-            tx.open_table(LOG)?;
-            tx.open_table(IDEM)?;
-            let mut format = tx.open_table(FORMAT)?;
-            let existing = format.get("unlock-check")?.map(|v| v.value().to_vec());
-            if let Some(bytes) = existing {
-                let sealed: Sealed = serde_json::from_slice(&bytes)?;
-                ensure!(
-                    &*decrypt(&lfs.collection, &sealed, b"vela.lfs.format.v1")?
-                        == b"vela-lfs-m1-v1",
-                    "wrong format"
-                );
-            } else {
+        let existing = {
+            let tx = lfs.db.begin_read()?;
+            match tx.open_table(FORMAT) {
+                Ok(table) => Some(
+                    table
+                        .get("unlock-check")?
+                        .ok_or_else(|| anyhow!("missing unlock verifier"))?
+                        .value()
+                        .to_vec(),
+                ),
+                Err(redb::TableError::TableDoesNotExist(_)) => {
+                    ensure!(
+                        tx.list_tables()?.next().is_none(),
+                        "format missing from nonempty backing"
+                    );
+                    None
+                }
+                Err(e) => return Err(e.into()),
+            }
+        };
+        if let Some(bytes) = existing {
+            let sealed: Sealed = serde_json::from_slice(&bytes)?;
+            ensure!(
+                &*decrypt(&lfs.collection, &sealed, b"vela.lfs.format.v1")? == b"vela-lfs-m1-v1",
+                "wrong format"
+            );
+        } else {
+            let mut tx = lfs.db.begin_write()?;
+            tx.set_durability(Durability::Immediate)?;
+            {
+                tx.open_table(BLOBS)?;
+                tx.open_table(LOG)?;
+                tx.open_table(IDEM)?;
                 let bytes = canonical(&seal(
                     &lfs.collection,
                     b"vela-lfs-m1-v1",
                     b"vela.lfs.format.v1",
                 )?)?;
-                format.insert("unlock-check", bytes.as_slice())?;
+                tx.open_table(FORMAT)?
+                    .insert("unlock-check", bytes.as_slice())?;
             }
+            tx.commit()?;
         }
-        tx.commit()?;
         lfs.replay()?;
         Ok(lfs)
     }
     fn authorize(&self, token: &[u8], caller: &str, kind: Kind, op: &str) -> Result<()> {
         safe_name(caller)?;
+        ensure!(token.len() <= 16 * 1024, "capability exceeds size limit");
         let token = Biscuit::from(token, self.root)?;
         let source = format!(
             "caller(\"{caller}\"); resource(\"{kind}\"); operation(\"{op}\"); now({time}); allow if right(\"{caller}\", \"{kind}\", \"{op}\");",
@@ -291,6 +310,11 @@ impl Lfs {
             time = now()?
         );
         AuthorizerBuilder::new()
+            .set_limits(AuthorizerLimits {
+                max_facts: 256,
+                max_iterations: 32,
+                max_time: std::time::Duration::from_millis(250),
+            })
             .time()
             .code(source)?
             .build(&token)?

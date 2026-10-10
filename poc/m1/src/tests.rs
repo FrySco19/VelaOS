@@ -98,6 +98,24 @@ fn authorization_handles_and_attenuation() -> Result<()> {
     let mut forged = token;
     forged[10] ^= 1;
     assert!(lfs.handle(&forged, "alice", &result.oid, 120).is_err());
+    assert!(
+        lfs.handle(&vec![0; 16 * 1024 + 1], "alice", &result.oid, 120)
+            .is_err()
+    );
+    let mut builder = biscuit_auth::builder::BiscuitBuilder::new()
+        .code("right(\"alice\",\"NetConfig\",\"read\");")?;
+    for i in 0..300 {
+        builder = builder.code(format!("noise({i});"))?;
+    }
+    builder = builder.code("derived($n) <- noise($n);")?;
+    let oversized_policy = builder.build(&fixture::root())?.to_vec()?;
+    assert!(oversized_policy.len() <= 16 * 1024);
+    assert!(
+        lfs.handle(&oversized_policy, "alice", &result.oid, 120)
+            .unwrap_err()
+            .to_string()
+            .contains("limits")
+    );
     Ok(())
 }
 #[test]
