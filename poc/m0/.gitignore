@@ -1,0 +1,3 @@
+.model-cache/
+.venv/
+*.log

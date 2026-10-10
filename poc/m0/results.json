@@ -1,0 +1,757 @@
+{
+  "cards": 5,
+  "candidate_limit_per_branch": 64,
+  "rrf_k": 60,
+  "fts": "Lance-native BM25, whitespace tokens, English stopwords, no stemming",
+  "vector_search": "exact cosine scan; five rows do not justify an ANN index",
+  "cases": [
+    {
+      "name": "exact_ssid",
+      "query": "ZEPHYR-731",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "embedding_ms": 10.275199951138347,
+      "search_ms": 86.12459996948019,
+      "status": "RankedCandidates",
+      "dense": [
+        {
+          "oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+          "title": "Recorded configuration",
+          "kind": "NetConfig",
+          "card_text": "Recorded configuration\nArchived configuration state for an earlier network session.\nDNS 9.9.9.9\nSSID ZEPHYR-731\nUUID 8b9539b7-3c6f-4bb1-9355-ae58471cf013",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.15043318271636963
+        },
+        {
+          "oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+          "title": "Espresso wireless session",
+          "kind": "NetConfig",
+          "card_text": "Espresso wireless session\nA laptop connects over encrypted Wi-Fi at a coffee shop. A secure tunnel towards Milan protects traffic on the public hotspot.\nDNS 1.1.1.1\nSSID CafeGuest-5G",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.20493793487548828
+        },
+        {
+          "oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+          "title": "Home entertainment connection",
+          "kind": "NetConfig",
+          "card_text": "Home entertainment connection\nA home router serves the television and game console with automatic addresses. No secure tunnel is enabled.\nDNS 8.8.8.8\nSSID HomeLan-5G",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.24920248985290527
+        },
+        {
+          "oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+          "title": "Wireless troubleshooting handbook",
+          "kind": "Note",
+          "card_text": "Wireless troubleshooting handbook\nInstructions for diagnosing a network name, resolver and connectivity. This is a guide, not a saved configuration.\ntopic connectivity",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.24932777881622314
+        },
+        {
+          "oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+          "title": "Ferry at sunset",
+          "kind": "Media",
+          "card_text": "Ferry at sunset\nA short film of a sailboat crossing the bay in golden evening light.\ntopic sailing",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.25213927030563354
+        }
+      ],
+      "bm25": [
+        {
+          "oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+          "title": "Recorded configuration",
+          "kind": "NetConfig",
+          "card_text": "Recorded configuration\nArchived configuration state for an earlier network session.\nDNS 9.9.9.9\nSSID ZEPHYR-731\nUUID 8b9539b7-3c6f-4bb1-9355-ae58471cf013",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_score": 1.4540613889694214
+        }
+      ],
+      "hybrid": [
+        {
+          "oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+          "title": "Recorded configuration",
+          "kind": "NetConfig",
+          "card_text": "Recorded configuration\nArchived configuration state for an earlier network session.\nDNS 9.9.9.9\nSSID ZEPHYR-731\nUUID 8b9539b7-3c6f-4bb1-9355-ae58471cf013",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.15043318271636963,
+          "_rowid": 0,
+          "_score": 1.4540613889694214,
+          "_relevance_score": 0.032786883413791656
+        },
+        {
+          "oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+          "title": "Espresso wireless session",
+          "kind": "NetConfig",
+          "card_text": "Espresso wireless session\nA laptop connects over encrypted Wi-Fi at a coffee shop. A secure tunnel towards Milan protects traffic on the public hotspot.\nDNS 1.1.1.1\nSSID CafeGuest-5G",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.20493793487548828,
+          "_rowid": 1,
+          "_score": null,
+          "_relevance_score": 0.016129031777381897
+        },
+        {
+          "oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+          "title": "Home entertainment connection",
+          "kind": "NetConfig",
+          "card_text": "Home entertainment connection\nA home router serves the television and game console with automatic addresses. No secure tunnel is enabled.\nDNS 8.8.8.8\nSSID HomeLan-5G",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.24920248985290527,
+          "_rowid": 2,
+          "_score": null,
+          "_relevance_score": 0.01587301678955555
+        },
+        {
+          "oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+          "title": "Wireless troubleshooting handbook",
+          "kind": "Note",
+          "card_text": "Wireless troubleshooting handbook\nInstructions for diagnosing a network name, resolver and connectivity. This is a guide, not a saved configuration.\ntopic connectivity",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.24932777881622314,
+          "_rowid": 3,
+          "_score": null,
+          "_relevance_score": 0.015625
+        },
+        {
+          "oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+          "title": "Ferry at sunset",
+          "kind": "Media",
+          "card_text": "Ferry at sunset\nA short film of a sailboat crossing the bay in golden evening light.\ntopic sailing",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.25213927030563354,
+          "_rowid": 4,
+          "_score": null,
+          "_relevance_score": 0.015384615398943424
+        }
+      ],
+      "top_gap": 0.01665785163640976,
+      "auto_resolve": false
+    },
+    {
+      "name": "exact_ip",
+      "query": "9.9.9.9",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "embedding_ms": 11.783599969930947,
+      "search_ms": 27.19639998394996,
+      "status": "RankedCandidates",
+      "dense": [
+        {
+          "oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+          "title": "Recorded configuration",
+          "kind": "NetConfig",
+          "card_text": "Recorded configuration\nArchived configuration state for an earlier network session.\nDNS 9.9.9.9\nSSID ZEPHYR-731\nUUID 8b9539b7-3c6f-4bb1-9355-ae58471cf013",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.15157711505889893
+        },
+        {
+          "oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+          "title": "Espresso wireless session",
+          "kind": "NetConfig",
+          "card_text": "Espresso wireless session\nA laptop connects over encrypted Wi-Fi at a coffee shop. A secure tunnel towards Milan protects traffic on the public hotspot.\nDNS 1.1.1.1\nSSID CafeGuest-5G",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.21161866188049316
+        },
+        {
+          "oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+          "title": "Ferry at sunset",
+          "kind": "Media",
+          "card_text": "Ferry at sunset\nA short film of a sailboat crossing the bay in golden evening light.\ntopic sailing",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.21380257606506348
+        },
+        {
+          "oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+          "title": "Wireless troubleshooting handbook",
+          "kind": "Note",
+          "card_text": "Wireless troubleshooting handbook\nInstructions for diagnosing a network name, resolver and connectivity. This is a guide, not a saved configuration.\ntopic connectivity",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.2172337770462036
+        },
+        {
+          "oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+          "title": "Home entertainment connection",
+          "kind": "NetConfig",
+          "card_text": "Home entertainment connection\nA home router serves the television and game console with automatic addresses. No secure tunnel is enabled.\nDNS 8.8.8.8\nSSID HomeLan-5G",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.21980243921279907
+        }
+      ],
+      "bm25": [
+        {
+          "oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+          "title": "Recorded configuration",
+          "kind": "NetConfig",
+          "card_text": "Recorded configuration\nArchived configuration state for an earlier network session.\nDNS 9.9.9.9\nSSID ZEPHYR-731\nUUID 8b9539b7-3c6f-4bb1-9355-ae58471cf013",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_score": 1.4540613889694214
+        }
+      ],
+      "hybrid": [
+        {
+          "oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+          "title": "Recorded configuration",
+          "kind": "NetConfig",
+          "card_text": "Recorded configuration\nArchived configuration state for an earlier network session.\nDNS 9.9.9.9\nSSID ZEPHYR-731\nUUID 8b9539b7-3c6f-4bb1-9355-ae58471cf013",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.15157711505889893,
+          "_rowid": 0,
+          "_score": 1.4540613889694214,
+          "_relevance_score": 0.032786883413791656
+        },
+        {
+          "oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+          "title": "Espresso wireless session",
+          "kind": "NetConfig",
+          "card_text": "Espresso wireless session\nA laptop connects over encrypted Wi-Fi at a coffee shop. A secure tunnel towards Milan protects traffic on the public hotspot.\nDNS 1.1.1.1\nSSID CafeGuest-5G",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.21161866188049316,
+          "_rowid": 1,
+          "_score": null,
+          "_relevance_score": 0.016129031777381897
+        },
+        {
+          "oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+          "title": "Ferry at sunset",
+          "kind": "Media",
+          "card_text": "Ferry at sunset\nA short film of a sailboat crossing the bay in golden evening light.\ntopic sailing",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.21380257606506348,
+          "_rowid": 4,
+          "_score": null,
+          "_relevance_score": 0.01587301678955555
+        },
+        {
+          "oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+          "title": "Wireless troubleshooting handbook",
+          "kind": "Note",
+          "card_text": "Wireless troubleshooting handbook\nInstructions for diagnosing a network name, resolver and connectivity. This is a guide, not a saved configuration.\ntopic connectivity",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.2172337770462036,
+          "_rowid": 3,
+          "_score": null,
+          "_relevance_score": 0.015625
+        },
+        {
+          "oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+          "title": "Home entertainment connection",
+          "kind": "NetConfig",
+          "card_text": "Home entertainment connection\nA home router serves the television and game console with automatic addresses. No secure tunnel is enabled.\nDNS 8.8.8.8\nSSID HomeLan-5G",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.21980243921279907,
+          "_rowid": 2,
+          "_score": null,
+          "_relevance_score": 0.015384615398943424
+        }
+      ],
+      "top_gap": 0.01665785163640976,
+      "auto_resolve": false
+    },
+    {
+      "name": "exact_uuid",
+      "query": "8b9539b7-3c6f-4bb1-9355-ae58471cf013",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "embedding_ms": 19.194900000002235,
+      "search_ms": 27.214799949433655,
+      "status": "RankedCandidates",
+      "dense": [
+        {
+          "oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+          "title": "Recorded configuration",
+          "kind": "NetConfig",
+          "card_text": "Recorded configuration\nArchived configuration state for an earlier network session.\nDNS 9.9.9.9\nSSID ZEPHYR-731\nUUID 8b9539b7-3c6f-4bb1-9355-ae58471cf013",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.1634545922279358
+        },
+        {
+          "oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+          "title": "Ferry at sunset",
+          "kind": "Media",
+          "card_text": "Ferry at sunset\nA short film of a sailboat crossing the bay in golden evening light.\ntopic sailing",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.20494616031646729
+        },
+        {
+          "oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+          "title": "Espresso wireless session",
+          "kind": "NetConfig",
+          "card_text": "Espresso wireless session\nA laptop connects over encrypted Wi-Fi at a coffee shop. A secure tunnel towards Milan protects traffic on the public hotspot.\nDNS 1.1.1.1\nSSID CafeGuest-5G",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.20699912309646606
+        },
+        {
+          "oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+          "title": "Wireless troubleshooting handbook",
+          "kind": "Note",
+          "card_text": "Wireless troubleshooting handbook\nInstructions for diagnosing a network name, resolver and connectivity. This is a guide, not a saved configuration.\ntopic connectivity",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.20814204216003418
+        },
+        {
+          "oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+          "title": "Home entertainment connection",
+          "kind": "NetConfig",
+          "card_text": "Home entertainment connection\nA home router serves the television and game console with automatic addresses. No secure tunnel is enabled.\nDNS 8.8.8.8\nSSID HomeLan-5G",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.211401104927063
+        }
+      ],
+      "bm25": [
+        {
+          "oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+          "title": "Recorded configuration",
+          "kind": "NetConfig",
+          "card_text": "Recorded configuration\nArchived configuration state for an earlier network session.\nDNS 9.9.9.9\nSSID ZEPHYR-731\nUUID 8b9539b7-3c6f-4bb1-9355-ae58471cf013",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_score": 1.4540613889694214
+        }
+      ],
+      "hybrid": [
+        {
+          "oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+          "title": "Recorded configuration",
+          "kind": "NetConfig",
+          "card_text": "Recorded configuration\nArchived configuration state for an earlier network session.\nDNS 9.9.9.9\nSSID ZEPHYR-731\nUUID 8b9539b7-3c6f-4bb1-9355-ae58471cf013",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.1634545922279358,
+          "_rowid": 0,
+          "_score": 1.4540613889694214,
+          "_relevance_score": 0.032786883413791656
+        },
+        {
+          "oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+          "title": "Ferry at sunset",
+          "kind": "Media",
+          "card_text": "Ferry at sunset\nA short film of a sailboat crossing the bay in golden evening light.\ntopic sailing",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.20494616031646729,
+          "_rowid": 4,
+          "_score": null,
+          "_relevance_score": 0.016129031777381897
+        },
+        {
+          "oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+          "title": "Espresso wireless session",
+          "kind": "NetConfig",
+          "card_text": "Espresso wireless session\nA laptop connects over encrypted Wi-Fi at a coffee shop. A secure tunnel towards Milan protects traffic on the public hotspot.\nDNS 1.1.1.1\nSSID CafeGuest-5G",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.20699912309646606,
+          "_rowid": 1,
+          "_score": null,
+          "_relevance_score": 0.01587301678955555
+        },
+        {
+          "oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+          "title": "Wireless troubleshooting handbook",
+          "kind": "Note",
+          "card_text": "Wireless troubleshooting handbook\nInstructions for diagnosing a network name, resolver and connectivity. This is a guide, not a saved configuration.\ntopic connectivity",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.20814204216003418,
+          "_rowid": 3,
+          "_score": null,
+          "_relevance_score": 0.015625
+        },
+        {
+          "oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+          "title": "Home entertainment connection",
+          "kind": "NetConfig",
+          "card_text": "Home entertainment connection\nA home router serves the television and game console with automatic addresses. No secure tunnel is enabled.\nDNS 8.8.8.8\nSSID HomeLan-5G",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.211401104927063,
+          "_rowid": 2,
+          "_score": null,
+          "_relevance_score": 0.015384615398943424
+        }
+      ],
+      "top_gap": 0.01665785163640976,
+      "auto_resolve": false
+    },
+    {
+      "name": "semantic_it",
+      "query": "connessione protetta del portatile in caffetteria",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "embedding_ms": 16.607900033704937,
+      "search_ms": 21.303599991369992,
+      "status": "RankedCandidates",
+      "dense": [
+        {
+          "oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+          "title": "Espresso wireless session",
+          "kind": "NetConfig",
+          "card_text": "Espresso wireless session\nA laptop connects over encrypted Wi-Fi at a coffee shop. A secure tunnel towards Milan protects traffic on the public hotspot.\nDNS 1.1.1.1\nSSID CafeGuest-5G",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.15474921464920044
+        },
+        {
+          "oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+          "title": "Home entertainment connection",
+          "kind": "NetConfig",
+          "card_text": "Home entertainment connection\nA home router serves the television and game console with automatic addresses. No secure tunnel is enabled.\nDNS 8.8.8.8\nSSID HomeLan-5G",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.23372018337249756
+        },
+        {
+          "oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+          "title": "Recorded configuration",
+          "kind": "NetConfig",
+          "card_text": "Recorded configuration\nArchived configuration state for an earlier network session.\nDNS 9.9.9.9\nSSID ZEPHYR-731\nUUID 8b9539b7-3c6f-4bb1-9355-ae58471cf013",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.23730945587158203
+        },
+        {
+          "oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+          "title": "Wireless troubleshooting handbook",
+          "kind": "Note",
+          "card_text": "Wireless troubleshooting handbook\nInstructions for diagnosing a network name, resolver and connectivity. This is a guide, not a saved configuration.\ntopic connectivity",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.25715434551239014
+        },
+        {
+          "oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+          "title": "Ferry at sunset",
+          "kind": "Media",
+          "card_text": "Ferry at sunset\nA short film of a sailboat crossing the bay in golden evening light.\ntopic sailing",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.2802671790122986
+        }
+      ],
+      "bm25": [],
+      "hybrid": [
+        {
+          "oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+          "title": "Espresso wireless session",
+          "kind": "NetConfig",
+          "card_text": "Espresso wireless session\nA laptop connects over encrypted Wi-Fi at a coffee shop. A secure tunnel towards Milan protects traffic on the public hotspot.\nDNS 1.1.1.1\nSSID CafeGuest-5G",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.15474921464920044,
+          "_rowid": 1,
+          "_score": null,
+          "_relevance_score": 0.016393441706895828
+        },
+        {
+          "oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+          "title": "Home entertainment connection",
+          "kind": "NetConfig",
+          "card_text": "Home entertainment connection\nA home router serves the television and game console with automatic addresses. No secure tunnel is enabled.\nDNS 8.8.8.8\nSSID HomeLan-5G",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.23372018337249756,
+          "_rowid": 2,
+          "_score": null,
+          "_relevance_score": 0.016129031777381897
+        },
+        {
+          "oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+          "title": "Recorded configuration",
+          "kind": "NetConfig",
+          "card_text": "Recorded configuration\nArchived configuration state for an earlier network session.\nDNS 9.9.9.9\nSSID ZEPHYR-731\nUUID 8b9539b7-3c6f-4bb1-9355-ae58471cf013",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.23730945587158203,
+          "_rowid": 0,
+          "_score": null,
+          "_relevance_score": 0.01587301678955555
+        },
+        {
+          "oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+          "title": "Wireless troubleshooting handbook",
+          "kind": "Note",
+          "card_text": "Wireless troubleshooting handbook\nInstructions for diagnosing a network name, resolver and connectivity. This is a guide, not a saved configuration.\ntopic connectivity",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.25715434551239014,
+          "_rowid": 3,
+          "_score": null,
+          "_relevance_score": 0.015625
+        },
+        {
+          "oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+          "title": "Ferry at sunset",
+          "kind": "Media",
+          "card_text": "Ferry at sunset\nA short film of a sailboat crossing the bay in golden evening light.\ntopic sailing",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.2802671790122986,
+          "_rowid": 4,
+          "_score": null,
+          "_relevance_score": 0.015384615398943424
+        }
+      ],
+      "top_gap": 0.0002644099295139313,
+      "auto_resolve": false
+    },
+    {
+      "name": "lexical_vs_semantic",
+      "query": "ZEPHYR-731 connessione protetta del portatile in caffetteria",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "embedding_ms": 18.753600015770644,
+      "search_ms": 30.75960004935041,
+      "status": "RankedCandidates",
+      "dense": [
+        {
+          "oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+          "title": "Espresso wireless session",
+          "kind": "NetConfig",
+          "card_text": "Espresso wireless session\nA laptop connects over encrypted Wi-Fi at a coffee shop. A secure tunnel towards Milan protects traffic on the public hotspot.\nDNS 1.1.1.1\nSSID CafeGuest-5G",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.1678714156150818
+        },
+        {
+          "oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+          "title": "Recorded configuration",
+          "kind": "NetConfig",
+          "card_text": "Recorded configuration\nArchived configuration state for an earlier network session.\nDNS 9.9.9.9\nSSID ZEPHYR-731\nUUID 8b9539b7-3c6f-4bb1-9355-ae58471cf013",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.20719265937805176
+        },
+        {
+          "oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+          "title": "Home entertainment connection",
+          "kind": "NetConfig",
+          "card_text": "Home entertainment connection\nA home router serves the television and game console with automatic addresses. No secure tunnel is enabled.\nDNS 8.8.8.8\nSSID HomeLan-5G",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.25186294317245483
+        },
+        {
+          "oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+          "title": "Wireless troubleshooting handbook",
+          "kind": "Note",
+          "card_text": "Wireless troubleshooting handbook\nInstructions for diagnosing a network name, resolver and connectivity. This is a guide, not a saved configuration.\ntopic connectivity",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.2691801190376282
+        },
+        {
+          "oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+          "title": "Ferry at sunset",
+          "kind": "Media",
+          "card_text": "Ferry at sunset\nA short film of a sailboat crossing the bay in golden evening light.\ntopic sailing",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.2867043614387512
+        }
+      ],
+      "bm25": [
+        {
+          "oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+          "title": "Recorded configuration",
+          "kind": "NetConfig",
+          "card_text": "Recorded configuration\nArchived configuration state for an earlier network session.\nDNS 9.9.9.9\nSSID ZEPHYR-731\nUUID 8b9539b7-3c6f-4bb1-9355-ae58471cf013",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_score": 1.4540613889694214
+        }
+      ],
+      "hybrid": [
+        {
+          "oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+          "title": "Recorded configuration",
+          "kind": "NetConfig",
+          "card_text": "Recorded configuration\nArchived configuration state for an earlier network session.\nDNS 9.9.9.9\nSSID ZEPHYR-731\nUUID 8b9539b7-3c6f-4bb1-9355-ae58471cf013",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.20719265937805176,
+          "_rowid": 0,
+          "_score": 1.4540613889694214,
+          "_relevance_score": 0.032522473484277725
+        },
+        {
+          "oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+          "title": "Espresso wireless session",
+          "kind": "NetConfig",
+          "card_text": "Espresso wireless session\nA laptop connects over encrypted Wi-Fi at a coffee shop. A secure tunnel towards Milan protects traffic on the public hotspot.\nDNS 1.1.1.1\nSSID CafeGuest-5G",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.1678714156150818,
+          "_rowid": 1,
+          "_score": null,
+          "_relevance_score": 0.016393441706895828
+        },
+        {
+          "oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+          "title": "Home entertainment connection",
+          "kind": "NetConfig",
+          "card_text": "Home entertainment connection\nA home router serves the television and game console with automatic addresses. No secure tunnel is enabled.\nDNS 8.8.8.8\nSSID HomeLan-5G",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.25186294317245483,
+          "_rowid": 2,
+          "_score": null,
+          "_relevance_score": 0.01587301678955555
+        },
+        {
+          "oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+          "title": "Wireless troubleshooting handbook",
+          "kind": "Note",
+          "card_text": "Wireless troubleshooting handbook\nInstructions for diagnosing a network name, resolver and connectivity. This is a guide, not a saved configuration.\ntopic connectivity",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.2691801190376282,
+          "_rowid": 3,
+          "_score": null,
+          "_relevance_score": 0.015625
+        },
+        {
+          "oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+          "title": "Ferry at sunset",
+          "kind": "Media",
+          "card_text": "Ferry at sunset\nA short film of a sailboat crossing the bay in golden evening light.\ntopic sailing",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.2867043614387512,
+          "_rowid": 4,
+          "_score": null,
+          "_relevance_score": 0.015384615398943424
+        }
+      ],
+      "top_gap": 0.016129031777381897,
+      "auto_resolve": false
+    },
+    {
+      "name": "semantic_media_it",
+      "query": "filmato della barca al tramonto",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "embedding_ms": 14.69010004075244,
+      "search_ms": 27.919799962546676,
+      "status": "RankedCandidates",
+      "dense": [
+        {
+          "oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+          "title": "Ferry at sunset",
+          "kind": "Media",
+          "card_text": "Ferry at sunset\nA short film of a sailboat crossing the bay in golden evening light.\ntopic sailing",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.1750738024711609
+        },
+        {
+          "oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+          "title": "Espresso wireless session",
+          "kind": "NetConfig",
+          "card_text": "Espresso wireless session\nA laptop connects over encrypted Wi-Fi at a coffee shop. A secure tunnel towards Milan protects traffic on the public hotspot.\nDNS 1.1.1.1\nSSID CafeGuest-5G",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.28059256076812744
+        },
+        {
+          "oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+          "title": "Recorded configuration",
+          "kind": "NetConfig",
+          "card_text": "Recorded configuration\nArchived configuration state for an earlier network session.\nDNS 9.9.9.9\nSSID ZEPHYR-731\nUUID 8b9539b7-3c6f-4bb1-9355-ae58471cf013",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.2921959161758423
+        },
+        {
+          "oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+          "title": "Home entertainment connection",
+          "kind": "NetConfig",
+          "card_text": "Home entertainment connection\nA home router serves the television and game console with automatic addresses. No secure tunnel is enabled.\nDNS 8.8.8.8\nSSID HomeLan-5G",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.31702345609664917
+        },
+        {
+          "oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+          "title": "Wireless troubleshooting handbook",
+          "kind": "Note",
+          "card_text": "Wireless troubleshooting handbook\nInstructions for diagnosing a network name, resolver and connectivity. This is a guide, not a saved configuration.\ntopic connectivity",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.3398839235305786
+        }
+      ],
+      "bm25": [],
+      "hybrid": [
+        {
+          "oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+          "title": "Ferry at sunset",
+          "kind": "Media",
+          "card_text": "Ferry at sunset\nA short film of a sailboat crossing the bay in golden evening light.\ntopic sailing",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.1750738024711609,
+          "_rowid": 4,
+          "_score": null,
+          "_relevance_score": 0.016393441706895828
+        },
+        {
+          "oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+          "title": "Espresso wireless session",
+          "kind": "NetConfig",
+          "card_text": "Espresso wireless session\nA laptop connects over encrypted Wi-Fi at a coffee shop. A secure tunnel towards Milan protects traffic on the public hotspot.\nDNS 1.1.1.1\nSSID CafeGuest-5G",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.28059256076812744,
+          "_rowid": 1,
+          "_score": null,
+          "_relevance_score": 0.016129031777381897
+        },
+        {
+          "oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+          "title": "Recorded configuration",
+          "kind": "NetConfig",
+          "card_text": "Recorded configuration\nArchived configuration state for an earlier network session.\nDNS 9.9.9.9\nSSID ZEPHYR-731\nUUID 8b9539b7-3c6f-4bb1-9355-ae58471cf013",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.2921959161758423,
+          "_rowid": 0,
+          "_score": null,
+          "_relevance_score": 0.01587301678955555
+        },
+        {
+          "oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+          "title": "Home entertainment connection",
+          "kind": "NetConfig",
+          "card_text": "Home entertainment connection\nA home router serves the television and game console with automatic addresses. No secure tunnel is enabled.\nDNS 8.8.8.8\nSSID HomeLan-5G",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.31702345609664917,
+          "_rowid": 2,
+          "_score": null,
+          "_relevance_score": 0.015625
+        },
+        {
+          "oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+          "title": "Wireless troubleshooting handbook",
+          "kind": "Note",
+          "card_text": "Wireless troubleshooting handbook\nInstructions for diagnosing a network name, resolver and connectivity. This is a guide, not a saved configuration.\ntopic connectivity",
+          "model_id": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+          "_distance": 0.3398839235305786,
+          "_rowid": 3,
+          "_score": null,
+          "_relevance_score": 0.015384615398943424
+        }
+      ],
+      "top_gap": 0.0002644099295139313,
+      "auto_resolve": false
+    }
+  ],
+  "passed": true,
+  "checks": {
+    "canonical_oid": true,
+    "exact_oid_metadata_lookup": true,
+    "model_epoch_filter": true,
+    "kind_prefilter_both_branches": true,
+    "native_rrf_verified": true,
+    "no_payloads_returned": true
+  },
+  "warm_timing": {
+    "samples": 24,
+    "includes_embedding_and_three_searches": true,
+    "p50_ms": 39.77509998367168,
+    "p95_ms": 47.12294497003313
+  },
+  "m0_roadmap_gate_passed": false,
+  "limit": "Six handcrafted queries over five dummy cards, not 200 independent paraphrases. No LFS service, handles, Biscuit, commit log, planner or iceoryx2 data plane.",
+  "model": {
+    "epoch": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+    "revision": "614241f622f53c4eeff9890bdc4f31cfecc418b3",
+    "sha256": {
+      "config.json": "69137736cab8b8903a07fe8afaafdda25aac55415a12a55d1bffa9f581abf959",
+      "tokenizer.json": "0b44a9d7b51c3c62626640cda0e2c2f70fdacdc25bbbd68038369d14ebdf4c39",
+      "tokenizer_config.json": "a1d6bc8734a6f635dc158508bef000f8e2e5a759c7d92f984b2c86e5ff53425b",
+      "special_tokens_map.json": "d05497f1da52c5e09554c0cd874037a083e1dc1b9cfd48034d1c717f1afc07a7",
+      "onnx/model.onnx": "ca456c06b3a9505ddfd9131408916dd79290368331e7d76bb621f1cba6bc8665"
+    },
+    "setup_seconds": 3.855226399959065
+  },
+  "environment": {
+    "python": "3.12.14",
+    "os": "Windows",
+    "machine": "AMD64",
+    "cpu": "AMD64 Family 23 Model 8 Stepping 2, AuthenticAMD",
+    "threads": 4,
+    "packages": {
+      "lancedb": "0.40.0",
+      "fastembed": "0.9.0",
+      "blake3": "1.0.8",
+      "rfc8785": "0.1.4",
+      "numpy": "2.5.3",
+      "pyarrow": "26.0.0",
+      "onnxruntime": "1.31.0",
+      "tokenizers": "0.23.3"
+    }
+  }
+}
