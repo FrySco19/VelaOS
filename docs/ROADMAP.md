@@ -7,7 +7,8 @@ La roadmap segue gate tecnici verificabili per il sistema personale AI-native. N
 | M0 — Semantic hybrid recall | Chiuso sul fixture sintetico | Recall@1 186/200 (93%) e warm p95 25,67 ms sulle cinque card correnti. Non equivale a un benchmark indipendente o a qualità generalizzabile. |
 | M1 — Immutable LFS | Chiuso per il gate registrato | Kernel Rust, oggetti cifrati, commit firmati e policy Biscuit; 10.000 terminazioni di processo senza perdita o duplicazione nel test. Power-loss, anchor anti-rollback e servizio persistente restano fuori. |
 | M2 — Isolation & throughput | In corso | Bridge iceoryx2 reale verificata; Wasmtime compila e supera i test base in GitHub Actions. Restano aperti isolamento avversariale, throughput e streaming. |
-| M3 — Sistema integrato | Non iniziato | Integrare LFS, bus, semantic service e task runtime dietro API stabili; definire bootstrap, gestione chiavi, aggiornamenti, recovery e client utente. Obiettivo di sistema: meno di 1,5 GB RAM a riposo, da misurare sul sistema integrato. |
+| M3 — Planner, gate e route cache | Progettato; runtime non iniziato | [Contratti e prompt](m3-m4/README.md). Gate PDF: 100% piani validi, >95% su 300 intent, cold <400 ms. Ingresso dopo M2 verificato. |
+| M4 — SAVE / RECALL / RESTORE E2E | Progettato; runtime non iniziato | [Integrazione e recovery](m3-m4/M4_E2E.md). Zero bypass su 100 injection, rollback verificato e client di conferma. Budget globale <1,5 GB a riposo da misurare. Ingresso dopo M3 verificato. |
 
 ## M2: lavoro aperto
 
@@ -26,7 +27,8 @@ I parametri iniziali del bulk sono 256 KiB per blocco e 8 crediti in volo (2 MiB
 flowchart LR
   M0[M0 recall: chiuso sul fixture] --> M1[M1 LFS: gate crash chiuso]
   M1 --> M2[M2 isolation e throughput: aperto]
-  M2 --> M3[M3 integrazione: non iniziata]
+  M2 --> M3[M3 planner: progettato]
+  M3 --> M4[M4 E2E: progettato]
 ```
 
 Contributi utili: test avversariali per componenti Wasm, benchmark indipendenti, review delle capability e dei confini IPC, riproduzione su host Windows/Linux, documentazione dei limiti. La precedente preview desktop Debian/KDE non è il criterio di completamento di questa roadmap.

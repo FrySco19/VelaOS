@@ -51,3 +51,7 @@ Issue, review di sicurezza, test riproducibili e documentazione dei limiti sono 
 ## Progetto precedente
 
 La preview Debian 13/KDE Plasma, con assistente desktop locale, resta nel repository come linea storica e non è il sistema costruito dai gate M0-M2. Le relative schermate, note e procedure non costituiscono prove dell'architettura AI-native. Consulta [le note storiche della release](RELEASE_NOTES.md) e la [documentazione desktop](docs/BUILD.md).
+
+## Progettazione M3 → M4
+
+Disponibili [Intent Router, Kernel Prompt, protocollo RAM/VRAM e piano E2E](docs/m3-m4/README.md). Sono contratti progettuali: M2 resta in corso, M3/M4 non sono implementati né dichiarati chiusi. La roadmap segue i gate del PDF prima di avviare la fase successiva.
