@@ -1,7 +1,7 @@
 use anyhow::{Context, Result, anyhow, ensure};
 use std::sync::atomic::{AtomicUsize, Ordering};
-use wasmtime::{Config, Engine, Store, StoreLimits, StoreLimitsBuilder};
 use wasmtime::component::{Component, Linker};
+use wasmtime::{Config, Engine, Store, StoreLimits, StoreLimitsBuilder};
 
 wasmtime::component::bindgen!({
     path: "wit",
