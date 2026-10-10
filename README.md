@@ -98,3 +98,7 @@ Sono utili contributi a codice, design, traduzioni, accessibilità, documentazio
 ## Licenze
 
 Il codice originale VelaOS 2 senza una licenza specifica nel file è distribuito sotto **GPL-3.0-or-later**; risorse e componenti con licenze proprie conservano tali licenze. Il prototipo storico e la sua presentazione in [`archive/`](archive/README.md) conservano MIT. Debian, KDE, applicazioni, font e firmware mantengono le rispettive condizioni: [LICENSE](LICENSE), [LICENSES](LICENSES/README.md), [THIRD_PARTY.md](THIRD_PARTY.md).
+
+### Neural Bus bridge
+The [Rust M0 → M1 bridge](poc/m2/README.md) now transfers capability-authorized LFS object bytes through real iceoryx2 shared memory between two processes. The [10,000-message report](poc/m2/bridge-results.json) verifies integrity; M2 performance and process-isolation gates remain open.
+

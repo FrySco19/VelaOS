@@ -1,0 +1,28 @@
+name: Neural Bus M2 Rust checks
+on:
+  push:
+    paths: ['poc/m2/**', 'poc/m1/**', '.github/workflows/neural-bus-m2.yml']
+  pull_request:
+    paths: ['poc/m2/**', 'poc/m1/**', '.github/workflows/neural-bus-m2.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  bus:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: poc/m2
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned Rust
+        run: rustup toolchain install 1.96.1 --profile minimal --component rustfmt --component clippy
+      - name: Check formatting
+        run: cargo +1.96.1 fmt --check
+      - name: Test policy and typed frames
+        run: cargo +1.96.1 test --all-features --locked
+      - name: Check all targets
+        run: cargo +1.96.1 clippy --all-features --all-targets --locked -- -D warnings
+      - name: Build native IPC fixture
+        run: cargo +1.96.1 build --release --features fixture-e2e --locked

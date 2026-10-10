@@ -53,9 +53,9 @@ An initial tokenizer configuration also exposed a false lexical match: Italian `
 
 Typed filtering here is not Biscuit capability enforcement. This spike does not implement redb, encryption, Wasmtime, iceoryx2, handles, a commit log, or an LFS service. Dummy card text is deterministically rendered from authored fixture metadata, not a production schema extractor.
 
-## M0 gate remains open
+## M0 gate closed on the full evaluation
 
-The specification requires recall@1 >0.9 on 200 paraphrases and p95 below 50 ms. Six handcrafted queries and repeated timing samples do not satisfy that gate. The report explicitly sets `m0_roadmap_gate_passed=false`. Next work is an independent, frozen 200-paraphrase evaluation and a dedicated latency measurement; M1 starts after the M0 gate is verified.
+The specification requires recall@1 >0.9 on 200 paraphrases and p95 below 50 ms. The original six-query report retains `m0_roadmap_gate_passed=false`: it did not establish the gate. The subsequent frozen 200-paraphrase evaluation passed with 186/200 (93%) and warm p95 25.67 ms over 600 requests. See [official closure, limitations and reproduction](GATE.md) and [full results](gate-results.json). These are synthetic paraphrases of the current five cards, not independent human evaluation. The [Neural Bus bridge](../m2/README.md) now connects ranked M0 OIDs to exact M1 handles and real typed IPC.
 
 ## Pinned sources
 
@@ -64,3 +64,4 @@ The specification requires recall@1 >0.9 on 200 paraphrases and p95 below 50 ms.
 - [LanceDB native RRF implementation](https://github.com/lancedb/lancedb/blob/main/python/python/lancedb/rerankers/rrf.py).
 
 Runtime packages are pinned in the script and its uv lockfile. The implementation uses LanceDB 0.40.0's native BM25 fallback allowed by the specification, not a separate Tantivy service. No model weights are included in the source checkout.
+

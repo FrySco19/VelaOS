@@ -1,6 +1,6 @@
 # M1 decisions — 2026-10-10
 
-The specification's LFS storage/crash-consistency milestone is implemented as an internal Rust kernel. The explicit request to proceed to M1 overrides waiting for M0, but M0's 200-paraphrase gate remains open. The legacy desktop/ISO release remains outside this architectural work.
+The specification's LFS storage/crash-consistency milestone is implemented as an internal Rust kernel. The explicit request to proceed to M1 overrides waiting for M0, but M0's 200-paraphrase gate was still open at M1 implementation time. The legacy desktop/ISO release remains outside this architectural work.
 
 1. Use redb 4.3.0 with separate blob and commit transactions and immediate durability. Persist the idempotency binding in the same transaction as the authoritative signed operation. Avoid a second authoritative metadata store.
 2. Host encrypted blobs in the same physical redb backing for this adapter. Callers address content OIDs and handles only. A future persistent storage adapter must preserve the same durability order, not expose a hierarchy to the planner.
@@ -14,3 +14,4 @@ The specification's LFS storage/crash-consistency milestone is implemented as an
 10. Keep synthetic root credentials out of default builds. The fault-fixture feature exists for local/CI verification only. Production unlock takes an externally provisioned collection key and Biscuit public root; no production credential or password is embedded or persisted.
 
 No live restore/apply operation, bus transport, Wasmtime host, encrypted-volume setup, production unlock UX or seL4 port is claimed by this milestone. Subsequent milestones must add their specified components rather than treating a passing storage gate as an OS release.
+

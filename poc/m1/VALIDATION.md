@@ -1,6 +1,6 @@
 # Recorded M1 storage validation — 2026-10-10
 
-**The specified 10,000-process-kill storage gate passed.** This closes the tested storage/crash-consistency gate, not the complete OS or an externally exposed LFS service. The full M0 semantic evaluation remains open.
+**The specified 10,000-process-kill storage gate passed.** This closes the tested storage/crash-consistency gate, not the complete OS or an externally exposed LFS service. The M0 evaluation was still open at this storage validation; it subsequently [passed the 200-query gate](../m0/GATE.md).
 
 ## Functional and code checks
 
@@ -32,3 +32,4 @@ Test executable SHA-256: `41e91b9df2712f3c90002f0c0ffcc278329b70b2e72a54733c02f3
 An earlier full attempt failed because Biscuit's implicit 1 ms execution budget expired under concurrent load. It was not counted as a successful gate. Explicit finite budgets and fail-closed adversarial-token checks were then validated before the successful repetition.
 
 This is process termination on the current host, not physical power-loss certification. Corpus sizes and the sole NetConfig schema are limited. Semantic LanceDB recall, the service envelope/transport, iceoryx2 channels, Wasmtime hosting, production key management and an external anti-rollback head anchor remain unimplemented. The Rust kernel's internal read buffer is not zero-copy IPC. See README and DECISIONS for the precise architectural boundaries.
+
