@@ -56,4 +56,3 @@ Crash testing covers process termination, not hardware power loss. A signed chai
 - [XChaCha20-Poly1305 0.10.1](https://docs.rs/chacha20poly1305/0.10.1/chacha20poly1305/)
 
 Stable crypto APIs are pinned deliberately rather than adopting a new major version during the durability spike. Biscuit 6.0.0 requires its `datalog-macro` feature in this build because disabling it exposed unresolved upstream imports. The crate follows the repository's GPL-3.0 license; upstream dependencies retain their own licenses.
-

@@ -101,4 +101,3 @@ Il codice originale VelaOS 2 senza una licenza specifica nel file è distribuito
 
 ### Neural Bus bridge
 The [Rust M0 → M1 bridge](poc/m2/README.md) now transfers capability-authorized LFS object bytes through real iceoryx2 shared memory between two processes. The [10,000-message report](poc/m2/bridge-results.json) verifies integrity; M2 performance and process-isolation gates remain open.
-

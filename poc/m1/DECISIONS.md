@@ -14,4 +14,3 @@ The specification's LFS storage/crash-consistency milestone is implemented as an
 10. Keep synthetic root credentials out of default builds. The fault-fixture feature exists for local/CI verification only. Production unlock takes an externally provisioned collection key and Biscuit public root; no production credential or password is embedded or persisted.
 
 No live restore/apply operation, bus transport, Wasmtime host, encrypted-volume setup, production unlock UX or seL4 port is claimed by this milestone. Subsequent milestones must add their specified components rather than treating a passing storage gate as an OS release.
-

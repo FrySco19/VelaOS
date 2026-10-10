@@ -64,4 +64,3 @@ The specification requires recall@1 >0.9 on 200 paraphrases and p95 below 50 ms.
 - [LanceDB native RRF implementation](https://github.com/lancedb/lancedb/blob/main/python/python/lancedb/rerankers/rrf.py).
 
 Runtime packages are pinned in the script and its uv lockfile. The implementation uses LanceDB 0.40.0's native BM25 fallback allowed by the specification, not a separate Tantivy service. No model weights are included in the source checkout.
-
