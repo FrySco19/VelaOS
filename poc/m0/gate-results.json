@@ -1,0 +1,2059 @@
+{
+  "corpus_sha256": "e5ab8d1fdb1e4182778314524f7918cf724d0aab9dcf730afa3ff43c5ad244b0",
+  "unique_queries": 200,
+  "cards": 5,
+  "synthetic_corpus": true,
+  "human_heldout": false,
+  "recall_at_1": 0.93,
+  "groups": {
+    "media": {
+      "correct": 40,
+      "total": 40
+    },
+    "semantic_profile": {
+      "correct": 38,
+      "total": 40
+    },
+    "guide": {
+      "correct": 33,
+      "total": 40
+    },
+    "exact_profile": {
+      "correct": 38,
+      "total": 40
+    },
+    "home_profile": {
+      "correct": 37,
+      "total": 40
+    }
+  },
+  "latency": {
+    "samples": 600,
+    "rounds": 3,
+    "p50_ms": 20.519500016234815,
+    "p95_ms": 25.66898501536343,
+    "max_ms": 164.65859999880195,
+    "includes": "single-query embedding + native hybrid retrieval + result materialization",
+    "excludes": "model loading, index construction, cold-start and extra diagnostics",
+    "threads": 4
+  },
+  "thresholds": {
+    "recall_at_1_strictly_greater_than": 0.9,
+    "p95_ms_strictly_less_than": 50
+  },
+  "m0_gate_passed": true,
+  "model": {
+    "epoch": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+    "revision": "614241f622f53c4eeff9890bdc4f31cfecc418b3",
+    "sha256": {
+      "config.json": "69137736cab8b8903a07fe8afaafdda25aac55415a12a55d1bffa9f581abf959",
+      "tokenizer.json": "0b44a9d7b51c3c62626640cda0e2c2f70fdacdc25bbbd68038369d14ebdf4c39",
+      "tokenizer_config.json": "a1d6bc8734a6f635dc158508bef000f8e2e5a759c7d92f984b2c86e5ff53425b",
+      "special_tokens_map.json": "d05497f1da52c5e09554c0cd874037a083e1dc1b9cfd48034d1c717f1afc07a7",
+      "onnx/model.onnx": "ca456c06b3a9505ddfd9131408916dd79290368331e7d76bb621f1cba6bc8665"
+    },
+    "setup_seconds": 3.2034087000065483
+  },
+  "queries": [
+    {
+      "id": "media-17",
+      "query": "Mostra il film della traversata nella baia al calar del sole",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 20.547899999655783
+    },
+    {
+      "id": "semantic_profile-01",
+      "query": "Ritrova la connessione protetta del portatile in caffetteria",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 18.805500003509223
+    },
+    {
+      "id": "media-32",
+      "query": "Trova la ripresa del mare con una barca a vela nella baia",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 21.437799965497106
+    },
+    {
+      "id": "semantic_profile-08",
+      "query": "La configurazione che difendeva i dati sulla rete pubblica del bar",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 21.29329997114837
+    },
+    {
+      "id": "semantic_profile-33",
+      "query": "Mostra il tunnel del portatile associato a CafeGuest-5G",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 22.546200023498386
+    },
+    {
+      "id": "guide-37",
+      "query": "Vorrei la nota tecnica che guida alla verifica della connettività",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 18.926699995063245
+    },
+    {
+      "id": "media-31",
+      "query": "Mi interessa un contenuto video con una barca al tramonto",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 18.928200006484985
+    },
+    {
+      "id": "semantic_profile-11",
+      "query": "Mostra il salvataggio del computer con VPN milanese su hotspot pubblico",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 18.830200016964227
+    },
+    {
+      "id": "media-23",
+      "query": "Show the movie of a boat crossing the bay",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 19.260200031567365
+    },
+    {
+      "id": "media-12",
+      "query": "Il breve video con una barca a vela nella luce del sole basso",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 19.65050003491342
+    },
+    {
+      "id": "semantic_profile-24",
+      "query": "I need the coffee shop network where traffic was protected",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 18.9004999701865
+    },
+    {
+      "id": "media-36",
+      "query": "Mostra il breve film marino ambientato nella baia",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 19.387700012885034
+    },
+    {
+      "id": "exact_profile-03",
+      "query": "Cerco il profilo che contiene ZEPHYR-731",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 20.637799985706806
+    },
+    {
+      "id": "media-40",
+      "query": "Il video della traversata nella baia illuminata dal tramonto",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 18.6476000235416
+    },
+    {
+      "id": "semantic_profile-26",
+      "query": "Retrieve my secure browsing setup while working over coffee",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 19.55730002373457
+    },
+    {
+      "id": "home_profile-17",
+      "query": "Qual era la rete della console collegata al router casalingo",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 21.149199979845434
+    },
+    {
+      "id": "media-21",
+      "query": "Find the short sailboat film at sunset",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 19.95710004121065
+    },
+    {
+      "id": "guide-10",
+      "query": "Mostra le istruzioni per controllare il nome della rete in caso di guasto",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 21.073199983220547
+    },
+    {
+      "id": "media-34",
+      "query": "Recupera la scena di navigazione con il sole che scende",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 18.57800001744181
+    },
+    {
+      "id": "exact_profile-06",
+      "query": "Richiama il vecchio stato con ZEPHYR-731",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 20.466400019358844
+    },
+    {
+      "id": "media-20",
+      "query": "Cerco la scena filmata del traghetto nella baia",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 18.857499992009252
+    },
+    {
+      "id": "home_profile-32",
+      "query": "Cerco il profilo domestico che usa DNS 8.8.8.8",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": false,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 21.39429998351261
+    },
+    {
+      "id": "home_profile-35",
+      "query": "Il televisore era collegato alla rete HomeLan-5G",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 20.135500002652407
+    },
+    {
+      "id": "exact_profile-30",
+      "query": "Recall the configuration identified by ZEPHYR-731",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 19.978899974375963
+    },
+    {
+      "id": "media-26",
+      "query": "Find the sailboat crossing the bay in the evening",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 20.9364999900572
+    },
+    {
+      "id": "guide-34",
+      "query": "Trova il manuale che insegna a controllare il resolver",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 19.67569999396801
+    },
+    {
+      "id": "semantic_profile-02",
+      "query": "Cerco le impostazioni del Wi-Fi usato al bar con il tunnel verso Milano",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 23.17080000648275
+    },
+    {
+      "id": "exact_profile-40",
+      "query": "The exact record is 8b9539b7-3c6f-4bb1-9355-ae58471cf013 rather than the sunset movie",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": false,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 26.150699995923787
+    },
+    {
+      "id": "home_profile-24",
+      "query": "I need the domestic router settings without an active VPN",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 19.288199953734875
+    },
+    {
+      "id": "exact_profile-22",
+      "query": "Retrieve the archived network using 9.9.9.9",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 19.670300011057407
+    },
+    {
+      "id": "guide-16",
+      "query": "La guida che aiuta a verificare il DNS quando manca la connettività",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": false,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 19.59699997678399
+    },
+    {
+      "id": "home_profile-39",
+      "query": "Trova la connessione locale del router domestico per dispositivi multimediali",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 19.15730000473559
+    },
+    {
+      "id": "exact_profile-01",
+      "query": "Mostrami la configurazione della rete ZEPHYR-731",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 19.9692000169307
+    },
+    {
+      "id": "exact_profile-15",
+      "query": "Seleziona la scheda dove compare 9.9.9.9",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 19.18820000719279
+    },
+    {
+      "id": "exact_profile-09",
+      "query": "Individua lo snapshot con identificativo 8b9539b7-3c6f-4bb1-9355-ae58471cf013",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 29.13429995533079
+    },
+    {
+      "id": "exact_profile-33",
+      "query": "Tra i profili per portatili mi interessa quello con 9.9.9.9",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 20.694500009994954
+    },
+    {
+      "id": "semantic_profile-06",
+      "query": "Recupera la rete della caffetteria dove passavo attraverso una VPN",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 20.976100000552833
+    },
+    {
+      "id": "exact_profile-16",
+      "query": "Mi serve il salvataggio legato a ZEPHYR-731",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 19.263499998487532
+    },
+    {
+      "id": "semantic_profile-14",
+      "query": "Il collegamento senza fili del locale con instradamento protetto verso Milano",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 21.514000021852553
+    },
+    {
+      "id": "home_profile-29",
+      "query": "Find the home connection used by entertainment devices",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 18.344800046179444
+    },
+    {
+      "id": "exact_profile-12",
+      "query": "Ho bisogno delle impostazioni registrate per ZEPHYR-731",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 20.916200010105968
+    },
+    {
+      "id": "exact_profile-05",
+      "query": "Trova la rete associata al resolver 9.9.9.9",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 17.95680000213906
+    },
+    {
+      "id": "home_profile-33",
+      "query": "Mostra i parametri del router per HomeLan-5G",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 18.343099975027144
+    },
+    {
+      "id": "home_profile-30",
+      "query": "Retrieve the router state for television and console gaming",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 17.830000026151538
+    },
+    {
+      "id": "semantic_profile-05",
+      "query": "Mi serve il collegamento sicuro del computer portatile nel locale",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 18.559100048150867
+    },
+    {
+      "id": "media-15",
+      "query": "Cerco un video marittimo girato al tramonto",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 19.46520002093166
+    },
+    {
+      "id": "guide-28",
+      "query": "Recall the instructions for identifying wireless network problems",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 19.999900017865002
+    },
+    {
+      "id": "semantic_profile-09",
+      "query": "Vorrei lo stato della connessione cifrata mentre lavoravo al caffè",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 18.417500017676502
+    },
+    {
+      "id": "semantic_profile-10",
+      "query": "Cerca il profilo wireless del laptop sulla rete ospiti della caffetteria",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 19.014299963600934
+    },
+    {
+      "id": "exact_profile-08",
+      "query": "Vorrei rivedere i parametri con DNS 9.9.9.9",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 20.111999998334795
+    },
+    {
+      "id": "media-09",
+      "query": "Cerca il film della barca in navigazione con luce dorata",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 20.689700031653047
+    },
+    {
+      "id": "media-30",
+      "query": "Find the evening clip with a boat in the bay",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 21.380099991802126
+    },
+    {
+      "id": "semantic_profile-40",
+      "query": "Il profilo della caffetteria con VPN e rete senza fili",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 19.536099978722632
+    },
+    {
+      "id": "exact_profile-20",
+      "query": "In quale oggetto è memorizzato ZEPHYR-731",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 20.926900033373386
+    },
+    {
+      "id": "home_profile-19",
+      "query": "Voglio consultare le impostazioni della connessione domestica senza VPN",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 20.660499983932823
+    },
+    {
+      "id": "semantic_profile-25",
+      "query": "Locate the portable computer configuration used on public cafe Wi-Fi",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 19.766899989917874
+    },
+    {
+      "id": "media-35",
+      "query": "Il video della barca nella luce dorata prima della notte",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 19.552499987185
+    },
+    {
+      "id": "media-10",
+      "query": "Mostrami il video della barca che attraversava la baia la sera",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 20.493000047281384
+    },
+    {
+      "id": "home_profile-10",
+      "query": "Mostra la rete privata di casa che serve il televisore",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 31.190000008791685
+    },
+    {
+      "id": "guide-04",
+      "query": "Mi serve un documento che spieghi come analizzare una connessione che non funziona",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 18.90660001663491
+    },
+    {
+      "id": "home_profile-16",
+      "query": "Recupera la connessione di casa con indirizzi automatici per i dispositivi",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 19.374399969819933
+    },
+    {
+      "id": "guide-31",
+      "query": "Non voglio applicare un profilo cerco la guida per capire il guasto",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 19.498799985740334
+    },
+    {
+      "id": "media-39",
+      "query": "Mi serve il filmato serale della barca a vela",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 19.56009998684749
+    },
+    {
+      "id": "guide-22",
+      "query": "Retrieve the guide for diagnosing network names and resolvers",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 18.990500015206635
+    },
+    {
+      "id": "guide-38",
+      "query": "Cerco il testo di supporto per il troubleshooting wireless",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 20.770000002812594
+    },
+    {
+      "id": "exact_profile-36",
+      "query": "Il riferimento preciso resta 8b9539b7-3c6f-4bb1-9355-ae58471cf013 anche se ricordo il bar",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 29.349499964155257
+    },
+    {
+      "id": "media-38",
+      "query": "Ritrova il contenuto multimediale della navigazione al tramonto",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 18.430299998726696
+    },
+    {
+      "id": "guide-20",
+      "query": "Il documento per capire se il guasto dipende dal resolver o dalla rete",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 22.180399973876774
+    },
+    {
+      "id": "guide-24",
+      "query": "I need the manual explaining how to diagnose a wireless connection",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 20.418400003109127
+    },
+    {
+      "id": "home_profile-27",
+      "query": "Which profile gives automatic addresses to the TV and game console",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 18.33180000539869
+    },
+    {
+      "id": "semantic_profile-19",
+      "query": "Quale profilo usava un collegamento sicuro verso Milano dalla caffetteria",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 39.50980002991855
+    },
+    {
+      "id": "guide-39",
+      "query": "Mi serve il manuale di diagnostica del collegamento alla rete",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 20.65970003604889
+    },
+    {
+      "id": "guide-27",
+      "query": "Show the guide rather than a saved network configuration",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 20.746199996210635
+    },
+    {
+      "id": "guide-01",
+      "query": "Cerco le istruzioni per diagnosticare problemi di connettività",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 21.98379999026656
+    },
+    {
+      "id": "media-28",
+      "query": "Show the boat video captured in golden light",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 19.67689994489774
+    },
+    {
+      "id": "media-29",
+      "query": "Recall the short movie of sailing across the water",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 20.775499986484647
+    },
+    {
+      "id": "exact_profile-24",
+      "query": "Locate UUID 8b9539b7-3c6f-4bb1-9355-ae58471cf013",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 24.290100031066686
+    },
+    {
+      "id": "exact_profile-28",
+      "query": "Find the record associated with 8b9539b7-3c6f-4bb1-9355-ae58471cf013",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 23.121300037018955
+    },
+    {
+      "id": "exact_profile-23",
+      "query": "Show the profile containing ZEPHYR-731",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 20.01219999510795
+    },
+    {
+      "id": "semantic_profile-12",
+      "query": "Richiama le impostazioni usate per navigare al bar in sicurezza",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 22.812700015492737
+    },
+    {
+      "id": "media-22",
+      "query": "Retrieve the ferry video in golden evening light",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 19.91870003985241
+    },
+    {
+      "id": "media-08",
+      "query": "Individua la ripresa serale del traghetto",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 18.346199998632073
+    },
+    {
+      "id": "media-14",
+      "query": "Trova il filmato del traghetto con illuminazione serale",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 20.390700025018305
+    },
+    {
+      "id": "media-07",
+      "query": "Mi serve il breve video girato nella baia al tramonto",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 21.00910001900047
+    },
+    {
+      "id": "exact_profile-29",
+      "query": "Display the archived profile with DNS 9.9.9.9",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 18.064800009597093
+    },
+    {
+      "id": "exact_profile-10",
+      "query": "Cerca la configurazione con UUID 8b9539b7-3c6f-4bb1-9355-ae58471cf013",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 24.10300000337884
+    },
+    {
+      "id": "semantic_profile-31",
+      "query": "Trova il profilo con SSID CafeGuest-5G",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 19.215999986045063
+    },
+    {
+      "id": "semantic_profile-20",
+      "query": "Lo stato di rete del laptop mentre usavo una VPN nel locale",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 19.760499999392778
+    },
+    {
+      "id": "semantic_profile-18",
+      "query": "Recupera il salvataggio del portatile con connessione cifrata al punto di accesso pubblico",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 21.44759998191148
+    },
+    {
+      "id": "exact_profile-11",
+      "query": "Mostra i dettagli della connessione ZEPHYR-731",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 19.709999964106828
+    },
+    {
+      "id": "home_profile-08",
+      "query": "La connessione del router domestico con indirizzi automatici",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 19.339999998919666
+    },
+    {
+      "id": "semantic_profile-04",
+      "query": "Quale stato salvato proteggeva la navigazione mentre prendevo un caffè",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 22.764099994674325
+    },
+    {
+      "id": "guide-40",
+      "query": "Mostra la guida di connettività che non rappresenta una configurazione",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 21.881500026211143
+    },
+    {
+      "id": "home_profile-31",
+      "query": "Trova la configurazione con SSID HomeLan-5G",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 19.199299975298345
+    },
+    {
+      "id": "guide-19",
+      "query": "Trova la nota esplicativa per risolvere problemi del collegamento",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": false,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 18.70519999647513
+    },
+    {
+      "id": "guide-07",
+      "query": "Cerca il manuale di risoluzione dei problemi del Wi-Fi",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": false,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 20.722799992654473
+    },
+    {
+      "id": "home_profile-25",
+      "query": "Locate the saved connection for the console and television",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 20.571800007019192
+    },
+    {
+      "id": "guide-33",
+      "query": "Cerco spiegazioni sulla risoluzione dei problemi non impostazioni salvate",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 21.10969997011125
+    },
+    {
+      "id": "home_profile-05",
+      "query": "Quale configurazione collega il televisore al router domestico",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 21.189499995671213
+    },
+    {
+      "id": "media-02",
+      "query": "Recupera il video della barca a vela nella baia con luce serale",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 21.53050003107637
+    },
+    {
+      "id": "exact_profile-37",
+      "query": "Per il resolver voglio proprio 9.9.9.9 nel record salvato",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 20.519500016234815
+    },
+    {
+      "id": "guide-13",
+      "query": "Trova il documento di aiuto per analizzare i guasti della rete",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 22.59459998458624
+    },
+    {
+      "id": "semantic_profile-22",
+      "query": "Recall the encrypted wireless session on the cafe public hotspot",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 20.11710003716871
+    },
+    {
+      "id": "guide-03",
+      "query": "Mostrami la guida per controllare il nome della rete e il resolver",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 22.27299998048693
+    },
+    {
+      "id": "semantic_profile-37",
+      "query": "Il salvataggio della sessione wireless pubblica protetta del laptop",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 21.5942999930121
+    },
+    {
+      "id": "guide-06",
+      "query": "Vorrei la guida alla diagnosi della connessione senza fili",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 18.663100025150925
+    },
+    {
+      "id": "semantic_profile-23",
+      "query": "Show the saved laptop profile with a secure tunnel towards Milan",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 20.908800011966377
+    },
+    {
+      "id": "guide-29",
+      "query": "Retrieve the handbook about resolver troubleshooting",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 19.20320000499487
+    },
+    {
+      "id": "guide-02",
+      "query": "Trova il manuale per risolvere i guasti della rete wireless",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 20.594700006768107
+    },
+    {
+      "id": "media-24",
+      "query": "I want the sailing clip filmed at the end of the day",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 20.338499976787716
+    },
+    {
+      "id": "home_profile-12",
+      "query": "Cerco il collegamento del televisore e della console al router",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 19.628799986094236
+    },
+    {
+      "id": "home_profile-09",
+      "query": "Recupera le impostazioni usate a casa per la console da gioco",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 21.617699996568263
+    },
+    {
+      "id": "guide-23",
+      "query": "Show instructions for investigating connectivity failures",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 21.133899979759008
+    },
+    {
+      "id": "home_profile-37",
+      "query": "La rete usata dalla console senza instradare il traffico in una VPN",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 19.97369999298826
+    },
+    {
+      "id": "semantic_profile-13",
+      "query": "Individua la rete pubblica dove il tunnel proteggeva il portatile",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 20.129700016696006
+    },
+    {
+      "id": "home_profile-22",
+      "query": "Retrieve the household connection with automatic addresses and no tunnel",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 19.65069997822866
+    },
+    {
+      "id": "exact_profile-19",
+      "query": "Riporta la configurazione corrispondente a ZEPHYR-731",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 21.35739999357611
+    },
+    {
+      "id": "home_profile-40",
+      "query": "Mostra il profilo di casa con televisore console e indirizzi automatici",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 19.611600029747933
+    },
+    {
+      "id": "guide-36",
+      "query": "Il documento che spiega come riconoscere problemi del nome della rete",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 20.2788999886252
+    },
+    {
+      "id": "home_profile-14",
+      "query": "La configurazione senza tunnel usata dal router di casa",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 21.17929997621104
+    },
+    {
+      "id": "exact_profile-34",
+      "query": "Non la guida ai guasti ma il record ZEPHYR-731",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 22.813099960330874
+    },
+    {
+      "id": "media-37",
+      "query": "Cerco la ripresa della barca mentre attraversa lo specchio d'acqua",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 20.538600045256317
+    },
+    {
+      "id": "home_profile-21",
+      "query": "Find the home router profile serving the television and game console",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 20.85510001052171
+    },
+    {
+      "id": "home_profile-15",
+      "query": "Mi serve il salvataggio del Wi-Fi domestico per TV e giochi",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": false,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 19.341600011102855
+    },
+    {
+      "id": "exact_profile-07",
+      "query": "Apri la scheda relativa a ZEPHYR-731",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 18.882200005464256
+    },
+    {
+      "id": "guide-08",
+      "query": "Quale nota spiega come verificare connettività e resolver",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 19.673799979500473
+    },
+    {
+      "id": "exact_profile-35",
+      "query": "Non il video della barca ma lo stato ZEPHYR-731",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 21.60610002465546
+    },
+    {
+      "id": "home_profile-03",
+      "query": "Cerco la connessione della console con indirizzi assegnati automaticamente",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 19.72030004253611
+    },
+    {
+      "id": "home_profile-06",
+      "query": "Vorrei il salvataggio della rete casalinga senza tunnel sicuro",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 20.953700004611164
+    },
+    {
+      "id": "guide-35",
+      "query": "Recupera le istruzioni per indagare una rete senza connessione",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": false,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 20.40480001596734
+    },
+    {
+      "id": "media-01",
+      "query": "Trova il filmato della barca al tramonto",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 18.146199989132583
+    },
+    {
+      "id": "guide-14",
+      "query": "Recupera la nota con le istruzioni di troubleshooting della connessione",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 22.025100013706833
+    },
+    {
+      "id": "guide-26",
+      "query": "Find the document that explains connectivity diagnosis",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 20.724200003314763
+    },
+    {
+      "id": "media-33",
+      "query": "Vorrei il filmato della traversata del traghetto la sera",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 20.49480000277981
+    },
+    {
+      "id": "semantic_profile-21",
+      "query": "Find the laptop connection protected by a tunnel at the coffee shop",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 19.073500006925315
+    },
+    {
+      "id": "guide-17",
+      "query": "Mostrami il manuale sulle verifiche della rete wireless",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 19.264500006102026
+    },
+    {
+      "id": "home_profile-26",
+      "query": "Recall the home entertainment network configuration",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 18.0149000370875
+    },
+    {
+      "id": "media-05",
+      "query": "Vorrei il video di navigazione nella luce dorata della sera",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 18.416800012346357
+    },
+    {
+      "id": "exact_profile-39",
+      "query": "Find ZEPHYR-731 even though I mentioned the secure coffee shop connection",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": false,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 20.36019996739924
+    },
+    {
+      "id": "semantic_profile-03",
+      "query": "Mostrami il profilo del laptop sul punto di accesso pubblico con traffico cifrato",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 20.799899997655302
+    },
+    {
+      "id": "semantic_profile-34",
+      "query": "Cerco la connessione protetta della caffetteria che usa 1.1.1.1",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 20.04760003183037
+    },
+    {
+      "id": "semantic_profile-35",
+      "query": "La rete ospiti CafeGuest-5G del computer portatile",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 20.724300004076213
+    },
+    {
+      "id": "semantic_profile-07",
+      "query": "Trova la connessione del portatile con un tunnel sicuro diretto a Milano",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 21.829300036188215
+    },
+    {
+      "id": "guide-05",
+      "query": "Recupera le istruzioni per individuare problemi del DNS e della rete",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": false,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 19.499899994116277
+    },
+    {
+      "id": "media-04",
+      "query": "Mostra la ripresa della barca che attraversa la baia",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 18.911499995738268
+    },
+    {
+      "id": "semantic_profile-36",
+      "query": "Vorrei rivedere le impostazioni della VPN mentre ero sulla rete del locale",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": false,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 22.14240003377199
+    },
+    {
+      "id": "exact_profile-21",
+      "query": "Find the saved settings for ZEPHYR-731",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 19.65510001173243
+    },
+    {
+      "id": "semantic_profile-30",
+      "query": "Recall the encrypted cafe connection for the laptop",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 19.629299989901483
+    },
+    {
+      "id": "guide-32",
+      "query": "Mostra un documento con istruzioni di diagnosi del Wi-Fi",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": false,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 22.058999980799854
+    },
+    {
+      "id": "exact_profile-38",
+      "query": "Il router di casa non è quello che cerco voglio ZEPHYR-731",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 21.43309998791665
+    },
+    {
+      "id": "home_profile-04",
+      "query": "Mostra le impostazioni della rete di casa per giocare e guardare la TV",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 22.676199965644628
+    },
+    {
+      "id": "home_profile-01",
+      "query": "Trova la rete domestica usata dalla televisione e dalla console",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 21.150999993551522
+    },
+    {
+      "id": "exact_profile-14",
+      "query": "Ritrova lo stato precedente che cita ZEPHYR-731",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 20.04000003216788
+    },
+    {
+      "id": "semantic_profile-38",
+      "query": "Recupera i parametri del collegamento cifrato dal bar verso Milano",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 18.95450003212318
+    },
+    {
+      "id": "guide-12",
+      "query": "Mi interessa il manuale che tratta i problemi del resolver",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 19.034900004044175
+    },
+    {
+      "id": "semantic_profile-17",
+      "query": "Cerca la connessione protetta quando il computer era collegato alla rete del bar",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 21.77179994760081
+    },
+    {
+      "id": "semantic_profile-16",
+      "query": "Mi interessa la configurazione del laptop sul Wi-Fi della caffetteria",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 22.924399992916733
+    },
+    {
+      "id": "exact_profile-25",
+      "query": "I need the stored configuration for ZEPHYR-731",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 19.25909996498376
+    },
+    {
+      "id": "home_profile-13",
+      "query": "Trova lo stato della rete casalinga dove la VPN non era attiva",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": false,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 20.696099963970482
+    },
+    {
+      "id": "home_profile-11",
+      "query": "Il profilo per l'intrattenimento domestico con assegnazione automatica degli indirizzi",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 24.374899978283793
+    },
+    {
+      "id": "exact_profile-17",
+      "query": "Il mio riferimento è 8b9539b7-3c6f-4bb1-9355-ae58471cf013",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 23.939100035931915
+    },
+    {
+      "id": "exact_profile-13",
+      "query": "Qual era il profilo salvato con 9.9.9.9",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 19.586500013247132
+    },
+    {
+      "id": "media-06",
+      "query": "Ritrova il filmato con la barca a vela sull'acqua al calar del sole",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 23.128199973143637
+    },
+    {
+      "id": "media-18",
+      "query": "La ripresa breve della navigazione nella luce calda della sera",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 19.525000010617077
+    },
+    {
+      "id": "home_profile-02",
+      "query": "Recupera il profilo del router di casa senza VPN",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 17.972899950109422
+    },
+    {
+      "id": "media-11",
+      "query": "Recupera il filmato di navigazione a vela al tramonto",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 17.8283000132069
+    },
+    {
+      "id": "semantic_profile-39",
+      "query": "La connessione del portatile al caffè che teneva privato il traffico",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 21.405500010587275
+    },
+    {
+      "id": "exact_profile-31",
+      "query": "Confronta il ricordo della caffetteria con il riferimento esatto ZEPHYR-731",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 23.689900001045316
+    },
+    {
+      "id": "guide-25",
+      "query": "Locate the troubleshooting note about the resolver and network name",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 19.684300001244992
+    },
+    {
+      "id": "guide-09",
+      "query": "Ritrova il documento per capire perché una connessione wireless non va",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 19.049599999561906
+    },
+    {
+      "id": "media-27",
+      "query": "Retrieve the sunset ferry film",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 16.78379997611046
+    },
+    {
+      "id": "home_profile-28",
+      "query": "Show the household network with no secure tunnel enabled",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 19.201999995857477
+    },
+    {
+      "id": "media-13",
+      "query": "Vorrei rivedere la ripresa della barca nella baia",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 20.526700012851506
+    },
+    {
+      "id": "home_profile-36",
+      "query": "Vorrei il profilo della LAN di casa con indirizzi assegnati dal router",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 21.226199984084815
+    },
+    {
+      "id": "home_profile-07",
+      "query": "Individua il profilo di rete per console e televisione",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 20.02659998834133
+    },
+    {
+      "id": "semantic_profile-27",
+      "query": "Find the cafe hotspot profile with the Milan tunnel",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 18.929299956653267
+    },
+    {
+      "id": "semantic_profile-15",
+      "query": "Ritrova la sessione di lavoro al caffè con traffico dentro il tunnel",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 22.66570000210777
+    },
+    {
+      "id": "home_profile-38",
+      "query": "Recupera il salvataggio casalingo per televisione e videogiochi",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 18.870400032028556
+    },
+    {
+      "id": "exact_profile-04",
+      "query": "Quale configurazione usa il DNS 9.9.9.9",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 20.465700014028698
+    },
+    {
+      "id": "home_profile-23",
+      "query": "Show the network used for gaming and TV at home",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 19.188700011000037
+    },
+    {
+      "id": "media-03",
+      "query": "Cerco il breve film del traghetto durante il tramonto",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 18.96159996977076
+    },
+    {
+      "id": "exact_profile-32",
+      "query": "Anche se parlo di VPN a Milano cerco ZEPHYR-731",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 22.82399998512119
+    },
+    {
+      "id": "semantic_profile-32",
+      "query": "Recupera la configurazione del bar con DNS 1.1.1.1",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": false,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 19.11990001099184
+    },
+    {
+      "id": "semantic_profile-29",
+      "query": "Show the saved VPN session at the coffee shop",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 21.584400034043938
+    },
+    {
+      "id": "guide-21",
+      "query": "Find the wireless troubleshooting handbook",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 19.158100010827184
+    },
+    {
+      "id": "guide-15",
+      "query": "Vorrei leggere come individuare un problema nel collegamento senza fili",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 18.50689999992028
+    },
+    {
+      "id": "semantic_profile-28",
+      "query": "Which connection protected the laptop on a public wireless network",
+      "expected_label": "semantic_profile",
+      "expected_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "passed": true,
+      "top_oid": "e26e3e6e351e7f13160d07187f7d0069731b09708724cbb5c82f958e64713832",
+      "top_title": "Espresso wireless session",
+      "elapsed_ms": 19.90359998308122
+    },
+    {
+      "id": "guide-30",
+      "query": "Find the note explaining checks for a failing connection",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": false,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 20.527999964542687
+    },
+    {
+      "id": "home_profile-18",
+      "query": "Ritrova il profilo del router che collegava insieme console e TV",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 20.815900003071874
+    },
+    {
+      "id": "guide-11",
+      "query": "Cerco una guida tecnica per diagnosticare la connessione",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 17.88170001236722
+    },
+    {
+      "id": "media-16",
+      "query": "Ritrova la scena della barca a vela che passa sull'acqua",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 18.15280003938824
+    },
+    {
+      "id": "exact_profile-26",
+      "query": "Which saved state has resolver 9.9.9.9",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 17.814200022257864
+    },
+    {
+      "id": "home_profile-34",
+      "query": "Richiama la rete della console con resolver 8.8.8.8",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 20.48449998255819
+    },
+    {
+      "id": "home_profile-20",
+      "query": "Lo stato salvato della rete dedicata all'intrattenimento a casa",
+      "expected_label": "home_profile",
+      "expected_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "passed": true,
+      "top_oid": "6168301d7501e8b55da6c470c1836d1002beabfb49af0aa826596f2474a557af",
+      "top_title": "Home entertainment connection",
+      "elapsed_ms": 19.57030000630766
+    },
+    {
+      "id": "exact_profile-02",
+      "query": "Recupera lo stato salvato per ZEPHYR-731",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 18.29070004168898
+    },
+    {
+      "id": "exact_profile-27",
+      "query": "Look up the earlier connection named ZEPHYR-731",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 19.990100001450628
+    },
+    {
+      "id": "guide-18",
+      "query": "Cerco le istruzioni per diagnosticare nome della rete e accesso",
+      "expected_label": "guide",
+      "expected_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "passed": true,
+      "top_oid": "d251dcbd11ba2b4ec04df5341acd5c9e5d46f22abaf5f81d4103446d2f80f1e6",
+      "top_title": "Wireless troubleshooting handbook",
+      "elapsed_ms": 20.124099974054843
+    },
+    {
+      "id": "media-19",
+      "query": "Recupera il video con la barca e il cielo al tramonto",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 19.430600048508495
+    },
+    {
+      "id": "exact_profile-18",
+      "query": "Voglio consultare il resolver 9.9.9.9 nel profilo registrato",
+      "expected_label": "exact_profile",
+      "expected_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "passed": true,
+      "top_oid": "2e5755c858b396e26b5fac6017bc40d40ff48e4ac8d3c767f1f074a5664a9754",
+      "top_title": "Recorded configuration",
+      "elapsed_ms": 19.910099974367768
+    },
+    {
+      "id": "media-25",
+      "query": "Locate the short maritime video with warm sunset light",
+      "expected_label": "media",
+      "expected_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "passed": true,
+      "top_oid": "bf0ac233a3c3ed35607d6ed3934e9c18be76bb1261b4f7713aa6b06dd6245103",
+      "top_title": "Ferry at sunset",
+      "elapsed_ms": 19.60010000038892
+    }
+  ]
+}
