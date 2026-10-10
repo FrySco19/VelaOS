@@ -5,8 +5,9 @@
 - Reso esplicito il pivot del repository dal prototipo desktop Debian/KDE al sistema personale AI-native basato sui gate M0–M2.
 - M0 chiuso sul test sintetico congelato: recall@1 186/200 (93%), warm p95 25,67 ms; qualità di produzione non dimostrata.
 - M1: registrato il gate storage Rust su 10.000 terminazioni di processo; i limiti di power-loss e rollback restano aperti.
-- M2: aggiunto il boundary Wasmtime con WIT tipizzato, memoria configurabile 16–64 MiB, fuel, massimo due task e linker senza WASI/capability host. Build, test e integrazione non ancora confermati.
+- M2: aggiunto il boundary Wasmtime con WIT tipizzato, memoria configurabile 16–64 MiB, fuel, massimo due task e linker senza WASI/capability host. Build, test base e Clippy passano in GitHub Actions; integrazione e isolamento avversariale restano aperti.
 - La bridge iceoryx2 multi-processo misura 62.222 msg/s e 17 µs p99 round-trip nel test sequenziale da 4 KiB; throughput target e isolamento restano aperti.
+- Registrati i target M2 ancora da raggiungere: >100.000 msg/s, p99 <100 µs, stream lento da 10 GB con regressione fast-lane <=20% e budget globale <1,5 GB RAM a riposo.
 - Aggiornati README, architettura, roadmap e descrizione GitHub per separare prove, limiti e lavoro in corso.
 
 ## 2.0 preview pubblica — 2026-10-09

@@ -6,7 +6,16 @@ Verified locally on Windows on 2026-10-10. This is a real Rust `iceoryx2::ipc::S
 
 `src/sandbox.rs` aggiunge un runtime Wasmtime component-model con l'interfaccia WIT [`task.wit`](wit/task.wit): `run(input: string) -> result<string, string>`. Il runtime imposta un limite di memoria privata configurabile tra 16 e 64 MiB, fuel per task e un massimo globale di due esecuzioni concorrenti. Il `Linker` è creato vuoto: non vengono registrati WASI, filesystem, rete o altre capability host. Le importazioni non risolte falliscono durante l'istanza.
 
-**Stato di verifica:** il codice e le dipendenze sono nel crate, ma il build locale Wasmtime non ha restituito un exit code conclusivo e i test del sandbox non sono confermati. Il boundary non è collegato alla bridge o a un planner. Non dichiarare questa fase validata finché il workflow [Neural Bus M2 CI](../../.github/workflows/neural-bus-m2.yml) non completa test e Clippy.
+**Stato di verifica:** il workflow [Neural Bus M2 CI](../../.github/workflows/neural-bus-m2.yml) passa su Windows: formattazione, compilazione, test del crate/sandbox, Clippy e build del fixture. Il build locale Wasmtime non ha restituito un exit code conclusivo. La CI verifica i test base sui limiti di memoria e sugli slot concorrenti, non un attacco completo al sandbox. Il boundary non è collegato alla bridge o a un planner.
+
+## Obiettivi M2 ancora aperti
+
+- Lane fast per messaggi sotto 4 KiB e lane bulk asincrona con blocchi da 256 KiB e 8 crediti per stream (2 MiB in volo); il protocollo bulk non è implementato.
+- Gate prestazionale: oltre 100.000 messaggi/s da 4 KiB e p99 sotto 100 µs, misurando separatamente round-trip e latenza unidirezionale.
+- Coesistenza con stream lento di almeno 10 GB e regressione della lane fast non superiore al 20% rispetto alla baseline.
+- Isolamento avversariale dei task, handle opachi e capability Biscuit attenuate validati end-to-end.
+- Obiettivo complessivo del sistema: meno di 1,5 GB RAM a riposo; non ancora misurato.
+- Writer temporaneo LFS per file grandi, cifratura chunked, verifica progressiva e commit sul BLAKE3 del plaintext canonico.
 
 ## Verified flow
 

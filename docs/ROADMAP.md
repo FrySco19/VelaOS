@@ -6,8 +6,8 @@ La roadmap segue gate tecnici verificabili per il sistema personale AI-native. N
 | --- | --- | --- |
 | M0 — Semantic hybrid recall | Chiuso sul fixture sintetico | Recall@1 186/200 (93%) e warm p95 25,67 ms sulle cinque card correnti. Non equivale a un benchmark indipendente o a qualità generalizzabile. |
 | M1 — Immutable LFS | Chiuso per il gate registrato | Kernel Rust, oggetti cifrati, commit firmati e policy Biscuit; 10.000 terminazioni di processo senza perdita o duplicazione nel test. Power-loss, anchor anti-rollback e servizio persistente restano fuori. |
-| M2 — Isolation & throughput | In corso | Bridge iceoryx2 reale tra processi verificata. Il target >100.000 msg/s non è raggiunto; isolamento del peer e Wasmtime non ancora verificati. |
-| M3 — Sistema integrato | Non iniziato | Integrare LFS, bus, semantic service e task runtime dietro API stabili; definire bootstrap, gestione chiavi, aggiornamenti, recovery e client utente. |
+| M2 — Isolation & throughput | In corso | Bridge iceoryx2 reale verificata; Wasmtime compila e supera i test base in GitHub Actions. Restano aperti isolamento avversariale, throughput e streaming. |
+| M3 — Sistema integrato | Non iniziato | Integrare LFS, bus, semantic service e task runtime dietro API stabili; definire bootstrap, gestione chiavi, aggiornamenti, recovery e client utente. Obiettivo di sistema: meno di 1,5 GB RAM a riposo, da misurare sul sistema integrato. |
 
 ## M2: lavoro aperto
 
@@ -16,7 +16,11 @@ La roadmap segue gate tecnici verificabili per il sistema personale AI-native. N
 3. Completare authority con handle opachi e Biscuit attenuati; validare route, expiry, replay e identità dei peer su processi separati.
 4. Aggiungere lane bulk streaming con blocchi da 256 KiB, massimo 8 crediti in volo, cancellazione e backpressure che non blocchi la lane fast sotto i 4 KiB.
 5. Implementare writer temporaneo per file grandi, cifratura chunked, verifica progressiva e commit sull'hash BLAKE3 del plaintext canonico.
-6. Ripetere benchmark pipelined con distribuzioni di latenza e slow-reader fault injection; chiudere il gate solo con throughput e isolamento misurati contro i criteri M2.
+6. Chiudere il gate prestazionale con >100.000 messaggi/s da 4 KiB e p99 sotto 100 µs, riportando separatamente round-trip e latenza unidirezionale.
+7. Provare uno stream di almeno 10 GB con un lettore lento: massimo 20% di regressione sulla corsia rapida, memoria limitata ai buffer/crediti e nessuna crescita proporzionale alla dimensione dell'oggetto.
+8. Misurare il budget RAM dell'intero sistema a riposo; il target è <1,5 GB, non ancora raggiunto né misurato per l'architettura corrente.
+
+I parametri iniziali del bulk sono 256 KiB per blocco e 8 crediti in volo (2 MiB per stream). Sono obiettivi di progetto; la lane bulk e il protocollo di crediti non sono ancora implementati.
 
 ```mermaid
 flowchart LR
