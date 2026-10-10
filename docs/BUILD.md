@@ -1,4 +1,22 @@
-# Compilare VelaOS 2
+# Build e riproduzione
+
+> Le istruzioni Debian/live-build qui sotto ricostruiscono la precedente preview desktop VelaOS 2. Non costruiscono l'architettura AI-native M0–M2 e non producono una release corrente. Per il progetto attivo, vedere i README di [M0](../poc/m0/README.md), [M1](../poc/m1/README.md) e [M2](../poc/m2/README.md).
+
+## Prototipi correnti M0–M2
+
+M1 e M2 sono crate Rust indipendenti. Dal checkout, con Rust 1.90 o successivo:
+
+```powershell
+cargo test --manifest-path poc/m1/Cargo.toml --locked
+cargo test --manifest-path poc/m2/Cargo.toml --all-features --locked
+cargo clippy --manifest-path poc/m2/Cargo.toml --all-features --all-targets --locked -- -D warnings
+```
+
+M0 è uno spike Python con ambiente e modello fissati, descritto in `poc/m0/README.md`. Il build Wasmtime in M2 non è stato ancora confermato localmente al 2026-10-10; un comando di test non è prova di successo finché non termina e restituisce exit code zero.
+
+## Preview desktop storica
+
+Queste istruzioni ricostruiscono la linea Debian 13/KDE Plasma conservata nel repository per riferimento.
 
 ## Ambiente
 

@@ -20,7 +20,7 @@ jobs:
         run: rustup toolchain install 1.96.1 --profile minimal --component rustfmt --component clippy
       - name: Check formatting
         run: cargo +1.96.1 fmt --check
-      - name: Test policy and typed frames
+      - name: Test policy, typed frames, and Wasmtime sandbox
         run: cargo +1.96.1 test --all-features --locked
       - name: Check all targets
         run: cargo +1.96.1 clippy --all-features --all-targets --locked -- -D warnings

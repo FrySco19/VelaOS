@@ -4,7 +4,7 @@
 <circle cx="1280" cy="270" r="320" fill="#e68b75" opacity=".06"/>
 <g transform="translate(1160 100) scale(2.3)"><path d="M60 14 C38 40 28 72 26 100 L60 100 Z" fill="#fff"/><path d="M68 26 C84 48 96 74 102 100 L68 100 Z" fill="#e68b75"/><path d="M22 104 L106 104 C100 109 92 110 84 110 L44 110 C36 110 28 109 22 104 Z" fill="#fff"/></g>
 <text x="110" y="225" fill="#f2f8f8" font-family="Inter,Segoe UI,sans-serif" font-size="114" font-weight="600">VelaOS</text>
-<text x="115" y="290" fill="#b9ced4" font-family="Inter,Segoe UI,sans-serif" font-size="30">Un desktop aperto. Un progetto da costruire insieme.</text>
-<rect x="115" y="350" width="385" height="48" rx="24" fill="#e68b75"/>
-<text x="142" y="382" fill="#16252d" font-family="Inter,Segoe UI,sans-serif" font-size="22">DEBIAN 13 · PLASMA 6 · PREVIEW</text>
+<text x="115" y="290" fill="#b9ced4" font-family="Inter,Segoe UI,sans-serif" font-size="30">Un sistema personale AI-native, local-first.</text>
+<rect x="115" y="350" width="510" height="48" rx="24" fill="#e68b75"/>
+<text x="142" y="382" fill="#16252d" font-family="Inter,Segoe UI,sans-serif" font-size="22">M0 RECALL · M1 LFS · M2 IN SVILUPPO</text>
 </svg>

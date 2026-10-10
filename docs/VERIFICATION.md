@@ -1,5 +1,7 @@
 # Verifiche — 9 ottobre 2026
 
+> **Verifica storica della preview Debian/KDE.** Questi risultati non verificano i prototipi M0–M2 correnti; per il loro stato vedere [README](../README.md) e [report dei gate](../poc/).
+
 Queste verifiche riguardano la build integrata R2 e i sorgenti da cui deriva la preview pubblica. La preparazione della preview pubblica rimuove l'accesso SSH di sviluppo e aggiorna la documentazione; la sua verifica aggiuntiva è descritta nelle note della release.
 
 | Prova riprodotta | Risultato | Limite |

@@ -1,5 +1,7 @@
 # Verifiche della preview 2.1 — 10 ottobre 2026
 
+> **Verifica storica della preview desktop Debian/KDE.** I test del modello qui descritti non sono il gate semantico M0 né un test del runtime Wasmtime. Per lo stato dell'architettura corrente vedere [README](../README.md).
+
 ## Modello reale, distinto dai test simulati
 
 Gemma 4 E2B IT QAT Q4_0, revisione e SHA256 nel

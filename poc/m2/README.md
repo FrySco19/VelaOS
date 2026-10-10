@@ -1,6 +1,12 @@
-# Neural Bus: M0 → M1 bridge, M2 preparation
+# M2 — Neural Bus bridge e boundary Wasmtime (in corso)
 
 Verified locally on Windows on 2026-10-10. This is a real Rust `iceoryx2::ipc::Service` experiment between separate processes, not an IPC mock. **M2 remains open.** See [actual measurements](bridge-results.json).
+
+## Fase 1: Wasm boundary
+
+`src/sandbox.rs` aggiunge un runtime Wasmtime component-model con l'interfaccia WIT [`task.wit`](wit/task.wit): `run(input: string) -> result<string, string>`. Il runtime imposta un limite di memoria privata configurabile tra 16 e 64 MiB, fuel per task e un massimo globale di due esecuzioni concorrenti. Il `Linker` è creato vuoto: non vengono registrati WASI, filesystem, rete o altre capability host. Le importazioni non risolte falliscono durante l'istanza.
+
+**Stato di verifica:** il codice e le dipendenze sono nel crate, ma il build locale Wasmtime non ha restituito un exit code conclusivo e i test del sandbox non sono confermati. Il boundary non è collegato alla bridge o a un planner. Non dichiarare questa fase validata finché il workflow [Neural Bus M2 CI](../../.github/workflows/neural-bus-m2.yml) non completa test e Clippy.
 
 ## Verified flow
 
