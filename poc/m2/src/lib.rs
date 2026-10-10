@@ -1,4 +1,5 @@
 //! Control-plane capability checks and typed data-plane primitives. No LLM invocation.
+pub mod authority;
 pub mod sandbox;
 
 use anyhow::{Result, ensure};
