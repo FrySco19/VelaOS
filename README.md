@@ -1,98 +1,53 @@
-<p align="center"><img src="docs/images/banner.svg" alt="VelaOS — Un desktop aperto, un progetto da costruire insieme" width="100%"></p>
-
-<p align="center">
-<a href="https://github.com/FrySco19/VelaOS/releases">Download</a> ·
-<a href="docs/BUILD.md">Compilare</a> ·
-<a href="CONTRIBUTING.md">Contribuire</a> ·
-<a href="https://github.com/FrySco19/VelaOS/discussions">Community</a> ·
-<a href="docs/ROADMAP.md">Roadmap</a>
-</p>
-
 # VelaOS
 
-[![Source checks](https://github.com/FrySco19/VelaOS/actions/workflows/checks.yml/badge.svg)](https://github.com/FrySco19/VelaOS/actions/workflows/checks.yml)
+<p align="center"><img src="docs/images/banner.svg" alt="VelaOS: un sistema operativo personale AI-native e local-first" width="100%"></p>
 
-VelaOS è un progetto aperto di sistema operativo per desktop, basato su **Debian 13 e KDE Plasma 6**. Riunisce un ambiente grafico coerente, impostazioni native, applicazioni, un terminale con esecuzione confermata e un assistente locale incluso per impostazione predefinita.
+**Stiamo costruendo da zero una nuova architettura per un sistema operativo personale AI-native, local-first e verificabile**, non aggiornando la vecchia distro Debian/KDE. Il richiamo semantico propone candidati; capability e servizi Rust decidono l'autorità; LFS conserva oggetti immutabili; Neural Bus trasporta i byte su corsie tipizzate. M0–M2 sono le fondamenta in sviluppo: non esiste ancora un OS integrato o installabile.
 
-**Stato: preview di sviluppo.** Il desktop si avvia in VirtualBox e i componenti Vela sono integrati. Installazione su disco e compatibilità hardware estesa richiedono ancora collaudo. Le prove del modello e i loro limiti sono nel rapporto della release. Non è una versione stabile per sostituire il sistema principale.
+**English:** We are building a new AI-native personal OS architecture from the ground up, not continuing the old Debian/KDE desktop distribution. M0–M2 develop semantic retrieval, capability-secured immutable storage, typed IPC, and isolated Wasm tasks. The project is not yet an integrated or installable OS.
 
-**English:** An open desktop OS project built on Debian 13 and KDE Plasma 6. Native desktop integration, settings, applications and a bundled local Gemma 4 E2B assistant. Development preview; disk installation and physical hardware are not yet validated. See the release verification report for actual CPU inference measurements. Contributions in Italian and English are welcome.
+[![M1 Rust checks](https://github.com/FrySco19/VelaOS/actions/workflows/lfs-m1.yml/badge.svg)](https://github.com/FrySco19/VelaOS/actions/workflows/lfs-m1.yml)
+[![M2 Rust checks](https://github.com/FrySco19/VelaOS/actions/workflows/neural-bus-m2.yml/badge.svg)](https://github.com/FrySco19/VelaOS/actions/workflows/neural-bus-m2.yml)
 
-![Assistente locale nella preview 2.1, VM senza rete](docs/images/local-audio.png)
+## Stato dei gate
 
-## Dentro VelaOS
+| Fase | Stato | Evidenza e limiti |
+| --- | --- | --- |
+| M0 — richiamo ibrido | Gate superato sul fixture sintetico | 186/200 parafrasi (93% recall@1), p95 25,67 ms. Non misura qualità su dati personali reali. [Risultati e limiti](poc/m0/GATE.md) |
+| M1 — storage LFS | Gate crash superato | Kernel Rust con oggetti cifrati, commit firmati e capability Biscuit; gate registrato su 10.000 terminazioni di processo. Non è ancora un servizio di storage distribuito. [Implementazione e validazione](poc/m1/README.md) |
+| M2 — isolamento e throughput | In corso | Bridge Rust con IPC iceoryx2 tra processi reali: 62.222 messaggi/s e p99 round-trip 17 µs nel test sequenziale da 4 KiB. Il boundary Wasmtime compila e passa i test base in GitHub Actions; isolamento avversariale, target >100.000 msg/s e streaming concorrente non sono dimostrati. [Stato M2](poc/m2/README.md) |
 
-| Area | Componenti inclusi |
-| --- | --- |
-| Scrivania | Plasma Wayland, barra superiore, dock, tema chiaro/scuro, icone e sfondi Vela |
-| Impostazioni | Moduli nativi per assistente, privacy, aspetto e aggiornamenti |
-| Applicazioni | Discover/Flathub, Firefox ESR, strumenti per documenti e contenuti multimediali |
-| Terminale | Konsole/fish e terminale Vela con PTY reale, anteprima e conferma dei comandi |
-| Assistente | Pannello nativo, configurazione condivisa, integrazione browser e strumenti locali |
-| Primo avvio | Benvenuto, guida, suggerimenti e scorciatoie |
-| Sviluppo | Sorgenti, script ISO, strumenti VM, test e generatori delle risorse grafiche |
+I numeri descrivono test specifici, non garanzie di prodotto. Il test M2 è ping/ack sequenziale, non throughput pipelined; il trasferimento dallo storage al loan IPC effettua una copia. Il target di sistema è meno di 1,5 GB di RAM a riposo, ancora da misurare. Il progetto non è pronto per dati sensibili o uso come sistema principale.
 
-**Gemma 4 E2B e llama.cpp sono inclusi nella ISO.** L'assistente parte in locale,
-senza account, chiavi cloud o download del modello al primo avvio. Propone
-operazioni con anteprima e conferma: organizzazione di cartelle con registro e
-ripristino, diagnosi/cambio uscita audio e installazione dal catalogo controllato.
-Il download delle applicazioni richiede rete; le richieste al modello restano sul
-computer. L'assistente si può disattivare dalle impostazioni.
-[Funzionamento, limiti e schema dei flussi](docs/LOCAL_ASSISTANT.md).
-
-## Schermate reali
-
-| Impostazioni e privacy | Applicazioni e terminale |
-| --- | --- |
-| ![Impostazioni assistente, tema scuro](docs/images/assistant-settings.png) | ![Catalogo Discover caricato](docs/images/store.png) |
-| ![Pagina privacy](docs/images/privacy.png) | ![Assistente e terminale aperti](docs/images/assistant-terminal.png) |
-
-Le immagini provengono dalla VM di collaudo. Non sono mockup. [Altre schermate e contesto](docs/SCREENSHOTS.md).
-
-## Come è costruito
+## Architettura in breve
 
 ```mermaid
-flowchart TB
-  Debian[Debian 13 amd64] --> Plasma[KDE Plasma 6 / Wayland]
-  Plasma --> Desktop[Tema, dock e scrivania]
-  Plasma --> Settings[Impostazioni native]
-  Plasma --> Apps[Discover, browser e applicazioni]
-  Plasma --> Welcome[Benvenuto e guida]
-  Settings --> Config[Configurazione condivisa]
-  Config --> Assistant[Assistente locale]
-  Gemma[Gemma 4 E2B incluso / llama.cpp] --> Assistant
-  Config --> Terminal[Terminale Vela]
-  Assistant --> Confirm[Anteprima e conferma]
-  Terminal --> Confirm
-  Confirm --> Executor[Esecutore locale]
+flowchart LR
+  Query[Richiesta] --> M0[M0: recall ibrido]
+  M0 -->|candidati, mai autorità| Policy[Selezione esplicita e Biscuit]
+  Policy -->|handle esatto| M1[M1: LFS Rust]
+  M1 --> M2[M2: Neural Bus iceoryx2]
+  Wasm[Componente Wasm tipizzato] -. boundary in sviluppo .-> M2
 ```
 
-[Architettura e struttura dei sorgenti](docs/ARCHITECTURE.md).
+Il modello non concede permessi e non risolve direttamente gli oggetti. Il codice di policy valida le capability e l'handle prima di ogni accesso. Il componente Wasm usa un contratto WIT tipizzato e un linker senza WASI; l'integrazione end-to-end è ancora aperta. Il piano M2 prevede una corsia rapida sotto 4 KiB e streaming bulk a blocchi da 256 KiB con 8 crediti in volo, senza bloccare la corsia rapida. [Architettura e confini](docs/ARCHITECTURE.md) · [Roadmap dei gate](docs/ROADMAP.md) · [Limiti noti](docs/KNOWN_ISSUES.md).
 
-## Provarlo
+## Codice e riproduzione
 
-Scarica le parti della ISO, `ISO-PARTS.json` e `join-release.ps1` dalla sezione [Releases](https://github.com/FrySco19/VelaOS/releases). La preview pubblica disabilita l'accesso SSH di sviluppo e non contiene chiavi di accesso predisposte.
+| Percorso | Contenuto |
+| --- | --- |
+| [`poc/m0/`](poc/m0/README.md) | Esperimento di semantic hybrid recall; Python è confinato a questo spike. |
+| [`poc/m1/`](poc/m1/README.md) | Kernel storage Rust: canonicalizzazione, cifratura, commit firmati e handle capability-bound. |
+| [`poc/m2/`](poc/m2/README.md) | Bridge Neural Bus Rust/iceoryx2 e boundary Wasmtime in sviluppo. |
+| [`archive/`](archive/README.md) | Prototipo storico della shell web. |
+| `components/`, `build/` | Sorgenti e pipeline della precedente preview Debian/KDE; non implementano l'architettura M0-M2. |
 
-Su Windows metti tutte le parti e il manifest nella stessa cartella e avvia
-`join-release.ps1`: verifica ogni parte e crea la ISO completa. Per VirtualBox,
-scarica anche `Start-VM-Vela2.ps1` e avvialo nella cartella della ISO:
+Rust 1.90 o successivo. Per riprodurre i controlli si usano i manifest dei singoli crate; i comandi e i prerequisiti sono nei rispettivi README. Il build Wasmtime non è stato ancora verificato in locale al 2026-10-10. La guida [BUILD.md](docs/BUILD.md) riguarda la vecchia preview desktop e lo dichiara esplicitamente.
 
-```powershell
-.\Start-VM-Vela2.ps1 -Iso ".\VelaOS-2.1-local-preview.iso" -MemoryMB 8192
-```
+## Contribuire
 
-Leggi [la guida VirtualBox](VIRTUALBOX.md) prima di procedere. Per ricompilare da Debian 13, segui [BUILD.md](docs/BUILD.md). Le ISO sono asset delle release; non vengono salvate nella cronologia Git.
+Issue, review di sicurezza, test riproducibili e documentazione dei limiti sono particolarmente utili. Vedi [CONTRIBUTING.md](CONTRIBUTING.md), [Security](SECURITY.md) e [Code of Conduct](CODE_OF_CONDUCT.md). Le licenze del codice e degli artefatti storici sono descritte in [LICENSE](LICENSE), [LICENSES](LICENSES/README.md) e [THIRD_PARTY.md](THIRD_PARTY.md).
 
-## Cosa è verificato e cosa manca
+## Progetto precedente
 
-Avvio al desktop in VirtualBox, primo benvenuto, quattro pagine delle impostazioni, cambio tema, catalogo Store, ridimensionamento e protocollo dell'esecutore sono stati controllati. Sono disponibili **402 test terminale passati (3 saltati)**, **115 test assistente** e **13 controlli browser**, con i limiti descritti nel [resoconto delle verifiche](docs/VERIFICATION_LOCAL.md).
-
-Restano da completare installer e ripristino del sistema, prove su hardware fisico, accessibilità, aggiornamenti affidabili, GPU e dispositivi mobili. Le misure CPU non garantiscono le prestazioni su altre macchine. Vedi [problemi noti](docs/KNOWN_ISSUES.md) e [roadmap](docs/ROADMAP.md).
-
-## Costruiamolo insieme
-
-Sono utili contributi a codice, design, traduzioni, accessibilità, documentazione e collaudo. Apri una [Issue](https://github.com/FrySco19/VelaOS/issues), partecipa alle [Discussions](https://github.com/FrySco19/VelaOS/discussions) o proponi una pull request. Parti dalla [guida ai contributi](CONTRIBUTING.md) e dalle attività `good first issue` / `help wanted`.
-
-## Licenze
-
-Il codice originale VelaOS 2 senza una licenza specifica nel file è distribuito sotto **GPL-3.0-or-later**; risorse e componenti con licenze proprie conservano tali licenze. Il prototipo storico e la sua presentazione in [`archive/`](archive/README.md) conservano MIT. Debian, KDE, applicazioni, font e firmware mantengono le rispettive condizioni: [LICENSE](LICENSE), [LICENSES](LICENSES/README.md), [THIRD_PARTY.md](THIRD_PARTY.md).
+La preview Debian 13/KDE Plasma, con assistente desktop locale, resta nel repository come linea storica e non è il sistema costruito dai gate M0-M2. Le relative schermate, note e procedure non costituiscono prove dell'architettura AI-native. Consulta [le note storiche della release](RELEASE_NOTES.md) e la [documentazione desktop](docs/BUILD.md).

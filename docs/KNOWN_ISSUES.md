@@ -1,14 +1,15 @@
-# Problemi noti e limiti
+# Limiti noti dell'architettura M0–M2
 
-- Gemma 4 E2B e llama.cpp sono inclusi. Le richieste CPU a contesto vuoto possono essere lente; le richieste con prefisso già elaborato sono distinte nel rapporto. GPU, voce, visione e telefoni non sono collaudati.
-- Il modello può sbagliare strumenti o argomenti: anteprima, conferma e verifiche restano necessarie. Il benchmark sintetico non misura intelligenza generale.
-- Calamares è configurato, ma installazione su disco e dual boot non sono collaudati.
-- Mancano prove su hardware fisico per Wi-Fi, Bluetooth, audio, sospensione, GPU e periferiche.
-- Non esiste ancora un percorso convalidato di aggiornamento atomico e ripristino dopo aggiornamenti falliti.
-- La latenza CPU dell'assistente è misurata nel rapporto della release; consumi, prestazioni generali e accessibilità richiedono prove dedicate.
-- Le funzionalità applicative sono integrate ma non tutte verificate da inizio a fine.
-- Gli strumenti QA storici richiedono adattamento dei percorsi e dell'ambiente.
-- La build usa mirror correnti; pacchetti, toolchain e asset non sono ancora fissati per riproducibilità bit per bit.
-- I KCM precompilati nell'overlay dipendono dall'ABI Debian 13; ricostruirli quando cambia la piattaforma.
+Questa pagina descrive il sistema personale AI-native in sviluppo. La precedente preview Debian/KDE ha un diverso insieme di limiti documentato nelle [note storiche](../RELEASE_NOTES.md) e nelle [verifiche desktop](VERIFICATION.md).
 
-Un problema non testato non viene dichiarato risolto. Segnalare regressioni con versione, macchina, passi, risultato atteso e log privi di dati personali.
+- **M0:** il gate è passato su cinque card sintetiche e 200 parafrasi curate dagli autori; non dimostra qualità su corpus reali, lingue non coperte o query indipendenti.
+- **M1:** il gate di 10.000 terminazioni di processo è passato, ma non simula perdita improvvisa di alimentazione. Manca un anchor esterno anti-rollback; il rebuild del catalogo cresce linearmente.
+- **M2 throughput:** la misura corrente è sequenziale ping/ack da 4 KiB (62.222 msg/s, p99 round-trip 17 µs); non è throughput pipelined e non supera il target >100.000 msg/s.
+- **M2 isolamento:** il fixture gira con processi nativi fidati sotto lo stesso account Windows. Identità del peer IPC, isolamento OS, replay protection e isolamento Wasmtime non sono dimostrati.
+- **Wasm:** il modulo sandbox compila e i test base passano nella CI Windows; non sono ancora stati eseguiti test avversariali completi. Non è integrato nel bus o in un servizio di task.
+- **Bus bulk:** non sono implementati streaming con crediti/backpressure, comportamento slow-reader, cancellazione robusta o lane indipendente per oggetti MB/GB.
+- **Writer massivo:** manca il writer temporaneo con cifratura chunked, verifica progressiva e commit del BLAKE3 canonico.
+- **Sistema integrato:** semantic index persistente in Rust, provisioning delle chiavi, service supervision, recovery e client utente non sono disponibili come percorso end-to-end.
+- **Budget RAM:** l'obiettivo è meno di 1,5 GB per l'intero sistema a riposo. Non è ancora misurato sull'architettura corrente; i vecchi benchmark della preview desktop non sono un sostituto.
+
+Un requisito senza test non viene dichiarato risolto. Segnalare regressioni con commit, sistema operativo, comando riprodotto, risultato atteso e log privi di dati personali.

@@ -1,0 +1,27 @@
+{
+  "bus_integrated": false,
+  "duplicate_commits": 0,
+  "elapsed_seconds": 9.5030173,
+  "inflight_commits_recovered": 23,
+  "invalid_reads": 0,
+  "lost_commits": 0,
+  "note": "Randomized real child-process termination at transaction phases and racing log commit; baseline acknowledgements, durable operations, retry replies and handle reads checked after every recovery. Not power-loss testing.",
+  "phase_counts": [
+    16,
+    17,
+    23,
+    27,
+    17
+  ],
+  "phases": [
+    "BeforeBlob",
+    "BlobDurable",
+    "BeforeLogCommit",
+    "LogDurable",
+    "IndexApplied"
+  ],
+  "power_loss_tested": false,
+  "process_kill_gate_passed": false,
+  "seed": "0x56454c414d31",
+  "trials": 100
+}

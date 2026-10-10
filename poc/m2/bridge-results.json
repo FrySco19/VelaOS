@@ -1,0 +1,63 @@
+{
+  "bulk_bytes_on_control_plane": false,
+  "data_plane": {
+    "digest_verified": true,
+    "elapsed_seconds": 0.1607131,
+    "ipc": "iceoryx2::ipc::Service",
+    "messages": 10000,
+    "messages_per_second": 62222.6812873375,
+    "metric": "sequential authenticated 4KiB ping/ack, not pipelined throughput",
+    "payload_bytes": 4096,
+    "receiver_pid": 9112,
+    "roundtrip_p99_us": 17.0,
+    "sender_pid": 22608,
+    "storage_to_loan_staging_copy": true,
+    "transport_zero_copy": true
+  },
+  "limit": "IPC and capability fixture verified; OS/sandbox isolation and independent pipelined performance gate are not established.",
+  "llm_invocations": 0,
+  "m0_to_m1_bridge": true,
+  "m2_gate_passed": false,
+  "recall": {
+    "auto_resolve": false,
+    "candidates": [
+      {
+        "oid": "83d68c94e99307f004bedbe433980755c140e098ce18c35a1aa38849af8e353d",
+        "score": 0.032786883413791656
+      },
+      {
+        "oid": "056d7df24deb190872a585627333ad41b624608d588d6f7f88bc6e434a665d6e",
+        "score": 0.016129031777381897
+      },
+      {
+        "oid": "febf9238b34ce47bc75b2e94c6a729d5094adb6e878ec39b511e7c30c9533393",
+        "score": 0.01587301678955555
+      },
+      {
+        "oid": "40ee52335cf930cf024923e5b0d4789947ec7df1c6d6f67f2ff3e1ed4bb1d032",
+        "score": 0.015625
+      },
+      {
+        "oid": "57c5c97c8199bd848734af082e50adcec4e75f9a2a2ba32207305894dda2ce7c",
+        "score": 0.015384615398943424
+      }
+    ],
+    "embedding_epoch": "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1",
+    "status": "RankedCandidates"
+  },
+  "selected_oid": "83d68c94e99307f004bedbe433980755c140e098ce18c35a1aa38849af8e353d",
+  "typed_object_transfer": {
+    "digest_verified": true,
+    "elapsed_seconds": 0.0023984,
+    "ipc": "iceoryx2::ipc::Service",
+    "messages": 1,
+    "messages_per_second": 416.9446297531687,
+    "metric": "sequential authenticated 4KiB ping/ack, not pipelined throughput",
+    "payload_bytes": 69,
+    "receiver_pid": 7576,
+    "roundtrip_p99_us": 2397.6000000000004,
+    "sender_pid": 22608,
+    "storage_to_loan_staging_copy": true,
+    "transport_zero_copy": true
+  }
+}

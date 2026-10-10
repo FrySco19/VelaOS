@@ -1,4 +1,10 @@
-# VelaOS 2.1 — preview con assistente locale
+# Nota di stato corrente — 2026-10-10
+
+Il progetto attivo è l'architettura di un sistema personale AI-native descritta nel [README](README.md). M0 e M1 hanno gate locali registrati come superati nei rispettivi limiti; M2 è in sviluppo. Non esiste ancora una release installabile che integri recall, LFS, Neural Bus e Wasmtime.
+
+La preview Debian 13/KDE Plasma descritta sotto è una release storica del prototipo desktop. Non è l'implementazione né una dimostrazione dei gate M0–M2. Le verifiche e le limitazioni di quella ISO valgono solo per quell'artefatto.
+
+# VelaOS 2.1 — preview desktop storica con assistente locale
 
 Desktop Debian 13/KDE Plasma 6 con Gemma 4 E2B e llama.cpp inclusi. L'assistente parte in locale, senza account o download del modello al primo avvio. Versione di sviluppo, da provare in una VM dedicata con 8 GB di RAM. Accesso SSH di sviluppo disabilitato, senza chiavi predisposte.
 

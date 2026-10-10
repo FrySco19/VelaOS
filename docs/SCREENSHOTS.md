@@ -1,5 +1,7 @@
 # Schermate del sistema
 
+> **Archivio visivo della preview desktop Debian/KDE 2.x.** Queste schermate non rappresentano l'architettura M0–M2 descritta nel [README corrente](../README.md).
+
 ## Preview 2.1 locale — 10 ottobre 2026
 
 Nuova ISO avviata in VirtualBox con 8 GB di RAM, 4 CPU e cavo di rete scollegato. Il pannello mostra una diagnosi audio ottenuta con il modello Gemma incluso. La lettura delle uscite non dimostra che il suono sia udibile.

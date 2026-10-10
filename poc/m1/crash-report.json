@@ -1,0 +1,244 @@
+{
+  "bus_integrated": false,
+  "duplicate_commits": 0,
+  "elapsed_seconds": 382.3448178,
+  "invalid_reads": 0,
+  "jobs": 8,
+  "lost_commits": 0,
+  "parts": [
+    {
+      "batch_size": 32,
+      "bus_integrated": false,
+      "duplicate_commits": 0,
+      "elapsed_seconds": 382.1226126,
+      "inflight_commits_recovered": 137,
+      "invalid_reads": 0,
+      "lost_commits": 0,
+      "note": "Randomized real child-process termination at transaction phases and racing log commit. Distinct requests accumulate in groups of 32; all earlier objects, baseline acknowledgements, durable operations, retry replies and handle reads checked after every recovery. Not power-loss testing.",
+      "phase_counts": [
+        240,
+        242,
+        261,
+        255,
+        252
+      ],
+      "phases": [
+        "BeforeBlob",
+        "BlobDurable",
+        "BeforeLogCommit",
+        "LogDurable",
+        "IndexApplied"
+      ],
+      "power_loss_tested": false,
+      "process_kill_gate_passed": false,
+      "seed": 94855632080177,
+      "trials": 1250
+    },
+    {
+      "batch_size": 32,
+      "bus_integrated": false,
+      "duplicate_commits": 0,
+      "elapsed_seconds": 381.8282143,
+      "inflight_commits_recovered": 126,
+      "invalid_reads": 0,
+      "lost_commits": 0,
+      "note": "Randomized real child-process termination at transaction phases and racing log commit. Distinct requests accumulate in groups of 32; all earlier objects, baseline acknowledgements, durable operations, retry replies and handle reads checked after every recovery. Not power-loss testing.",
+      "phase_counts": [
+        241,
+        248,
+        244,
+        283,
+        234
+      ],
+      "phases": [
+        "BeforeBlob",
+        "BlobDurable",
+        "BeforeLogCommit",
+        "LogDurable",
+        "IndexApplied"
+      ],
+      "power_loss_tested": false,
+      "process_kill_gate_passed": false,
+      "seed": 94855632080178,
+      "trials": 1250
+    },
+    {
+      "batch_size": 32,
+      "bus_integrated": false,
+      "duplicate_commits": 0,
+      "elapsed_seconds": 381.8361282,
+      "inflight_commits_recovered": 127,
+      "invalid_reads": 0,
+      "lost_commits": 0,
+      "note": "Randomized real child-process termination at transaction phases and racing log commit. Distinct requests accumulate in groups of 32; all earlier objects, baseline acknowledgements, durable operations, retry replies and handle reads checked after every recovery. Not power-loss testing.",
+      "phase_counts": [
+        251,
+        236,
+        247,
+        257,
+        259
+      ],
+      "phases": [
+        "BeforeBlob",
+        "BlobDurable",
+        "BeforeLogCommit",
+        "LogDurable",
+        "IndexApplied"
+      ],
+      "power_loss_tested": false,
+      "process_kill_gate_passed": false,
+      "seed": 94855632080179,
+      "trials": 1250
+    },
+    {
+      "batch_size": 32,
+      "bus_integrated": false,
+      "duplicate_commits": 0,
+      "elapsed_seconds": 382.3404921,
+      "inflight_commits_recovered": 115,
+      "invalid_reads": 0,
+      "lost_commits": 0,
+      "note": "Randomized real child-process termination at transaction phases and racing log commit. Distinct requests accumulate in groups of 32; all earlier objects, baseline acknowledgements, durable operations, retry replies and handle reads checked after every recovery. Not power-loss testing.",
+      "phase_counts": [
+        234,
+        241,
+        266,
+        252,
+        257
+      ],
+      "phases": [
+        "BeforeBlob",
+        "BlobDurable",
+        "BeforeLogCommit",
+        "LogDurable",
+        "IndexApplied"
+      ],
+      "power_loss_tested": false,
+      "process_kill_gate_passed": false,
+      "seed": 94855632080180,
+      "trials": 1250
+    },
+    {
+      "batch_size": 32,
+      "bus_integrated": false,
+      "duplicate_commits": 0,
+      "elapsed_seconds": 381.2992283,
+      "inflight_commits_recovered": 158,
+      "invalid_reads": 0,
+      "lost_commits": 0,
+      "note": "Randomized real child-process termination at transaction phases and racing log commit. Distinct requests accumulate in groups of 32; all earlier objects, baseline acknowledgements, durable operations, retry replies and handle reads checked after every recovery. Not power-loss testing.",
+      "phase_counts": [
+        253,
+        242,
+        271,
+        255,
+        229
+      ],
+      "phases": [
+        "BeforeBlob",
+        "BlobDurable",
+        "BeforeLogCommit",
+        "LogDurable",
+        "IndexApplied"
+      ],
+      "power_loss_tested": false,
+      "process_kill_gate_passed": false,
+      "seed": 94855632080181,
+      "trials": 1250
+    },
+    {
+      "batch_size": 32,
+      "bus_integrated": false,
+      "duplicate_commits": 0,
+      "elapsed_seconds": 381.8780344,
+      "inflight_commits_recovered": 122,
+      "invalid_reads": 0,
+      "lost_commits": 0,
+      "note": "Randomized real child-process termination at transaction phases and racing log commit. Distinct requests accumulate in groups of 32; all earlier objects, baseline acknowledgements, durable operations, retry replies and handle reads checked after every recovery. Not power-loss testing.",
+      "phase_counts": [
+        276,
+        263,
+        231,
+        261,
+        219
+      ],
+      "phases": [
+        "BeforeBlob",
+        "BlobDurable",
+        "BeforeLogCommit",
+        "LogDurable",
+        "IndexApplied"
+      ],
+      "power_loss_tested": false,
+      "process_kill_gate_passed": false,
+      "seed": 94855632080182,
+      "trials": 1250
+    },
+    {
+      "batch_size": 32,
+      "bus_integrated": false,
+      "duplicate_commits": 0,
+      "elapsed_seconds": 382.2143834,
+      "inflight_commits_recovered": 132,
+      "invalid_reads": 0,
+      "lost_commits": 0,
+      "note": "Randomized real child-process termination at transaction phases and racing log commit. Distinct requests accumulate in groups of 32; all earlier objects, baseline acknowledgements, durable operations, retry replies and handle reads checked after every recovery. Not power-loss testing.",
+      "phase_counts": [
+        264,
+        253,
+        274,
+        235,
+        224
+      ],
+      "phases": [
+        "BeforeBlob",
+        "BlobDurable",
+        "BeforeLogCommit",
+        "LogDurable",
+        "IndexApplied"
+      ],
+      "power_loss_tested": false,
+      "process_kill_gate_passed": false,
+      "seed": 94855632080183,
+      "trials": 1250
+    },
+    {
+      "batch_size": 32,
+      "bus_integrated": false,
+      "duplicate_commits": 0,
+      "elapsed_seconds": 379.9308528,
+      "inflight_commits_recovered": 119,
+      "invalid_reads": 0,
+      "lost_commits": 0,
+      "note": "Randomized real child-process termination at transaction phases and racing log commit. Distinct requests accumulate in groups of 32; all earlier objects, baseline acknowledgements, durable operations, retry replies and handle reads checked after every recovery. Not power-loss testing.",
+      "phase_counts": [
+        256,
+        257,
+        244,
+        263,
+        230
+      ],
+      "phases": [
+        "BeforeBlob",
+        "BlobDurable",
+        "BeforeLogCommit",
+        "LogDurable",
+        "IndexApplied"
+      ],
+      "power_loss_tested": false,
+      "process_kill_gate_passed": false,
+      "seed": 94855632080184,
+      "trials": 1250
+    }
+  ],
+  "phase_counts": [
+    2015,
+    1982,
+    2038,
+    2061,
+    1904
+  ],
+  "power_loss_tested": false,
+  "process_kill_gate_passed": true,
+  "trials": 10000
+}

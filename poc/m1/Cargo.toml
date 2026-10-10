@@ -1,0 +1,32 @@
+[package]
+name = "vela-lfs-m1"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.90"
+license = "GPL-3.0-only"
+
+[features]
+fault-fixtures = []
+
+[dependencies]
+anyhow = "=1.0.100"
+argon2 = "=0.5.3"
+biscuit-auth = { version = "=6.0.0", default-features = false, features = ["datalog-macro"] }
+blake3 = "=1.8.2"
+chacha20poly1305 = "=0.10.1"
+ed25519-dalek = "=2.2.0"
+fastcdc = "=5.0.0"
+rand = "=0.8.5"
+redb = "=4.3.0"
+serde = { version = "=1.0.228", features = ["derive"] }
+serde_json = "=1.0.145"
+serde_jcs = "=0.2.0"
+subtle = "=2.6.1"
+zeroize = "=1.8.2"
+
+tempfile = "=3.23.0"
+
+[[bin]]
+name = "crash-gate"
+path = "src/bin/crash_gate.rs"
+required-features = ["fault-fixtures"]

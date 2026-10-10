@@ -1,5 +1,7 @@
 # Assistente locale integrato
 
+> **Documento della preview desktop Debian/KDE 2.x.** Descrive l'assistente GUI storico, non un planner o un runtime integrato con LFS, Neural Bus o Wasmtime. Per il progetto corrente vedere [README](../README.md).
+
 La nuova integrazione usa Gemma 4 E2B e llama.cpp inclusi nella distribuzione.
 Non richiede account, API cloud o download al primo avvio. L'esecuzione CPU è
 il riferimento iniziale; il modello viene rilasciato dopo cinque minuti inattivo.

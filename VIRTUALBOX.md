@@ -1,5 +1,7 @@
 # Provare VelaOS in VirtualBox
 
+> **Guida storica della preview desktop Debian/KDE 2.x.** Le immagini ISO menzionate qui non contengono l'architettura M0–M2 corrente. Per lo stato del progetto vedere [README](README.md).
+
 Usare una VM dedicata e un disco virtuale vuoto. La preview si può provare in modalità live senza installarla sul disco. Il percorso completo dell'installer non è ancora collaudato.
 
 Configurazione usata per il collaudo: VirtualBox 7.2.20, Linux/Debian 64 bit, EFI, 2 CPU, VMSVGA con 256 MB video, 8 GB RAM, rete NAT e ISO nel lettore ottico. 8 GB per la VM richiedono memoria sufficiente anche per l'host; le prestazioni non sono ancora misurate.

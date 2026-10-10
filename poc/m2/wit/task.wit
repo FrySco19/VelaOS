@@ -1,0 +1,5 @@
+package vela:task@1.0.0;
+
+world task {
+    export run: func(input: string) -> result<string, string>;
+}
