@@ -1,4 +1,6 @@
 //! Control-plane capability checks and typed data-plane primitives. No LLM invocation.
+pub mod sandbox;
+
 use anyhow::{Result, ensure};
 use biscuit_auth::{AuthorizerLimits, Biscuit, PublicKey, builder::AuthorizerBuilder};
 use iceoryx2::prelude::ZeroCopySend;

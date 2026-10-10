@@ -20,6 +20,7 @@ subtle = "=2.6.1"
 tempfile = "=3.23.0"
 vela-lfs-m1 = { path = "../m1" }
 zeroize = "=1.8.2"
+wasmtime = { version = "=36.0.2", default-features = false, features = ["component-model", "cranelift", "runtime", "std"] }
 
 [[bin]]
 name = "bus-spike"
