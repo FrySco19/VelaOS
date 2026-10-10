@@ -11,7 +11,9 @@ Exit 1 if any FAIL.
 """
 import json, os, re, subprocess, sys
 
-root = sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].startswith('--') else '/workspace/vela/v2'
+_script_dir = os.path.dirname(os.path.abspath(__file__))
+_default_root = os.path.normpath(os.path.join(_script_dir, '..', '..', '..'))
+root = sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].startswith('--') else _default_root
 out = sys.argv[sys.argv.index('--out') + 1] if '--out' in sys.argv else None
 here = os.path.dirname(os.path.abspath(__file__))
 banned = [re.compile(l.strip(), re.I) for l in open(os.path.join(here, '..', 'lib', 'banned_phrases.txt'))

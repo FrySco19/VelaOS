@@ -6,7 +6,7 @@ export QA_BUILD=${1:?build name}; what=${2:-all}
 D=$(cd "$(dirname "$0")" && pwd)
 . "$D/lib/qa.sh"
 echo "evidence: $QA_OUT"
-case $what in static|all) python3 "$D/tests/static_lint.py" /workspace/vela/v2 --out "$QA_OUT/static.json" | tee "$QA_OUT/static.log"
+case $what in static|all) python3 "$D/tests/static_lint.py" "$QA_REPO" --out "$QA_OUT/static.json" | tee "$QA_OUT/static.log"
   awk '{s=$1; id=$2; $1=$2=""; printf "%s\t%s\t%s\t\n", s, id, substr($0,3)}' "$QA_OUT/static.log" >> "$QA_RESULTS";; esac
 for t in system complaints parity; do
   case $what in $t|all) bash "$D/tests/t_$t.sh" 2>&1 | tee "$QA_OUT/t_$t.log";; esac
