@@ -135,7 +135,9 @@ class Controller:
         if intent:
             self.bridge.run_intent_external(intent[0], intent[1])
         if setup:
-            self.bridge.model.add("setup", "", extra={"state": "ollama_missing", "focus_local": True})
+            state = self.bridge.agent.check()
+            if state["state"] != "ready":
+                self.bridge.model.add("setup", state.get("message", ""), extra=state)
         if files and not ask:
             self.win.setProperty("prefill", "")
             self.win.setProperty("placeholderOverride", self.bridge.tr.get("files_ask_prompt", ""))

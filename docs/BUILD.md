@@ -2,17 +2,28 @@
 
 ## Ambiente
 
-Debian 13 amd64, accesso root/sudo, connessione ai mirror Debian e Fast Track, almeno 30 GB liberi consigliati. Usare un filesystem Linux (ext4 anche in WSL), non compilare direttamente su una cartella NTFS montata. Il risultato dipende dalle versioni correnti dei mirror: non è ancora una build riproducibile bit per bit.
+Debian 13 amd64, accesso root/sudo, connessione ai mirror Debian, Fast Track, Hugging Face e GitHub, almeno 40 GB liberi consigliati. Usare un filesystem Linux (ext4 anche in WSL), non compilare direttamente su una cartella NTFS montata. Il risultato dipende dalle versioni correnti dei mirror: non è ancora una build riproducibile bit per bit.
 
 ```sh
 sudo apt update
-sudo apt install git live-build debootstrap squashfs-tools xorriso isolinux syslinux-common grub-pc-bin grub-efi-amd64-bin mtools dosfstools rsync sudo
+sudo apt install git python3 live-build debootstrap squashfs-tools xorriso isolinux syslinux-common grub-pc-bin grub-efi-amd64-bin mtools dosfstools rsync sudo
 git clone https://github.com/FrySco19/VelaOS.git
 cd VelaOS
 sudo sh build/build.sh
 ```
 
 Il risultato è in `build/out/`, con checksum SHA256. La build controlla componenti, launcher e moduli nativi nel filesystem compresso. `--release` aumenta la compressione; non certifica la stabilità del sistema.
+
+La build prepara automaticamente Gemma 4 E2B e llama.cpp, controllando gli hash
+in `components/local-ai/assets.json`. Gli input scaricati sono conservati in
+`.local/ai-cache/`; il modello e il runtime non entrano nella cronologia Git.
+Per preparare la cache separatamente: `python3 build/prepare-local-ai.py`.
+La ISO include già questi file e non scarica il modello al primo avvio.
+
+Le ISO oltre il limite per singolo asset GitHub vengono pubblicate in parti.
+`python3 tools/split-release.py percorso.iso cartella-release` crea
+parti e manifest; `tools/join-release.ps1` le riunisce su Windows verificando
+ogni checksum e quello finale. Non sovrascrive una ISO esistente.
 
 ## Ricostruire i moduli nativi
 

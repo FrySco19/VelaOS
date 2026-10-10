@@ -13,6 +13,8 @@ def lang():
 
 
 IT = {
+    "audio_diagnosis": "Controllo audio", "audio_default": "Predefinita", "audio_muted": "Audio disattivato",
+    "audio_choose": "Usa questa uscita",
     # ---- states / setup
     "state_disabled": "L'assistente è disattivato in Impostazioni.",
     "state_ollama_missing": "Nessun modello configurato. Puoi installare un modello locale o usare un servizio online.",
@@ -156,6 +158,8 @@ IT = {
 }
 
 EN = {
+    "audio_diagnosis": "Audio check", "audio_default": "Default", "audio_muted": "Muted",
+    "audio_choose": "Use this output",
     "state_disabled": "The assistant is turned off in Settings.",
     "state_ollama_missing": "No model set up. You can install a local model or use an online service.",
     "state_ollama_down": "The local model isn't running.",

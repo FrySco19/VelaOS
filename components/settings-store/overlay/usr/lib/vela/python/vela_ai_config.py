@@ -13,16 +13,16 @@ SYSTEM_DIR = "/etc/vela/ai.conf.d"
 BUILTIN = {
     "version": 1,
     "enabled": True,
-    "provider": "ollama",
+    "provider": "openai",
     "ollama": {"base_url": "http://127.0.0.1:11434", "model": "qwen2.5:1.5b"},
-    "openai": {"base_url": "https://api.openai.com/v1", "model": "gpt-4o-mini", "organization": ""},
+    "openai": {"base_url": "http://127.0.0.1:11435/v1", "model": "vela-local", "organization": ""},
     "generation": {"temperature": 0.3, "max_tokens": 1024, "timeout_s": 60},
     "language": "auto",
     "assistant": {"shortcut": "Meta+A", "history": True, "tray": True},
     "permissions": {
         "active_window": True, "selected_text": True, "clipboard": False,
         "files": "ask", "screen": "ask", "microphone": "ask", "web": "ask",
-        "run_commands": "ask", "network_settings": "ask", "system_changes": "ask",
+        "run_commands": "never", "network_settings": "ask", "system_changes": "ask",
     },
     "privacy": {
         "allow_cloud": False, "log_actions": True, "log_retention_days": 30,
@@ -171,8 +171,18 @@ def endpoint(cfg=None, with_key=True):
     base = s.get("base_url", "https://api.openai.com/v1").rstrip("/")
     host = base.split("//", 1)[-1].split("/", 1)[0].split(":", 1)[0]
     local = host in ("127.0.0.1", "localhost", "::1")
+    key = get_api_key() if with_key else ""
+    if base == "http://127.0.0.1:11435/v1":
+        key = ""
+        if with_key:
+            runtime = os.environ.get("XDG_RUNTIME_DIR") or f"/run/user/{os.getuid()}"
+            try:
+                with open(os.path.join(runtime, "vela-local-ai.key"), encoding="utf-8") as f:
+                    key = f.read().strip()
+            except OSError:
+                pass
     return {"provider": "openai", "base_url": base, "model": s.get("model", ""),
-            "api_key": get_api_key() if with_key else "", "cloud": not local}
+            "api_key": key, "cloud": not local}
 
 
 def may(cfg, perm):

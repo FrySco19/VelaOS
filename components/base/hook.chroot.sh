@@ -25,23 +25,24 @@ if [ ! -e /usr/lib/os-release.debian ]; then
 fi
 VER=$(. /usr/lib/os-release.debian && echo "$VERSION_ID")
 cat > /usr/lib/os-release <<EOT
-PRETTY_NAME="Vela OS 2"
+PRETTY_NAME="Vela OS 2.1"
 NAME="Vela OS"
 VERSION_ID="$VER"
-VERSION="2 (Debian $VER trixie)"
+VERSION="2.1 (Debian $VER trixie)"
+VELA_VERSION="2.1-local-preview"
 VERSION_CODENAME=trixie
 DEBIAN_VERSION_FULL=$(cat /etc/debian_version)
 ID=debian
 VARIANT="Vela"
 VARIANT_ID=vela
 LOGO=vela-logo
-HOME_URL="https://www.debian.org/"
-SUPPORT_URL="https://www.debian.org/support"
-BUG_REPORT_URL="https://bugs.debian.org/"
+HOME_URL="https://github.com/FrySco19/VelaOS"
+SUPPORT_URL="https://github.com/FrySco19/VelaOS/discussions"
+BUG_REPORT_URL="https://github.com/FrySco19/VelaOS/issues"
 EOT
 ln -sf ../usr/lib/os-release /etc/os-release
-printf 'Vela OS 2 \\n \\l\n\n' > /etc/issue
-echo 'Vela OS 2' > /etc/issue.net
+printf 'Vela OS 2.1 \\n \\l\n\n' > /etc/issue
+echo 'Vela OS 2.1' > /etc/issue.net
 
 # --- Services ---
 systemctl set-default graphical.target

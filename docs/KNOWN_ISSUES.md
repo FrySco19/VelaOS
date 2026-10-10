@@ -1,10 +1,11 @@
 # Problemi noti e limiti
 
-- Il modello e il runtime locale non sono preinstallati. L'inferenza reale, il download, l'accelerazione GPU e la qualità delle risposte non sono convalidati.
+- Gemma 4 E2B e llama.cpp sono inclusi. Le richieste CPU a contesto vuoto possono essere lente; le richieste con prefisso già elaborato sono distinte nel rapporto. GPU, voce, visione e telefoni non sono collaudati.
+- Il modello può sbagliare strumenti o argomenti: anteprima, conferma e verifiche restano necessarie. Il benchmark sintetico non misura intelligenza generale.
 - Calamares è configurato, ma installazione su disco e dual boot non sono collaudati.
 - Mancano prove su hardware fisico per Wi-Fi, Bluetooth, audio, sospensione, GPU e periferiche.
 - Non esiste ancora un percorso convalidato di aggiornamento atomico e ripristino dopo aggiornamenti falliti.
-- Prestazioni, consumi, latenza e accessibilità richiedono misurazioni e prove dedicate.
+- La latenza CPU dell'assistente è misurata nel rapporto della release; consumi, prestazioni generali e accessibilità richiedono prove dedicate.
 - Le funzionalità applicative sono integrate ma non tutte verificate da inizio a fine.
 - Gli strumenti QA storici richiedono adattamento dei percorsi e dell'ambiente.
 - La build usa mirror correnti; pacchetti, toolchain e asset non sono ancora fissati per riproducibilità bit per bit.

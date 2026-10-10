@@ -1,0 +1,23 @@
+{
+  "real_model_proposal_seconds": 147.327654703,
+  "preview_no_mutations": true,
+  "installed_model_sha256": "fa401b55b07ee70a54c6dae3903c783a6e65064312529ea57175cb5f8dec6634",
+  "confirmed_moves": true,
+  "undo_new_controller": true,
+  "original_bytes_restored": true,
+  "local_endpoint": true,
+  "unauthenticated_inference_rejected": true,
+  "session_key_0600": true,
+  "audio_state": {
+    "default": "alsa_output.pci-0000_00_05.0.analog-stereo",
+    "sinks": [
+      {
+        "name": "alsa_output.pci-0000_00_05.0.analog-stereo",
+        "description": "Audio interno Analog Stereo",
+        "mute": false,
+        "state": "SUSPENDED"
+      }
+    ]
+  },
+  "notes": "Run with VM network cable disconnected to validate offline operation. Audio audibility not tested."
+}

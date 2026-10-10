@@ -364,7 +364,7 @@ class Bridge(QObject):
         if m and m[0] == "open_app" and not tools.get("open_app").find(m[1]["name"]):
             m = None
         if m:
-            self.agent.run_intent(m[0], m[1], text)
+            self.run_intent_external(m[0], m[1])
             return
         att = {"selection": self._selection, "clipboard": self._clipboard, "files": self._files,
                "image": self._image}
@@ -407,11 +407,28 @@ class Bridge(QObject):
         self.agent.decline(card_id)
 
     @Slot(str)
+    def cancelOperation(self, card_id):
+        self.agent.cancel_operation(card_id)
+
+    @Slot(str)
     def undo(self, card_id):
         threading.Thread(target=self.agent.undo, args=(card_id,), daemon=True).start()
 
     def run_intent_external(self, tool_name, args):
-        self.agent.run_intent(tool_name, args)
+        if self._busy:
+            return
+        self._busy = True
+        self.changed.emit()
+        def prepare():
+            try:
+                self.agent.run_intent(tool_name, args)
+            finally:
+                self.agentEvent.emit("busy", {"on": False})
+        threading.Thread(target=prepare, daemon=True).start()
+
+    @Slot(str)
+    def proposeAudioOutput(self, name):
+        self.run_intent_external("set_audio_output", {"name": name})
 
     def _on_agent_event(self, kind, data):
         data = data or {}
@@ -517,6 +534,8 @@ class Bridge(QObject):
     @Slot()
     def enableAssistant(self):
         config.save_user({"enabled": True})
+        if config.endpoint()["base_url"] == "http://127.0.0.1:11435/v1":
+            sysutil.run(["systemctl", "--user", "start", "vela-local-ai.service"], timeout=5)
         self.refreshStatus()
 
     @Slot()

@@ -1,4 +1,4 @@
-# Vela default applications (agent: apps). All verified present in Debian 13 trixie main (apt-cache policy, 2026-10-08).
+# Vela default applications. Verified present in Debian 13 trixie main (apt-cache policy, 2026-10-08).
 # Lines starting with # are comments.
 
 # Browser (AI browser = Firefox ESR + Vela AI sidebar extension, see overlay/)

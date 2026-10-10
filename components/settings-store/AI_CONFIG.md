@@ -20,17 +20,17 @@ dir 0700). A future version may move it to KWallet/Secret Service; always use th
 {
   "version": 1,
   "enabled": true,                       // master switch: false => no AI feature may run or send anything
-  "provider": "ollama",                  // "ollama" | "openai"  (openai = any OpenAI-compatible endpoint)
+  "provider": "openai",                  // protocol name, not a cloud provider
   "ollama": {
     "base_url": "http://127.0.0.1:11434",
     "model": "qwen2.5:1.5b"              // model tag for chat; empty => first installed model
   },
   "openai": {
-    "base_url": "https://api.openai.com/v1",
-    "model": "gpt-4o-mini",
+    "base_url": "http://127.0.0.1:11435/v1",
+    "model": "vela-local",
     "organization": ""                   // optional
   },
-  "generation": { "temperature": 0.3, "max_tokens": 1024, "timeout_s": 60 },
+  "generation": { "temperature": 0.1, "max_tokens": 384, "timeout_s": 180 },
   "language": "auto",                    // "auto" (follow system locale) | "it" | "en"
   "assistant": {
     "shortcut": "Meta+A",                // informational; the real binding is owned by desktop/assistant
@@ -91,12 +91,16 @@ dir 0700). A future version may move it to KWallet/Secret Service; always use th
 Both Ollama (>=0.1.24) and OpenAI-compatible servers expose `POST {base_url}/v1/chat/completions` —
 for Ollama use `base_url + "/v1"`; `endpoint()` already returns the right `/v1` URL in both cases.
 
-## Local model install
-Settings never installs Ollama itself: its «Installa Ollama» button runs `vela-assistant --setup-local`
-(owned by assistant component: per-user install, explicit click only), then re-checks the connection.
+## Included local model
+The ISO includes Gemma 4 E2B and llama.cpp. The `vela-local-ai.service` user service
+starts the loopback server by default; no first-run model download is needed.
+The session credential lives at `$XDG_RUNTIME_DIR/vela-local-ai.key`, mode 0600.
+`endpoint(with_key=True)` reads it automatically for the bundled endpoint.
+Changing the master switch in native settings starts/stops this service.
+Other compatible endpoints remain supported by the configuration contract for developers.
 
 ## Rules for consumers
 - If `enabled` is false: do not call any model; show "L'assistente è disattivato in Impostazioni".
-- If `provider == "openai"` and `privacy.allow_cloud` is false: refuse and point to Settings (no silent fallback).
+- If `endpoint()["cloud"]` is true and `privacy.allow_cloud` is false: refuse and point to Settings (no silent fallback).
 - Never send content to a remote API without `allow_cloud`; mark `sent_off_machine:true` in the log when you do.
 - "ask" ⇒ show a preview and require explicit confirmation every time.

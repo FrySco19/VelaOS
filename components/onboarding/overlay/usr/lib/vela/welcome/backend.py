@@ -243,7 +243,9 @@ class Backend(QObject):
                       motion=not self._a11y["reduce_motion"])
         cfg = self._ai_cfg()
         self._ai_choice = st.get("ai_choice") or ("off" if not cfg.get("enabled", True) else
-                                                   ("online" if cfg.get("provider") == "openai" else "local"))
+                                                   ("online" if cfg.get("provider") == "openai" and
+                                                    cfg.get("openai", {}).get("base_url") != "http://127.0.0.1:11435/v1"
+                                                    else "local"))
         self._wifi = []
         self._wifi_state = "unknown"   # unknown|scanning|nowifi|list|connecting|failed
         self._net_summary = ""
@@ -712,6 +714,14 @@ class Backend(QObject):
         self._bg(self._check_local)
 
     def _check_local(self):
+        if self.aiGet("openai.base_url") == "http://127.0.0.1:11435/v1":
+            try:
+                with urllib.request.urlopen("http://127.0.0.1:11435/health", timeout=4) as r:
+                    json.load(r)
+                self.aiStatus.emit("ok", "Gemma 4 E2B · locale · incluso / local · included")
+            except OSError:
+                self.aiStatus.emit("warn", "Modello incluso in caricamento / Included model loading")
+            return
         base = self.aiGet("ollama.base_url") or "http://127.0.0.1:11434"
         try:
             with urllib.request.urlopen(base.rstrip("/") + "/api/tags", timeout=4) as r:
@@ -753,7 +763,8 @@ class Backend(QObject):
         if ch == "off":
             self._ai_save({"enabled": False})
         elif ch == "local":
-            self._ai_save({"enabled": True, "provider": "ollama"})
+            self._ai_save({"enabled": True, "provider": "openai", "privacy": {"allow_cloud": False},
+                           "openai": {"base_url": "http://127.0.0.1:11435/v1", "model": "vela-local"}})
         else:
             if not consent:
                 return "ai.needConsent"

@@ -1,6 +1,8 @@
 # Italian translations for the Vela KCMs (see components/onboarding/STYLE_GUIDE_COPY.md).
 # Regenerate the .po files with: python3 po/make_po.py
 IT = {
+    "Gemma 4 E2B is included and runs locally. No account or first-run download.": "Gemma 4 E2B è incluso e funziona in locale. Nessun account o download al primo avvio.",
+    "What you ask is sent to the service you choose.": "Le richieste vengono inviate al servizio che scegli.",
  'Sending data to online services is turned off. Turn it on below or in Privacy and memory.': "L'invio di dati ai servizi online è disattivato. Attivalo prima qui sotto o in Privacy e memoria.",
  'The server address is not valid.': "L'indirizzo del server non è valido.",
  'Checking connection…': 'Verifica della connessione…',

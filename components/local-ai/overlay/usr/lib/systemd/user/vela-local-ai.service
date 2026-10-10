@@ -1,0 +1,17 @@
+[Unit]
+Description=Vela local inference (Gemma 4 E2B)
+
+[Service]
+ExecStart=/usr/bin/vela-local-ai
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=10
+NoNewPrivileges=yes
+PrivateTmp=yes
+RestrictAddressFamilies=AF_UNIX AF_INET
+IPAddressDeny=any
+IPAddressAllow=localhost
+Environment=HF_HUB_OFFLINE=1
+
+[Install]
+WantedBy=default.target

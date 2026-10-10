@@ -38,6 +38,11 @@ Rectangle {
 
         // ---------- disabled
         RowLayout {
+            visible: card.state_ === "local_loading"
+            BusyIndicator { running: visible }
+            VButton { text: "Riprova / Retry"; onClicked: bridge.retry() }
+        }
+        RowLayout {
             visible: card.state_ === "disabled"
             spacing: 8
             VButton { primary: true; text: bridge.tr.setup_enable; onClicked: bridge.enableAssistant() }
@@ -46,7 +51,7 @@ Rectangle {
 
         // ---------- segmented control
         Rectangle {
-            visible: card.state_ !== "disabled"
+            visible: card.state_ !== "disabled" && card.state_ !== "local_loading"
             Layout.alignment: Qt.AlignHCenter
             implicitWidth: seg.implicitWidth + 4; implicitHeight: 30
             radius: Tokens.radiusControl
@@ -78,7 +83,7 @@ Rectangle {
 
         // ---------- local model
         ColumnLayout {
-            visible: card.state_ !== "disabled" && card.tab === 0
+            visible: card.state_ !== "disabled" && card.state_ !== "local_loading" && card.tab === 0
             spacing: 8
             Layout.fillWidth: true
             Text { text: bridge.tr.setup_local_desc; color: Tokens.textSecondary; wrapMode: Text.Wrap
@@ -131,7 +136,7 @@ Rectangle {
 
         // ---------- online service
         ColumnLayout {
-            visible: card.state_ !== "disabled" && card.tab === 1
+            visible: card.state_ !== "disabled" && card.state_ !== "local_loading" && card.tab === 1
             spacing: 8
             Layout.fillWidth: true
             Text { text: bridge.tr.setup_online_desc; color: Tokens.textSecondary; wrapMode: Text.Wrap
@@ -157,7 +162,7 @@ Rectangle {
         }
 
         Text {
-            visible: card.state_ !== "disabled"
+            visible: card.state_ !== "disabled" && card.state_ !== "local_loading"
             text: bridge.tr.offline_hint; color: Tokens.textSecondary; wrapMode: Text.Wrap; Layout.fillWidth: true
             font.family: Tokens.fontUi; font.pointSize: 8.5
         }

@@ -7,6 +7,7 @@ import json
 import re
 import socket
 import ssl
+import threading
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -64,6 +65,13 @@ def check_ready(cfg, ep, ollama_installed=None):
     disabled, cloud_blocked, no_key, ollama_missing, ollama_down, no_model, ready."""
     if not cfg.get("enabled", True):
         return {"state": "disabled", "message": T("state_disabled"), "model": ""}
+    if ep.get("base_url") == "http://127.0.0.1:11435/v1":
+        try:
+            _get_json("http://127.0.0.1:11435/health", timeout=2,
+                      headers={"Authorization": "Bearer " + ep.get("api_key", "")})
+        except (OSError, ValueError):
+            return {"state": "local_loading", "message": "Modello locale in caricamento. Riprova tra pochi secondi.",
+                    "model": ep["model"]}
     if ep["provider"] == "ollama":
         try:
             models = ollama_models(ep["native_url"])
@@ -167,6 +175,9 @@ def stream_chat(ep, messages, tools=None, temperature=0.3, max_tokens=1024, time
 
     Raises LLMError (user-facing), ToolsUnsupported (caller retries without tools) or Cancelled.
     """
+    if cancel is not None and cancel.is_set():
+        raise Cancelled()
+    finished = threading.Event()
     url = ep["base_url"].rstrip("/") + "/chat/completions"
     payload = {"model": ep["model"], "messages": messages, "stream": True,
                "temperature": temperature, "max_tokens": max_tokens}
@@ -178,19 +189,37 @@ def stream_chat(ep, messages, tools=None, temperature=0.3, max_tokens=1024, time
     try:
         conn, path = _connect(url, timeout)
         conn.request("POST", path, body=json.dumps(payload).encode("utf-8"), headers=headers)
+        if cancel is not None:
+            sock = conn.sock
+            def interrupt_socket():
+                while not finished.wait(0.1):
+                    if cancel.is_set():
+                        try:
+                            sock.shutdown(socket.SHUT_RDWR)
+                        except (OSError, AttributeError):
+                            pass
+                        return
+            threading.Thread(target=interrupt_socket, daemon=True).start()
         resp = conn.getresponse()
     except (ConnectionRefusedError, socket.gaierror) as e:
+        finished.set()
         raise LLMError("connect", T("err_connect_local") if not ep.get("cloud") else T("err_connect_cloud"), str(e))
     except (socket.timeout, TimeoutError) as e:
+        finished.set()
         raise LLMError("timeout", T("err_timeout"), str(e))
     except ssl.SSLError as e:
+        finished.set()
         raise LLMError("tls", T("err_tls"), str(e))
-    except OSError as e:
+    except (OSError, http.client.HTTPException) as e:
+        finished.set()
+        if cancel is not None and cancel.is_set():
+            raise Cancelled()
         raise LLMError("connect", T("err_connect_cloud") if ep.get("cloud") else T("err_connect_local"), str(e))
 
     if resp.status != 200:
         body = resp.read().decode("utf-8", "replace")
         conn.close()
+        finished.set()
         raise _http_error(resp.status, body, ep["model"])
 
     ctype = resp.getheader("Content-Type", "")
@@ -247,12 +276,22 @@ def stream_chat(ep, messages, tools=None, temperature=0.3, max_tokens=1024, time
                     if ch.get("finish_reason"):
                         finish = ch["finish_reason"]
     except (socket.timeout, TimeoutError) as e:
+        if cancel is not None and cancel.is_set():
+            raise Cancelled()
         raise LLMError("timeout", T("err_timeout"), str(e))
+    except (OSError, http.client.HTTPException) as e:
+        if cancel is not None and cancel.is_set():
+            raise Cancelled()
+        raise LLMError("connect", T("err_connect_local") if not ep.get("cloud") else T("err_connect_cloud"), str(e))
     finally:
+        finished.set()
+        resp.close()
         try:
             conn.close()
         except Exception:
             pass
+    if cancel is not None and cancel.is_set():
+        raise Cancelled()
     if calls:
         out = []
         for i in sorted(calls):

@@ -104,6 +104,7 @@ Rectangle {
             spacing: 8
             BusyIndicator { running: visible; implicitWidth: 18; implicitHeight: 18 }
             Text { text: bridge.tr.working; color: Tokens.textSecondary; font.family: Tokens.fontUi; font.pointSize: 9 }
+            VButton { text: "Interrompi / Stop"; onClicked: bridge.cancelOperation(card.c.id) }
         }
 
         // result line
@@ -122,9 +123,27 @@ Rectangle {
                 font.family: Tokens.fontUi; font.pointSize: 9.5
             }
             VButton {
-                visible: !!card.c.can_undo && card.st === "done"
+                visible: !!card.c.can_undo && ["done", "failed"].indexOf(card.st) >= 0
                 text: bridge.tr.undo
                 onClicked: bridge.undo(card.c.id)
+            }
+        }
+
+        Repeater {
+            model: card.st === "done" && card.c.tool === "diagnose_audio" ? (card.d.sinks || []) : []
+            delegate: RowLayout {
+                Layout.fillWidth: true
+                Text {
+                    Layout.fillWidth: true; wrapMode: Text.Wrap
+                    text: modelData.description + (modelData.name === card.d.default ? " · " + bridge.tr.audio_default : "") +
+                          (modelData.mute ? " · " + bridge.tr.audio_muted : "")
+                    color: Tokens.text; font.family: Tokens.fontUi; font.pointSize: 9
+                }
+                VButton {
+                    visible: modelData.name !== card.d.default
+                    text: bridge.tr.audio_choose
+                    onClicked: bridge.proposeAudioOutput(modelData.name)
+                }
             }
         }
 

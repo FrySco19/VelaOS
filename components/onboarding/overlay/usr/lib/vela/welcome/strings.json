@@ -102,7 +102,7 @@
   "ai.title": "Assistente",
   "ai.body": "L'assistente risponde alle domande e ti aiuta con file, app e impostazioni. Si apre con %1.",
   "ai.local": "Modello locale",
-  "ai.localHint": "Funziona su questo computer, anche senza Internet. I dati non escono dal computer.",
+  "ai.localHint": "Gemma 4 E2B è già incluso. Funziona su questo computer senza account o Internet.",
   "ai.online": "Servizio online",
   "ai.onlineHint": "Usa un servizio compatibile con OpenAI. Serve una chiave API.",
   "ai.off": "Non ora",
@@ -191,7 +191,7 @@
   "welcome.liveTitle": "Stai provando Vela senza installarla.",
   "done.kb": "Tastiera",
   "ai.setupLocal": "Configura il modello locale…",
-  "ai.setupLater": "Puoi farlo anche dopo, dall'assistente o da Impostazioni > Intelligenza artificiale."
+  "ai.setupLater": "Il primo caricamento può richiedere qualche secondo. Riprova senza scaricare nulla."
  },
  "en": {
   "app.title": "Welcome",
@@ -296,7 +296,7 @@
   "ai.title": "Assistant",
   "ai.body": "The assistant answers questions and helps with files, apps and settings. Open it with %1.",
   "ai.local": "Local model",
-  "ai.localHint": "Runs on this computer, even offline. Your data stays on this computer.",
+  "ai.localHint": "Gemma 4 E2B is included. Runs on this computer without accounts or Internet.",
   "ai.online": "Online service",
   "ai.onlineHint": "Uses an OpenAI-compatible service. You need an API key.",
   "ai.off": "Not now",
@@ -385,6 +385,6 @@
   "welcome.liveTitle": "You're trying Vela without installing it.",
   "done.kb": "Keyboard",
   "ai.setupLocal": "Set up the local model…",
-  "ai.setupLater": "You can also do this later from the assistant or in Settings > Artificial intelligence."
+  "ai.setupLater": "The first load can take a few seconds. Retry without downloading anything."
  }
 }

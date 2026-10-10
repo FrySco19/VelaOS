@@ -12,7 +12,7 @@ import urllib.parse
 
 from . import config  # noqa: F401  (adds /usr/lib/vela/python to sys.path for safeexec)
 from . import apps as appsmod
-from . import i18n, safeexec, sysutil
+from . import i18n, safeexec, sysutil, workflows
 
 T = i18n.T
 HOME = os.path.expanduser("~")
@@ -844,13 +844,198 @@ class OpenHelp(Tool):
         return result(True, T("opened", name=T("open_help_title")))
 
 
-ALL = [OpenHelp(), OpenApp(), OpenSettings(), OpenPath(), FindFiles(), SystemStatus(), MoveFile(), RenameFile(), CreateFolder(),
+class OrganizeFolder(Tool):
+    name, icon, permission = "organize_folder", "folder", "files"
+    description = ("Prepare a preview to organize one explicit home folder automatically into the fixed groups "
+                   "Immagini, Video, Audio, Archivi. No need to ask about categories. "
+                   "Leaves documents, unknown files and collisions untouched. Persistent undo. "
+                   "Ask only if the folder path is missing.")
+    parameters = {"type": "object", "properties": {"folder": {"type": "string"}}, "required": ["folder"]}
+
+    def preview(self, args):
+        try:
+            rec = workflows.plan(args["folder"])
+        except (OSError, workflows.WorkflowError) as e:
+            raise ToolError(str(e))
+        args["_plan_id"] = rec["id"]
+        return {"title": "Organizza " + rec["folder"], "danger": False, "confirm": "Sposta i file",
+                "detail": [f"{len(rec['entries'])} spostamenti; {len(rec['skipped'])} elementi lasciati invariati."] +
+                          [os.path.basename(e["source"]) + " → " + os.path.relpath(e["destination"], rec["folder"])
+                           for e in rec["entries"]]}
+
+    def run(self, args):
+        try:
+            rec = workflows.execute(args["_plan_id"])
+        except (OSError, workflows.WorkflowError) as e:
+            rec = workflows.load(args["_plan_id"])
+            if rec["state"] in ("running", "interrupted"):
+                return result(False, str(e), {"operation": rec["id"]},
+                              undo={"tool": self.name, "operation": rec["id"]})
+            raise ToolError(str(e))
+        return result(True, f"Verificati {len(rec['entries'])} spostamenti.", {"operation": rec["id"]},
+                      undo={"tool": self.name, "operation": rec["id"]})
+
+    def undo(self, data):
+        try:
+            workflows.undo(data["operation"])
+        except (OSError, workflows.WorkflowError) as e:
+            raise ToolError(str(e))
+        return result(True, "Posizioni originali ripristinate e verificate.")
+
+
+class DiagnoseAudio(Tool):
+    name, kind, icon = "diagnose_audio", "read", "audio-card"
+    description = "Read actual audio outputs, current default and mute states. Do not claim the sound is audible."
+
+    def preview(self, args):
+        return {"title": T("audio_diagnosis"), "detail": [], "danger": False, "confirm": T("btn_open")}
+
+    def run(self, args):
+        try:
+            state = workflows.audio_state()
+        except (ValueError, workflows.WorkflowError) as e:
+            raise ToolError(str(e))
+        return result(True, "Stato audio letto. Per confermare il suono serve una prova dell'utente.", state)
+
+
+class SetAudioOutput(Tool):
+    name, icon, permission = "set_audio_output", "audio-card", "system_changes"
+    description = "Change default audio output to an exact sink name returned by diagnose_audio. Requires confirmation."
+    parameters = {"type": "object", "properties": {"name": {"type": "string"}}, "required": ["name"]}
+
+    def preview(self, args):
+        try:
+            state = workflows.audio_state()
+        except (ValueError, workflows.WorkflowError) as e:
+            raise ToolError(str(e))
+        sink = next((s for s in state["sinks"] if s["name"] == args["name"]), None)
+        if not sink:
+            raise ToolError("Uscita audio inesistente. Ripeti la diagnosi.")
+        args["_previous"] = state["default"]
+        return {"title": "Usa " + sink["description"], "detail": ["Uscita attuale: " + state["default"],
+                "Le applicazioni già aperte possono mantenere la loro uscita."], "danger": False, "confirm": "Applica"}
+
+    def run(self, args):
+        try:
+            state = workflows.audio_state()
+        except (ValueError, workflows.WorkflowError) as e:
+            raise ToolError(str(e))
+        if state["default"] != args["_previous"] or args["name"] not in [s["name"] for s in state["sinks"]]:
+            raise ToolError("Lo stato audio è cambiato dall'anteprima.")
+        rc, _, err = sysutil.run(["pactl", "set-default-sink", args["name"]], 5)
+        if rc or workflows.audio_state()["default"] != args["name"]:
+            raise ToolError("Cambio uscita non verificato: " + err[:200])
+        return result(True, "Uscita predefinita verificata. Prova ora il suono.", {},
+                      undo={"tool": self.name, "name": args["_previous"], "expected": args["name"]})
+
+    def undo(self, data):
+        if workflows.audio_state()["default"] != data["expected"]:
+            raise ToolError("L'uscita è cambiata nel frattempo: ripristino sospeso.")
+        rc, _, _ = sysutil.run(["pactl", "set-default-sink", data["name"]], 5)
+        if rc or workflows.audio_state()["default"] != data["name"]:
+            raise ToolError("Ripristino uscita non verificato.")
+        return result(True, "Uscita precedente ripristinata.")
+
+
+class InstallCatalogApp(Tool):
+    name, icon, permission = "install_catalog_app", "system-software-install", "system_changes"
+    description = "Install a user Flatpak from the allowlisted catalog: vlc, gimp, libreoffice, krita. Network needed."
+    parameters = {"type": "object", "properties": {"name": {"type": "string", "enum": list(workflows.CATALOG)}},
+                  "required": ["name"]}
+
+    def check_origin(self):
+        rc, remotes, _ = sysutil.read(["flatpak", "remotes", "--user", "--columns=name,url"], 5)
+        if rc or not any(line.split() == ["flathub", "https://dl.flathub.org/repo/"]
+                         for line in remotes.splitlines()):
+            raise ToolError("Catalogo utente Flathub non configurato o origine diversa.")
+
+    def preview(self, args):
+        try:
+            app = workflows.catalog_app(args["name"])
+        except workflows.WorkflowError as e:
+            raise ToolError(str(e))
+        self.check_origin()
+        rc, info, err = sysutil.read(["flatpak", "remote-info", "--user", "--show-metadata", "flathub", app["id"]], 30)
+        if rc:
+            raise ToolError("Impossibile verificare l'applicazione nel catalogo: " + err[:200])
+        args["_metadata"] = info
+        return {"title": "Installa " + app["name"], "detail": ["Origine: Flathub · " + app["id"],
+                "Installazione nel tuo account; richiede rete. Disinstallazione e recupero dei dati non sono automatici.",
+                info[:6000]], "danger": False, "confirm": "Installa"}
+
+    def run(self, args):
+        app = workflows.catalog_app(args["name"])
+        self.check_origin()
+        rc, info, err = sysutil.read(["flatpak", "remote-info", "--user", "--show-metadata", "flathub", app["id"]], 30)
+        if rc or info != args["_metadata"]:
+            raise ToolError("Il catalogo è cambiato dall'anteprima. Ripeti la proposta.")
+        rc, out, err = sysutil.run(["flatpak", "install", "--user", "--noninteractive", "flathub", app["id"]], 1800)
+        if rc:
+            raise ToolError("Installazione non completata: " + (err or out)[-500:])
+        rc, location, _ = sysutil.read(["flatpak", "info", "--user", "--show-location", app["id"]], 10)
+        if rc or not location.strip():
+            raise ToolError("Installazione non verificata.")
+        return result(True, "Installazione verificata: " + app["name"], {"app": app["id"]})
+
+
+ALL = [OrganizeFolder(), DiagnoseAudio(), SetAudioOutput(), InstallCatalogApp(), OpenHelp(), OpenApp(), OpenSettings(), OpenPath(), FindFiles(), SystemStatus(), MoveFile(), RenameFile(), CreateFolder(),
        TrashFile(), SetDarkMode(), SetVolume(), SetBrightness(), SetWifi(), CreateReminder(), RunCommand()]
 BY_NAME = {t.name: t for t in ALL}
 
 
 def schemas():
-    return [t.schema() for t in ALL]
+    return [t.schema() for t in ALL if t.name != "run_command"]
+
+
+def select_schemas(text, history=None):
+    """Reduce CPU prefill for known domains. Routing never authorizes an action."""
+    text = (text or "").lower()
+    names = set()
+    domains = [
+        (r"cartell|file|document|foto|immagin|folder|organizz|organiz|download|directory|spost|rinomin|creare|create",
+         {"organize_folder", "find_files", "open_path", "move_file", "rename_file", "create_folder", "trash_file"}),
+        (r"audio|suono|sento|cuffi|altoparl|volume|sound|speaker|headphone|hear",
+         {"diagnose_audio", "set_audio_output", "set_volume", "open_settings"}),
+        (r"install|catalog|vlc|gimp|krita|libreoffice|applicaz|app\b",
+         {"install_catalog_app", "open_app"}),
+        (r"impostaz|settings|wi.?fi|bluetooth|tema|theme|schermo|display|brightness|luminosit|batter|sistema",
+         {"open_settings", "system_status", "set_wifi", "set_dark_mode", "set_brightness"}),
+        (r"promemoria|ricordami|remind", {"create_reminder"}),
+        (r"aiuto|guida|help|scorciato|shortcut", {"open_help"}),
+    ]
+    # Keep the previous turn's domain for short follow-ups; never inspect attachments.
+    previous = next((m.get("content", "") for m in reversed(history or [])
+                     if m.get("role") == "user" and isinstance(m.get("content"), str)), "")
+    routed = text + (" " + previous.lower() if len(text) < 80 else "")
+    for pattern, group in domains:
+        if re.search(pattern, routed):
+            names.update(group)
+    if not names:
+        return schemas()
+    return [t.schema() for t in ALL if t.name in names]
+
+
+def validate_args(tool, args):
+    """Reject invalid and internal model arguments before preview can attach a plan."""
+    if not isinstance(args, dict):
+        raise ToolError("Argomenti non validi.")
+    props = tool.parameters.get("properties", {})
+    if set(args) - set(props) or any(k not in args for k in tool.parameters.get("required", [])):
+        raise ToolError("Argomenti mancanti o non consentiti.")
+    for key, value in args.items():
+        rule = props[key]
+        typ = rule.get("type")
+        expected = {"string": str, "integer": int, "boolean": bool, "number": (int, float),
+                    "array": list, "object": dict}.get(typ)
+        if expected and (not isinstance(value, expected) or typ in ("integer", "number") and isinstance(value, bool)):
+            raise ToolError("Tipo di argomento non valido: " + key)
+        if isinstance(value, str) and (len(value) > 4096 or "\x00" in value):
+            raise ToolError("Argomento troppo lungo o non valido.")
+        if "enum" in rule and value not in rule["enum"]:
+            raise ToolError("Valore non consentito: " + key)
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            if "minimum" in rule and value < rule["minimum"] or "maximum" in rule and value > rule["maximum"]:
+                raise ToolError("Valore fuori intervallo: " + key)
 
 
 def get(name):

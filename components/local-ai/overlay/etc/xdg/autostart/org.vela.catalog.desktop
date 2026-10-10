@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Vela application catalog
+Exec=vela-catalog-init
+NoDisplay=true
+X-KDE-autostart-phase=2

@@ -14,6 +14,7 @@ KCM.SimpleKCM {
 
     readonly property bool aiOn: v("enabled") === true
     readonly property bool online: v("provider") === "openai"
+    readonly property bool packaged: String(v("openai.base_url")) === "http://127.0.0.1:11435/v1" && root.online
     readonly property string onlineHost: {
         kcm.revision
         var u = String(v("openai.base_url") || "")
@@ -78,8 +79,13 @@ KCM.SimpleKCM {
             Kirigami.FormData.label: root.td("Runs on:")
             enabled: root.aiOn
             text: root.td("This computer (local model)")
-            checked: !root.online
-            onToggled: if (checked) root.setv("provider", "ollama")
+            checked: root.packaged || !root.online
+            onToggled: if (checked) {
+                root.setv("provider", "openai")
+                root.setv("openai.base_url", "http://127.0.0.1:11435/v1")
+                root.setv("openai.model", "vela-local")
+                root.setv("privacy.allow_cloud", false)
+            }
         }
         QQC2.Label {
             Layout.maximumWidth: Kirigami.Units.gridUnit * 22
@@ -87,13 +93,14 @@ KCM.SimpleKCM {
             wrapMode: Text.Wrap
             font: Kirigami.Theme.smallFont
             color: Kirigami.Theme.textColor; opacity: 0.7
-            text: root.td("Private and works offline. Uses Ollama; answers are slower on modest hardware.")
+            text: root.td("Gemma 4 E2B is included and runs locally. No account or first-run download.")
         }
         QQC2.RadioButton {
             id: onlineRadio
+            visible: !root.packaged
             enabled: root.aiOn
             text: root.td("An online service (OpenAI-compatible API)")
-            checked: root.online
+            checked: root.online && !root.packaged
             onToggled: if (checked) root.setv("provider", "openai")
         }
         QQC2.Label {
@@ -102,7 +109,8 @@ KCM.SimpleKCM {
             wrapMode: Text.Wrap
             font: Kirigami.Theme.smallFont
             color: Kirigami.Theme.textColor; opacity: 0.7
-            text: root.td("Faster and smarter models. What you ask is sent to the service you choose.")
+            visible: !root.packaged
+            text: root.td("What you ask is sent to the service you choose.")
         }
 
         // ---------- local ----------
@@ -119,7 +127,7 @@ KCM.SimpleKCM {
         QQC2.ComboBox {
             id: presetCombo
             Kirigami.FormData.label: root.td("Service:")
-            visible: root.online
+            visible: root.online && !root.packaged
             enabled: root.aiOn
             Layout.preferredWidth: Kirigami.Units.gridUnit * 16
             textRole: "label"
@@ -146,7 +154,7 @@ KCM.SimpleKCM {
         }
         QQC2.TextField {
             Kirigami.FormData.label: root.td("Address:")
-            visible: root.online
+            visible: root.online && !root.packaged
             enabled: root.aiOn
             Layout.preferredWidth: Kirigami.Units.gridUnit * 16
             text: String(v("openai.base_url") || "")
@@ -155,7 +163,7 @@ KCM.SimpleKCM {
         }
         Kirigami.PasswordField {
             Kirigami.FormData.label: root.td("API key:")
-            visible: root.online
+            visible: root.online && !root.packaged
             enabled: root.aiOn
             Layout.preferredWidth: Kirigami.Units.gridUnit * 16
             text: kcm.apiKey
@@ -163,7 +171,7 @@ KCM.SimpleKCM {
             onTextChanged: if (activeFocus) kcm.apiKey = text
         }
         QQC2.Label {
-            visible: root.online
+            visible: root.online && !root.packaged
             Layout.maximumWidth: Kirigami.Units.gridUnit * 22
             wrapMode: Text.Wrap
             font: Kirigami.Theme.smallFont
@@ -176,7 +184,7 @@ KCM.SimpleKCM {
             QQC2.ComboBox {
                 id: modelCombo
                 Layout.preferredWidth: Kirigami.Units.gridUnit * 16
-                editable: true
+                editable: !root.packaged
                 readonly property string key: root.online ? "openai.model" : "ollama.model"
                 readonly property string current: String(v(key) || "")
                 model: {
@@ -229,7 +237,7 @@ KCM.SimpleKCM {
             QQC2.ComboBox {
                 id: pullCombo
                 Layout.preferredWidth: Kirigami.Units.gridUnit * 16
-                editable: true
+                editable: !root.packaged
                 textRole: "label"
                 valueRole: "tag"
                 model: [

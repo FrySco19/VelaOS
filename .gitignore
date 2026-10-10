@@ -13,3 +13,6 @@ coordination/*.lock
 !.env.example
 id_ed25519*
 *.pem
+components/local-ai/overlay/usr/lib/vela/local-ai/
+components/local-ai/overlay/usr/share/vela/models/
+components/local-ai/overlay/usr/share/doc/vela-local-ai/

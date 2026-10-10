@@ -65,6 +65,7 @@ printf '%s\n' grub-efi-amd64 grub-efi > config/package-lists/vela-installer-efi.
 printf '%s\n' cryptsetup-initramfs keyutils > config/package-lists/vela-installer.list.binary
 
 log "assembling components: $VELA_COMPONENTS"
+python3 "$VELA_ROOT/build/prepare-local-ai.py"
 vela_assemble config "$TEST"
 ls config/package-lists config/hooks/normal | sed 's/^/  /' >&2
 
@@ -84,6 +85,7 @@ unsquashfs -quiet -d "$VERIFY/root" binary/live/filesystem.squashfs \
   etc/vela usr/bin/vela-* usr/share/plasma/look-and-feel/org.vela.desktop \
   usr/share/plasma/layout-templates/org.vela.desktop.defaultPanels \
   usr/share/vela/store/featured.json \
+  usr/share/vela/models usr/lib/vela/local-ai usr/lib/systemd/user/vela-local-ai.service \
   usr/lib/x86_64-linux-gnu/qt6/plugins/plasma/kcms/systemsettings/kcm_vela_*.so
 sh "$VELA_ROOT/build/verify-integrated.sh" "$VERIFY/root"
 rm -rf "$VERIFY"

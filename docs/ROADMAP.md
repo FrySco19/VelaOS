@@ -5,7 +5,7 @@ L'obiettivo è un desktop aperto che si possa usare, capire e riparare. La prior
 | Fase | Risultato richiesto per considerarla completata |
 | --- | --- |
 | 1 — Preview collaborativa | Sorgenti pubblici, build documentata, issue riproducibili, CI e immagini reali |
-| 2 — Assistente operativo | Installazione runtime/modello con consenso, inferenza reale, errori e cancellazione, misure su hardware dichiarato |
+| 2 — Assistente operativo | Runtime e modello inclusi per impostazione predefinita, inferenza offline, anteprima/conferma, recupero delle cartelle, errori e cancellazione, misure su hardware dichiarato |
 | 3 — Sistema installabile | Installer su disco vuoto, cifratura, backup/ripristino, aggiornamenti e recupero provati in VM |
 | 4 — Hardware e accessibilità | Matrice di macchine, sospensione/rete/audio/periferiche, tastiera e lettore schermo verificati |
 | 5 — Beta per consumatori | Flussi completi, compatibilità applicativa documentata, criteri di release e supporto comunitario |

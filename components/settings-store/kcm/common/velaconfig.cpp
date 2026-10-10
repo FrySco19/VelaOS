@@ -27,14 +27,14 @@ QJsonObject builtin()
 {
     // Must match /etc/vela/ai.conf and vela_ai_config.BUILTIN
     static const char *json = R"({
-      "version": 1, "enabled": true, "provider": "ollama",
+      "version": 1, "enabled": true, "provider": "openai",
       "ollama": {"base_url": "http://127.0.0.1:11434", "model": "qwen2.5:1.5b"},
-      "openai": {"base_url": "https://api.openai.com/v1", "model": "gpt-4o-mini", "organization": ""},
+      "openai": {"base_url": "http://127.0.0.1:11435/v1", "model": "vela-local", "organization": ""},
       "generation": {"temperature": 0.3, "max_tokens": 1024, "timeout_s": 60},
       "language": "auto", "assistant": {"shortcut": "Meta+A", "history": true, "tray": true},
       "permissions": {"active_window": true, "selected_text": true, "clipboard": false,
         "files": "ask", "screen": "ask", "microphone": "ask", "web": "ask",
-        "run_commands": "ask", "network_settings": "ask", "system_changes": "ask"},
+        "run_commands": "never", "network_settings": "ask", "system_changes": "ask"},
       "privacy": {"allow_cloud": false, "log_actions": true, "log_retention_days": 30,
         "memory_enabled": true, "memory_paused": false,
         "memory_exclude_paths": ["~/.ssh", "~/.gnupg", "~/.local/share/keyrings"],

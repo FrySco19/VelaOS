@@ -1,4 +1,7 @@
 #include "kcm_vela_ai.h"
+#include <QFile>
+#include <QStandardPaths>
+#include <QProcess>
 #include "velaconfig.h"
 
 #include <KLocalizedString>
@@ -40,6 +43,11 @@ void VelaAiKcm::loadExtra()
 
 bool VelaAiKcm::saveExtra(QString *err)
 {
+    if (value(QStringLiteral("openai.base_url")).toString() == QLatin1String("http://127.0.0.1:11435/v1")) {
+        QProcess::startDetached(QStringLiteral("systemctl"), {QStringLiteral("--user"),
+            value(QStringLiteral("enabled")).toBool() ? QStringLiteral("start") : QStringLiteral("stop"),
+            QStringLiteral("vela-local-ai.service")});
+    }
     if (m_apiKey == m_apiKeySaved) return true;
     if (!VelaConfig::writeApiKey(m_apiKey, err)) return false;
     m_apiKeySaved = m_apiKey;
@@ -86,7 +94,10 @@ void VelaAiKcm::testConnection()
             return;
         }
         req.setUrl(QUrl(base + QStringLiteral("/models")));
-        if (hasApiKey()) req.setRawHeader("Authorization", "Bearer " + m_apiKey.trimmed().toUtf8());
+        if (base == QLatin1String("http://127.0.0.1:11435/v1")) {
+            QFile key(QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation) + QStringLiteral("/vela-local-ai.key"));
+            if (key.open(QIODevice::ReadOnly)) req.setRawHeader("Authorization", "Bearer " + key.readAll().trimmed());
+        } else if (hasApiKey()) req.setRawHeader("Authorization", "Bearer " + m_apiKey.trimmed().toUtf8());
     } else {
         QString base = value(QStringLiteral("ollama.base_url")).toString();
         while (base.endsWith(QLatin1Char('/'))) base.chop(1);

@@ -6,7 +6,7 @@ VELA_BUILD_DIR=${VELA_BUILD_DIR:-/var/tmp/vela2-live}
 VELA_OUT=${VELA_OUT:-$VELA_ROOT/build/out}
 VELA_LOCK=$VELA_ROOT/coordination/build.lock
 # Order of component application
-VELA_COMPONENTS=${VELA_COMPONENTS:-"base perf theme desktop settings-store apps terminal assistant onboarding qa"}
+VELA_COMPONENTS=${VELA_COMPONENTS:-"base perf theme desktop settings-store apps terminal assistant local-ai onboarding qa"}
 VELA_SSH_KEY=${VELA_SSH_KEY:-$VELA_ROOT/.local/ssh/id_ed25519}
 
 log() { printf '\033[1;34m[vela]\033[0m %s\n' "$*" >&2; }
@@ -39,10 +39,12 @@ vela_assemble() {
     fi
     if [ -d "$cdir/overlay" ]; then
       cp -a "$cdir/overlay/." "$dst/includes.chroot/"
+      find "$dst/includes.chroot" -type d -name __pycache__ -prune -exec rm -rf {} +
       # ZIP extraction on Windows loses Unix modes. Restore safe defaults and
       # executable launchers before live-build copies this tree into the image.
       find "$dst/includes.chroot" -type d -exec chmod 755 {} +
       find "$dst/includes.chroot" -type f -exec chmod 644 {} +
+      if [ "$(id -u)" = 0 ]; then chown -R 0:0 "$dst/includes.chroot"; fi
       find "$dst/includes.chroot" -type f -exec sh -c '
         for f do
           [ "$(head -c 2 "$f")" != "#!" ] || chmod 755 "$f"

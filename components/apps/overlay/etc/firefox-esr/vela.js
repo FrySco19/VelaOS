@@ -1,4 +1,4 @@
-// Vela defaults for Firefox ESR (agent: apps). Default prefs: the user can change them in Impostazioni of Firefox.
+// Vela defaults for Firefox ESR. The user can change these preferences in Firefox settings.
 // Debian loads every *.js file in /etc/firefox-esr as default preferences.
 
 // Native KDE dialogs (file picker, "open with") through xdg-desktop-portal-kde.

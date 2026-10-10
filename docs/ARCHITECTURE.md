@@ -13,6 +13,7 @@ La scrivania corrente è Plasma nativo. Il prototipo web precedente è isolato i
 | `components/apps` | Browser, estensione, native host e spazi |
 | `components/terminal` | Terminale Python/PySide6, PTY ed esecutore |
 | `components/assistant` | Pannello QML, strumenti locali e integrazione D-Bus |
+| `components/local-ai` | Modello e runtime verificati, servizio locale e licenze |
 | `components/onboarding` | Benvenuto, guida, testi e suggerimenti |
 | `components/qa` | Verifiche host/VM, non installate come applicazioni |
 | `tools/` | VM QEMU e distribuzione dei componenti per sviluppo |
@@ -29,6 +30,6 @@ flowchart LR
   VM --> Release[Release preview]
 ```
 
-Gli overlay sono applicati nell'ordine: base, perf, theme, desktop, settings-store, apps, terminal, assistant, onboarding, qa. Ogni componente può aggiungere pacchetti, file e hook. `/etc/vela/components.list` registra l'assemblaggio. La build deve fallire se un componente richiesto manca.
+Gli overlay sono applicati nell'ordine: base, perf, theme, desktop, settings-store, apps, terminal, assistant, local-ai, onboarding, qa. Ogni componente può aggiungere pacchetti, file e hook. `/etc/vela/components.list` registra l'assemblaggio. La build deve fallire se un componente richiesto manca.
 
 Il contratto della configurazione dell'assistente è in [AI_CONFIG.md](../components/settings-store/AI_CONFIG.md). L'esecutore e il modello sono servizi distinti: la presenza del pannello non implica che un modello sia installato o funzionante. Per modifiche ai file e comandi, mantenere anteprima, conferma e gestione degli errori; ogni nuovo flusso necessita di prove specifiche.

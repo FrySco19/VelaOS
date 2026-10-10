@@ -1,0 +1,55 @@
+{
+  "count": 120,
+  "correct": 113,
+  "median_seconds": 3.074542119000398,
+  "p95_seconds": 13.596960082002624,
+  "first_request_seconds": 34.90317005500037,
+  "platform": {
+    "system": "Linux",
+    "kernel": "6.18.33.2-microsoft-standard-WSL2",
+    "machine": "x86_64"
+  },
+  "notes": "CPU reference; prefix cache enabled by server. Synthetic paraphrases, not consumer usability study. No-tool cases require review of clarification text. No actions executed by this benchmark.",
+  "by_task": {
+    "organize_folder": {
+      "count": 12,
+      "correct": 9,
+      "median_seconds": 3.0669053379988327
+    },
+    "diagnose_audio": {
+      "count": 12,
+      "correct": 8,
+      "median_seconds": 2.6902131569986523
+    },
+    "set_volume": {
+      "count": 12,
+      "correct": 12,
+      "median_seconds": 2.5941329919987766
+    },
+    "install_catalog_app:vlc": {
+      "count": 12,
+      "correct": 12,
+      "median_seconds": 3.0743640460004826
+    },
+    "install_catalog_app:gimp": {
+      "count": 12,
+      "correct": 12,
+      "median_seconds": 3.0727047349992063
+    },
+    "open_settings": {
+      "count": 12,
+      "correct": 12,
+      "median_seconds": 2.6629751919990667
+    },
+    "create_folder": {
+      "count": 12,
+      "correct": 12,
+      "median_seconds": 2.8922892049995426
+    },
+    "no_tool": {
+      "count": 36,
+      "correct": 36,
+      "median_seconds": 8.576615036501607
+    }
+  }
+}

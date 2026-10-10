@@ -1,0 +1,19 @@
+{
+  "model": {
+    "name": "Gemma 4 E2B IT QAT Q4_0",
+    "repository": "google/gemma-4-E2B-it-qat-q4_0-gguf",
+    "revision": "675cff42a74c774d6cb76f76d8eacb49b48c9b93",
+    "file": "gemma-4-E2B_q4_0-it.gguf",
+    "url": "https://huggingface.co/google/gemma-4-E2B-it-qat-q4_0-gguf/resolve/675cff42a74c774d6cb76f76d8eacb49b48c9b93/gemma-4-E2B_q4_0-it.gguf",
+    "sha256": "fa401b55b07ee70a54c6dae3903c783a6e65064312529ea57175cb5f8dec6634",
+    "bytes": 3349516256,
+    "license": "Apache-2.0"
+  },
+  "runtime": {
+    "repository": "ggml-org/llama.cpp",
+    "tag": "b11539",
+    "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11539/llama-b11539-bin-ubuntu-x64.tar.gz",
+    "sha256": "f2476a4337d2ab2efc4d845f40d362518b74442a4c9833a5e02d219f4c2086fb",
+    "license": "MIT"
+  }
+}

@@ -1,0 +1,21 @@
+#!/bin/sh
+# Packaged inference: no network download, no account, loopback only.
+set -eu
+BIN=/usr/lib/vela/local-ai/llama-server
+MODEL=/usr/share/vela/models/gemma-4-E2B.gguf
+test -x "$BIN" && test -r "$MODEL" || { echo 'Modello locale incluso non disponibile' >&2; exit 1; }
+if ! python3 -c 'import sys; sys.path.insert(0, "/usr/lib/vela/python"); import vela_ai_config; sys.exit(0 if vela_ai_config.load().get("enabled", True) else 1)'; then
+  exit 0
+fi
+KEY="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/vela-local-ai.key"
+umask 077
+python3 - "$KEY" <<'PY'
+import os, secrets, sys
+with open(sys.argv[1], "w") as f:
+    f.write(secrets.token_hex(32) + "\n")
+os.chmod(sys.argv[1], 0o600)
+PY
+exec "$BIN" --model "$MODEL" --alias vela-local --host 127.0.0.1 --port 11435 \
+  --ctx-size 4096 --parallel 1 --threads 4 --n-gpu-layers 0 --jinja \
+  --chat-template-kwargs '{"enable_thinking":false}' --sleep-idle-seconds 300 \
+  --no-webui --load-mode mmap --lazy-mode on --api-key-file "$KEY"

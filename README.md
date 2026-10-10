@@ -12,13 +12,13 @@
 
 [![Source checks](https://github.com/FrySco19/VelaOS/actions/workflows/checks.yml/badge.svg)](https://github.com/FrySco19/VelaOS/actions/workflows/checks.yml)
 
-VelaOS è un progetto aperto di sistema operativo per desktop, basato su **Debian 13 e KDE Plasma 6**. Riunisce un ambiente grafico coerente, impostazioni native, applicazioni, un terminale con esecuzione confermata e un assistente configurabile.
+VelaOS è un progetto aperto di sistema operativo per desktop, basato su **Debian 13 e KDE Plasma 6**. Riunisce un ambiente grafico coerente, impostazioni native, applicazioni, un terminale con esecuzione confermata e un assistente locale incluso per impostazione predefinita.
 
-**Stato: preview di sviluppo.** Il desktop si avvia in VirtualBox e i componenti Vela sono integrati. Installazione su disco, compatibilità hardware estesa e inferenza con un modello reale richiedono ancora collaudo. Non è una versione stabile per sostituire il sistema principale.
+**Stato: preview di sviluppo.** Il desktop si avvia in VirtualBox e i componenti Vela sono integrati. Installazione su disco e compatibilità hardware estesa richiedono ancora collaudo. Le prove del modello e i loro limiti sono nel rapporto della release. Non è una versione stabile per sostituire il sistema principale.
 
-**English:** An open desktop OS project built on Debian 13 and KDE Plasma 6. Native desktop integration, settings, applications and an optional configurable assistant. Development preview; real hardware, disk installation and real-model inference are not yet validated. Contributions in Italian and English are welcome.
+**English:** An open desktop OS project built on Debian 13 and KDE Plasma 6. Native desktop integration, settings, applications and a bundled local Gemma 4 E2B assistant. Development preview; disk installation and physical hardware are not yet validated. See the release verification report for actual CPU inference measurements. Contributions in Italian and English are welcome.
 
-![Schermata reale del benvenuto VelaOS in VirtualBox](docs/images/welcome.png)
+![Assistente locale nella preview 2.1, VM senza rete](docs/images/local-audio.png)
 
 ## Dentro VelaOS
 
@@ -32,7 +32,13 @@ VelaOS è un progetto aperto di sistema operativo per desktop, basato su **Debia
 | Primo avvio | Benvenuto, guida, suggerimenti e scorciatoie |
 | Sviluppo | Sorgenti, script ISO, strumenti VM, test e generatori delle risorse grafiche |
 
-L'assistente è opzionale. **Il motore e il modello non sono preinstallati**: la configurazione locale prevista usa Ollama; è disponibile anche una connessione online compatibile con OpenAI, su scelta dell'utente. Le prove con server simulato verificano i protocolli, non la qualità o la velocità di un modello reale.
+**Gemma 4 E2B e llama.cpp sono inclusi nella ISO.** L'assistente parte in locale,
+senza account, chiavi cloud o download del modello al primo avvio. Propone
+operazioni con anteprima e conferma: organizzazione di cartelle con registro e
+ripristino, diagnosi/cambio uscita audio e installazione dal catalogo controllato.
+Il download delle applicazioni richiede rete; le richieste al modello restano sul
+computer. L'assistente si può disattivare dalle impostazioni.
+[Funzionamento, limiti e schema dei flussi](docs/LOCAL_ASSISTANT.md).
 
 ## Schermate reali
 
@@ -53,7 +59,8 @@ flowchart TB
   Plasma --> Apps[Discover, browser e applicazioni]
   Plasma --> Welcome[Benvenuto e guida]
   Settings --> Config[Configurazione condivisa]
-  Config --> Assistant[Assistente opzionale]
+  Config --> Assistant[Assistente locale]
+  Gemma[Gemma 4 E2B incluso / llama.cpp] --> Assistant
   Config --> Terminal[Terminale Vela]
   Assistant --> Confirm[Anteprima e conferma]
   Terminal --> Confirm
@@ -64,21 +71,23 @@ flowchart TB
 
 ## Provarlo
 
-Scarica ISO e checksum dalla sezione [Releases](https://github.com/FrySco19/VelaOS/releases). La preview pubblica disabilita l'accesso SSH di sviluppo e non contiene chiavi di accesso predisposte.
+Scarica le parti della ISO, `ISO-PARTS.json` e `join-release.ps1` dalla sezione [Releases](https://github.com/FrySco19/VelaOS/releases). La preview pubblica disabilita l'accesso SSH di sviluppo e non contiene chiavi di accesso predisposte.
 
-Per VirtualBox su Windows, scarica anche `Start-VM-Vela2.ps1` e avvialo nella cartella della ISO:
+Su Windows metti tutte le parti e il manifest nella stessa cartella e avvia
+`join-release.ps1`: verifica ogni parte e crea la ISO completa. Per VirtualBox,
+scarica anche `Start-VM-Vela2.ps1` e avvialo nella cartella della ISO:
 
 ```powershell
-.\Start-VM-Vela2.ps1 -Iso ".\VelaOS-2.0-preview-public.iso" -MemoryMB 8192
+.\Start-VM-Vela2.ps1 -Iso ".\VelaOS-2.1-local-preview.iso" -MemoryMB 8192
 ```
 
 Leggi [la guida VirtualBox](VIRTUALBOX.md) prima di procedere. Per ricompilare da Debian 13, segui [BUILD.md](docs/BUILD.md). Le ISO sono asset delle release; non vengono salvate nella cronologia Git.
 
 ## Cosa è verificato e cosa manca
 
-Avvio al desktop in VirtualBox, primo benvenuto, quattro pagine delle impostazioni, cambio tema, catalogo Store, ridimensionamento e protocollo dell'esecutore sono stati controllati. Sono disponibili **401 test terminale passati (4 saltati)**, **52 test assistente** e **13 controlli browser**, con i limiti descritti nel [resoconto delle verifiche](docs/VERIFICATION.md).
+Avvio al desktop in VirtualBox, primo benvenuto, quattro pagine delle impostazioni, cambio tema, catalogo Store, ridimensionamento e protocollo dell'esecutore sono stati controllati. Sono disponibili **402 test terminale passati (3 saltati)**, **115 test assistente** e **13 controlli browser**, con i limiti descritti nel [resoconto delle verifiche](docs/VERIFICATION_LOCAL.md).
 
-Restano da completare inferenza reale, installer e ripristino, prove su hardware fisico, accessibilità, aggiornamenti affidabili e misurazioni delle prestazioni. Vedi [problemi noti](docs/KNOWN_ISSUES.md) e [roadmap](docs/ROADMAP.md).
+Restano da completare installer e ripristino del sistema, prove su hardware fisico, accessibilità, aggiornamenti affidabili, GPU e dispositivi mobili. Le misure CPU non garantiscono le prestazioni su altre macchine. Vedi [problemi noti](docs/KNOWN_ISSUES.md) e [roadmap](docs/ROADMAP.md).
 
 ## Costruiamolo insieme
 

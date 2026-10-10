@@ -26,7 +26,7 @@ PageBase {
     Row {
         spacing: 12
         Repeater {
-            model: [{v: "local", ic: "cpu"}, {v: "online", ic: "cloud"}, {v: "off", ic: "off"}]
+            model: [{v: "local", ic: "cpu"}, {v: "off", ic: "off"}]
             ChoiceCard {
                 required property var modelData
                 width: 196
@@ -50,9 +50,8 @@ PageBase {
         width: parent.width
         spacing: 8
         VButton {
-            visible: backend.canSetupLocal
-            text: backend.s["ai.setupLocal"]
-            onClicked: backend.setupLocal()
+            text: "Riprova / Retry"
+            onClicked: backend.checkLocal()
         }
         Text {
             width: parent.width; wrapMode: Text.WordWrap

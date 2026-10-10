@@ -10,6 +10,8 @@ VelaOS si basa su software esistente. Copyright e licenze dei rispettivi autori 
 | Firefox ESR | [Mozilla](https://www.mozilla.org/firefox/); non viene dichiarata proprietà del marchio Firefox |
 | Flatpak/Flathub | [Flatpak](https://flatpak.org/), [Flathub](https://flathub.org/); ciascuna app ha licenza propria e non è inclusa solo perché compare nel catalogo |
 | Calamares | [Calamares](https://calamares.io/); configurazione basata sui pacchetti Debian |
+| Gemma 4 E2B IT QAT Q4_0 | [Google, modello ufficiale](https://huggingface.co/google/gemma-4-E2B-it-qat-q4_0-gguf); Apache-2.0, revisione e SHA256 in `components/local-ai/assets.json`, licenza inclusa nella ISO |
+| llama.cpp | [ggml-org](https://github.com/ggml-org/llama.cpp/tree/b11539); runtime MIT, build e hash fissati nel manifesto, licenza inclusa nella ISO |
 | Guest Additions | Pacchetti [Debian Fast Track](https://fasttrack.debian.net/); mantenere le licenze del pacchetto |
 | Inter | [Inter](https://github.com/rsms/inter), SIL Open Font License 1.1; font/risorse derivati conservano le relative condizioni |
 | Risorse Vela | Generatori e metadati in `components/theme`; vedere LICENSES/README.md |

@@ -33,6 +33,9 @@ _OFF = r"(disattiva|spegni|disabilita|togli|turn off|disable)"
 
 
 def match(text):
+    workflow = _workflow_match(text)
+    if workflow:
+        return workflow
     t = _n(text)
     if not t or len(t) > 80:
         return None
@@ -112,6 +115,29 @@ def match(text):
     m = re.fullmatch(r"(apri|avvia|lancia|open|launch|start) (l'|il |la |lo |i |le |gli |the |app )?(.{2,40})", t)
     if m:
         return "open_app", {"name": m.group(3)}
+    return None
+
+
+def _workflow_match(text):
+    """Explicit single workflows can prepare a preview without CPU inference."""
+    raw = (text or "").strip()
+    if len(raw) > 512 or "\n" in raw:
+        return None
+    prefix = r"(?:(?:per favore[,]?|please|mi aiuti a|puoi)\s+)?"
+    path = r'''(?P<path>"[^"\n]+"|'[^'\n]+'|(?:~/|/)[^\s?]+)'''
+    m = re.fullmatch(prefix + r"(?:organizza(?:re)?|organize)\s+(?:(?:la cartella|cartella|the folder|folder)\s+)?" + path +
+                     r"(?:\s+(?:per tipo(?: di file)?|by file type))?\??", raw, re.IGNORECASE)
+    if m:
+        folder = m.group("path")
+        if folder[0] in "\"'":
+            folder = folder[1:-1]
+        return "organize_folder", {"folder": folder}
+    m = re.fullmatch(prefix + r"(?:installa(?:re)?|install)\s+(vlc|gimp|krita|libreoffice)(?:\s+(?:dal catalogo|from the catalog))?\??",
+                     raw, re.IGNORECASE)
+    if m:
+        return "install_catalog_app", {"name": m.group(1).lower()}
+    if re.fullmatch(prefix + r"(?:controlla|diagnostica|check|diagnose)\s+(?:l['’])?(?:audio|sound)\??", raw, re.IGNORECASE):
+        return "diagnose_audio", {}
     return None
 
 
