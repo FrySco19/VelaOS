@@ -1,3 +1,5 @@
+> **Nuova architettura — LFS + Neural Bus.** Il lavoro corrente è nei prototipi [M0: ricerca ibrida](poc/m0/README.md) e [M1: nucleo LFS in Rust](poc/m1/README.md). M0 non ha ancora chiuso la valutazione completa sulle 200 parafrasi. Il nucleo M1 è separato dal futuro trasporto zero-copy M2. Il desktop e le istruzioni seguenti documentano il prototipo precedente e non implementano la nuova architettura.
+
 <p align="center"><img src="docs/images/banner.svg" alt="VelaOS — Un desktop aperto, un progetto da costruire insieme" width="100%"></p>
 
 <p align="center">

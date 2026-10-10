@@ -1,0 +1,16 @@
+# M1 decisions — 2026-10-10
+
+The specification's LFS storage/crash-consistency milestone is implemented as an internal Rust kernel. The explicit request to proceed to M1 overrides waiting for M0, but M0's 200-paraphrase gate remains open. The legacy desktop/ISO release remains outside this architectural work.
+
+1. Use redb 4.3.0 with separate blob and commit transactions and immediate durability. Persist the idempotency binding in the same transaction as the authoritative signed operation. Avoid a second authoritative metadata store.
+2. Host encrypted blobs in the same physical redb backing for this adapter. Callers address content OIDs and handles only. A future persistent storage adapter must preserve the same durability order, not expose a hierarchy to the planner.
+3. Use a single mutable writer instance; redb also enforces exclusive ownership of its backing. The process-kill harness drops the parent instance before a child opens it. Limit the cache to 8 MiB for small fixtures instead of redb's default 1 GiB.
+4. Deduplicate complete content objects and repeated chunks within an object. Do not claim cross-object shared-chunk deduplication with independent object keys. Ciphertext and wrapping nonces come from the OS cryptographic RNG; content hashes bind reads to plaintext identity.
+5. Encrypt the commit body and idempotency record as well as payloads. Sign encrypted commit envelopes and link them by digest. Explicitly defer protection against complete-snapshot rollback to an external trusted-head anchor.
+6. Implement only the admitted network-configuration schema with a pure card extractor. The pinned extractor epoch contains no embedding; no LLM metadata generation or semantic reranker is called. M0 hybrid recall is not disguised as a production LFS index.
+7. Enforce Biscuit directly in the kernel using exact requested rights, not authority derived from a plan or from a bus verdict. Provide current-time facts for attenuation expiry checks. Caller identifiers are a closed validated alphabet before entering Datalog code. Tokens are bearer capabilities; authenticated bus sender binding belongs to M2.
+8. Bind read handles to caller, kind, content OID, wall-clock expiry, monotonic deadline and random boot session. A restart requires reminting handles. Do not pretend an internal read buffer is an iceoryx2 channel.
+9. Test real process termination with fixed reproducible PRNG seeds and five fault phases. Include dirty uncommitted transactions, a race against commit, committed-but-not-indexed recovery, and acknowledged writes. Independent expected counts detect loss of an acknowledged tail between trials. Distinct objects accumulate across 32 crashes before resetting synthetic storage.
+10. Keep synthetic root credentials out of default builds. The fault-fixture feature exists for local/CI verification only. Production unlock takes an externally provisioned collection key and Biscuit public root; no production credential or password is embedded or persisted.
+
+No live restore/apply operation, bus transport, Wasmtime host, encrypted-volume setup, production unlock UX or seL4 port is claimed by this milestone. Subsequent milestones must add their specified components rather than treating a passing storage gate as an OS release.

@@ -1,0 +1,32 @@
+name: LFS M1 Rust checks
+on:
+  push:
+    paths: ['poc/m1/**', '.github/workflows/lfs-m1.yml']
+  pull_request:
+    paths: ['poc/m1/**', '.github/workflows/lfs-m1.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  storage:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: poc/m1
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned Rust
+        run: rustup toolchain install 1.96.1 --profile minimal --component rustfmt --component clippy
+      - name: Check formatting
+        run: cargo +1.96.1 fmt --check
+      - name: Test kernel
+        run: cargo +1.96.1 test --locked
+      - name: Check all targets
+        run: cargo +1.96.1 clippy --all-targets --features fault-fixtures --locked -- -D warnings
+      - name: Process-kill smoke test (200 kills, not full gate)
+        run: cargo +1.96.1 run --release --locked --features fault-fixtures --bin crash-gate -- 200 ci-crash-report.json 4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: m1-crash-smoke
+          path: poc/m1/ci-crash-report.json
