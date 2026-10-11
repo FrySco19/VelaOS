@@ -1,9 +1,14 @@
-# Gate A — minimal seL4/Microkit boot
+# seL4/Microkit protection-domain scaffold
 
-This scaffold builds one Rust protection domain with seL4 Microkit 2.3.0 for
-`qemu_virt_aarch64`, packages it as a Microkit loader image, and starts QEMU.
-The guest writes `VelaOS Gate A: seL4 Boot Successful` through seL4's debug
-printing interface, then waits in Microkit's handler loop.
+This scaffold builds five distinct Rust protection domains with seL4 Microkit
+2.3.0 for `qemu_virt_aarch64`, packages them as one Microkit loader image, and
+starts QEMU. Microkit creates a separate CSpace and VSpace for each declared
+protection domain. Gate B currently demonstrates static domain separation and
+boot; it does not yet configure service IPC channels, dynamic capability
+delegation, or negative isolation tests.
+
+Each domain prints an online marker and then waits in Microkit's handler loop.
+Because the debug output is shared, concurrent startup messages may interleave.
 
 ## Pinned toolchain
 
@@ -31,12 +36,12 @@ docker build -f poc/m5_sel4/Dockerfile -t velaos-gate-a poc/m5_sel4
 docker run --rm -it velaos-gate-a
 ```
 
-The Docker build compiles the protection-domain ELF and creates
+The Docker build compiles all five protection-domain ELFs and creates
 `build/loader.img` inside the image. `docker run` starts QEMU interactively.
 Use `Ctrl+A`, then `X` to exit QEMU.
 
 ## Scope
 
-This is a boot/printing smoke test, not the full M5 architecture, an isolated
-VelaOS service graph, or hardware qualification. It verifies one Microkit
-protection domain on the pinned QEMU virtual platform only.
+This verifies five statically declared Microkit protection domains on the
+pinned QEMU virtual platform. It is not the full M5 architecture, a connected
+service graph, dynamic capability routing, or hardware qualification.

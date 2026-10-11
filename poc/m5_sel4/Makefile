@@ -4,8 +4,10 @@ CONFIG ?= debug
 BUILD ?= build
 CARGO_TARGET_DIR := $(BUILD)/cargo-target
 SEL4_INCLUDE_DIRS := $(MICROKIT_SDK)/board/$(BOARD)/$(CONFIG)/include
-APP_ELF := $(CARGO_TARGET_DIR)/aarch64-sel4-microkit/release/velaos-gate-a-hello.elf
-PD_ELF := $(BUILD)/hello_domain.elf
+PD_NAMES := pcb orchestrator bus lfs executor
+APP_ELFS := $(addprefix $(CARGO_TARGET_DIR)/aarch64-sel4-microkit/release/,$(addsuffix .elf,$(PD_NAMES)))
+PD_ELFS := $(addprefix $(BUILD)/,$(addsuffix .elf,$(PD_NAMES)))
+APP_BUILD_STAMP := $(BUILD)/cargo-target/.built
 LOADER := $(BUILD)/loader.img
 
 .PHONY: all build run clean
@@ -14,15 +16,16 @@ all: build
 
 build: $(LOADER)
 
-$(APP_ELF): app/Cargo.toml app/Cargo.lock app/src/main.rs app/rust-toolchain.toml app/rustc-wrapper.sh app/.cargo/config.toml app/targets/aarch64-sel4-microkit.json
+$(APP_BUILD_STAMP): app/Cargo.toml app/Cargo.lock $(wildcard app/src/*.rs app/src/bin/*.rs) app/rust-toolchain.toml app/rustc-wrapper.sh app/.cargo/config.toml app/targets/aarch64-sel4-microkit.json
 	mkdir -p $(BUILD)
-	cd app && SEL4_INCLUDE_DIRS="$(SEL4_INCLUDE_DIRS)" CARGO_TARGET_DIR="../$(CARGO_TARGET_DIR)" cargo build --locked --release
+	cd app && SEL4_INCLUDE_DIRS="$(SEL4_INCLUDE_DIRS)" CARGO_TARGET_DIR="../$(CARGO_TARGET_DIR)" cargo build --locked --release --bins
+	touch $@
 
-$(PD_ELF): $(APP_ELF)
-	cp $(APP_ELF) $(PD_ELF)
+$(BUILD)/%.elf: $(APP_BUILD_STAMP)
+	cp $(CARGO_TARGET_DIR)/aarch64-sel4-microkit/release/$*.elf $@
 
-$(LOADER): hello.system $(PD_ELF)
-	$(MICROKIT_SDK)/bin/microkit hello.system \
+$(LOADER): velaos.system $(PD_ELFS)
+	$(MICROKIT_SDK)/bin/microkit velaos.system \
 		--search-path $(BUILD) \
 		--board $(BOARD) \
 		--config $(CONFIG) \

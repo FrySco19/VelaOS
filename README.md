@@ -55,7 +55,7 @@ The host exposes only explicitly linked interfaces. Per-invocation fuel,
 epoch-based interruption, memory limits, and bounded IPC constrain execution.
 
 The architecture and threat boundaries are described in the [M5 design](docs/M5_DESIGN.md).
-Gate A's reproducible QEMU boot scaffold and exact commands are in
+Gate A/B's reproducible QEMU protection-domain scaffold and exact commands are in
 [`poc/m5_sel4/`](poc/m5_sel4/README.md).
 
 ## Project status
@@ -67,12 +67,13 @@ Gate A's reproducible QEMU boot scaffold and exact commands are in
 | M2 — IPC and WASM | **CLOSED** | Dual-lane IPC and WASM prototype tests cover typed transport, authorized reads, and adversarial traps. Current host-native peer isolation and durable bulk-file integration are not complete. |
 | M3 — intent routing | **CLOSED** | Constrained local intent router, finite templates, deterministic Rust policy, and capability revalidation at cache hits. It remains a prototype and does not authorize operations by model output. |
 | M4 — recovery and SLM footprint | **CONDITIONALLY CLOSED** | Persistent-provider, confirmation, and rollback implementation is present. mmap, 512-token context, and KV-offload configuration is in place; physical hardware/CI memory and latency qualification remains pending. |
-| M5 Gate A — reproducible seL4 boot | **CLOSED** | The pinned Microkit 2.3.0 image built and booted the AArch64 seL4 guest in QEMU, which printed `VelaOS Gate A: seL4 Boot Successful`. This verifies a minimal boot/print smoke test, not domain isolation or hardware readiness. |
-| M5 Gate B — domain isolation | **NEXT** | Implement and validate the protection-domain boundaries, capability distribution, and fault isolation defined in the M5 design. |
+| M5 Gate A — reproducible seL4 boot | **CLOSED** | The pinned Microkit 2.3.0 image built and booted the AArch64 seL4 guest in QEMU. |
+| M5 Gate B — domain isolation | **IN PROGRESS** | Five statically declared protection domains with separate ELFs, CSpaces, and VSpaces now build and boot. Capability manifests, restricted authority, negative reachability tests, and crash/restart tests remain. |
+| M5 Gate C — PCB capability derivation | **NEXT** | Define and test the bounded capability-derivation mechanism; Biscuit verification is application policy, not a kernel capability. |
 
 “Closed” for M0–M3 refers to the stated component-gate scope; it does not mean
 those components have been integrated into a complete seL4 operating system.
-Likewise, Gate A closes only the minimal QEMU boot criterion. M4 remains
+Gate B currently proves the static five-domain boot structure only. M4 remains
 conditional until its outstanding system and hardware measurements are
 completed. See [runtime status and limitations](docs/RUNTIME_STATUS.md).
 
@@ -131,7 +132,7 @@ for toolchain details and scope.
 | [`poc/m2/`](poc/m2/README.md) | Neural Bus, typed IPC, and WASM boundary prototypes. |
 | [`poc/m3/`](poc/m3/README.md) | Local intent routing, deterministic policy, and evaluation corpus. |
 | [`poc/m4/`](poc/m4/README.md) | Recovery coordinator, persistent provider, and rollback supervisor. |
-| [`poc/m5_sel4/`](poc/m5_sel4/README.md) | Gate A Microkit/Rust/QEMU boot scaffold. |
+| [`poc/m5_sel4/`](poc/m5_sel4/README.md) | Gate A boot and initial Gate B Microkit/Rust/QEMU protection-domain scaffold. |
 | [`docs/M5_DESIGN.md`](docs/M5_DESIGN.md) | Proposed seL4 protection-domain architecture and M5 acceptance gates. |
 | [`docs/RUNTIME_STATUS.md`](docs/RUNTIME_STATUS.md) | Runtime evidence, measurements, and outstanding limitations. |
 | [`archive/`](archive/README.md) | Historical web-shell prototype. |

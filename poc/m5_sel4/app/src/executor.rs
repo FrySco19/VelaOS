@@ -6,6 +6,6 @@ use sel4_microkit::{debug_println, protection_domain, Handler, NullHandler};
 
 #[protection_domain]
 fn init() -> impl Handler {
-    debug_println!("VelaOS Gate A: seL4 Boot Successful");
+    debug_println!("VelaOS Gate B: executor protection domain online");
     NullHandler::new()
 }

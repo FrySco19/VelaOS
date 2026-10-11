@@ -44,7 +44,7 @@ RUN set -eux; \
 
 WORKDIR /work
 
-COPY Makefile hello.system ./
+COPY Makefile velaos.system ./
 COPY app/ ./app/
 
 RUN chmod +x app/rustc-wrapper.sh

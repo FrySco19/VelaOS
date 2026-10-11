@@ -345,7 +345,13 @@ M5 is complete only when the following evidence is recorded for the pinned sourc
 ### Gate A — reproducible boot
 
 - Build and boot the same pinned seL4/QEMU image from a documented clean environment.
-- A first-boot scaffold is available in [`poc/m5_sel4/`](../poc/m5_sel4/). It pins Microkit SDK 2.3.0, `rust-sel4` v5.0.0, and that release's Rust toolchain; the Docker/QEMU boot remains unverified until the image is built and run.
+- The scaffold in [`poc/m5_sel4/`](../poc/m5_sel4/) pins Microkit SDK 2.3.0, `rust-sel4` v5.0.0, and that release's Rust toolchain. Its five-domain image has built and booted under QEMU; this verifies startup only, not service readiness, isolation attacks, or hardware behavior.
+
+### Gate B — initial static domain separation
+
+- The scaffold declares separate `pcb`, `orchestrator`, `bus`, `lfs`, and `executor` protection domains, each mapped to its own Rust ELF. Microkit supplies each domain with a distinct CSpace and VSpace.
+- The five-domain image builds and boots in QEMU. This is an initial static-separation milestone, not completion of the full Gate B acceptance criteria below.
+- Capability manifests, constrained initial authority, negative reachability tests, and crash/restart isolation tests remain required before Gate B can be considered fully closed.
 - Record source revisions, build commands, artifact hashes, QEMU machine/configuration, boot log, and service versions.
 - Reboot repeatedly and verify deterministic startup order and explicit readiness/failure behavior.
 
