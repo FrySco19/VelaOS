@@ -8,6 +8,7 @@ La roadmap segue gate tecnici verificabili per il sistema personale AI-native. N
 | M1 — Immutable LFS | Chiuso per il gate registrato | Kernel Rust, oggetti cifrati, commit firmati e policy Biscuit; 10.000 terminazioni di processo senza perdita o duplicazione nel test. Power-loss, anchor anti-rollback e servizio persistente restano fuori. |
 | M2 — Isolation & throughput | In corso | Bridge iceoryx2 reale verificata; Wasmtime compila e supera i test base in GitHub Actions. Restano aperti isolamento avversariale, throughput e streaming. |
 | M3 — Sistema integrato | Non iniziato | Integrare LFS, bus, semantic service e task runtime dietro API stabili; definire bootstrap, gestione chiavi, aggiornamenti, recovery e client utente. Obiettivo di sistema: meno di 1,5 GB RAM a riposo, da misurare sul sistema integrato. |
+| M5 — Executor seL4, fase engine | Build/boot verificati (standalone) | POC AArch64 Microkit con interprete Wasmi `no_std`, linker senza import, limiti fuel/memoria e controllo W^X sull'ELF; la fixture WASI `proc_exit` è stata rifiutata in QEMU. Non implica Gate C nel checkout corrente, collegamento PCB, ABI condivisa o chiusura M5. |
 
 ## M2: lavoro aperto
 
@@ -21,6 +22,18 @@ La roadmap segue gate tecnici verificabili per il sistema personale AI-native. N
 8. Misurare il budget RAM dell'intero sistema a riposo; il target è <1,5 GB, non ancora raggiunto né misurato per l'architettura corrente.
 
 I parametri iniziali del bulk sono 256 KiB per blocco e 8 crediti in volo (2 MiB per stream). Sono obiettivi di progetto; la lane bulk e il protocollo di crediti non sono ancora implementati.
+
+## M5 — fase engine del dominio Executor
+
+Il crate sperimentale [`poc/m5_executor/`](../poc/m5_executor/README.md) separa
+il runtime destinato a seL4 dal Wasmtime host di M2. Usa Wasmi interpretato,
+senza WASI/JIT, con un linker vuoto e budget espliciti. Build AArch64, controllo
+W^X ELF e boot QEMU sono stati verificati; una fixture con import
+`wasi_snapshot_preview1::proc_exit` è stata rifiutata dal linker vuoto. Questa
+è verifica della fase engine, non chiusura di Gate D o M5. Restano aperti:
+validazione del token nel PCB, trasferimento
+mediante pagine condivise, ingressi modulo avversariali, revoca/cancellazione e
+qualificazione RAM/latenza.
 
 ```mermaid
 flowchart LR

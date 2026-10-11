@@ -16,6 +16,7 @@
 | M0 — richiamo ibrido | Gate superato sul fixture sintetico | 186/200 parafrasi (93% recall@1), p95 25,67 ms. Non misura qualità su dati personali reali. [Risultati e limiti](poc/m0/GATE.md) |
 | M1 — storage LFS | Gate crash superato | Kernel Rust con oggetti cifrati, commit firmati e capability Biscuit; gate registrato su 10.000 terminazioni di processo. Non è ancora un servizio di storage distribuito. [Implementazione e validazione](poc/m1/README.md) |
 | M2 — isolamento e throughput | In corso | Bridge Rust con IPC iceoryx2 tra processi reali: 62.222 messaggi/s e p99 round-trip 17 µs nel test sequenziale da 4 KiB. Il boundary Wasmtime compila e passa i test base in GitHub Actions; isolamento avversariale, target >100.000 msg/s e streaming concorrente non sono dimostrati. [Stato M2](poc/m2/README.md) |
+| M5 — Executor seL4 (fase engine) | Build e boot verificati | Proof of concept autonomo con Wasmi `no_std`: build AArch64, controllo W^X ELF e boot QEMU verificati; la fixture conferma rifiuto di un import WASI non risolto, esaurimento fuel e limite memoria. Non è collegato al PCB né prova gli altri gate M5. [Stato e limiti](poc/m5_executor/README.md) |
 
 I numeri descrivono test specifici, non garanzie di prodotto. Il test M2 è ping/ack sequenziale, non throughput pipelined; il trasferimento dallo storage al loan IPC effettua una copia. Il target di sistema è meno di 1,5 GB di RAM a riposo, ancora da misurare. Il progetto non è pronto per dati sensibili o uso come sistema principale.
 
@@ -39,6 +40,7 @@ Il modello non concede permessi e non risolve direttamente gli oggetti. Il codic
 | [`poc/m0/`](poc/m0/README.md) | Esperimento di semantic hybrid recall; Python è confinato a questo spike. |
 | [`poc/m1/`](poc/m1/README.md) | Kernel storage Rust: canonicalizzazione, cifratura, commit firmati e handle capability-bound. |
 | [`poc/m2/`](poc/m2/README.md) | Bridge Neural Bus Rust/iceoryx2 e boundary Wasmtime in sviluppo. |
+| [`poc/m5_executor/`](poc/m5_executor/README.md) | Proof of concept standalone del dominio Executor AArch64/seL4 con Wasmi senza WASI/JIT. |
 | [`archive/`](archive/README.md) | Prototipo storico della shell web. |
 | `components/`, `build/` | Sorgenti e pipeline della precedente preview Debian/KDE; non implementano l'architettura M0-M2. |
 
