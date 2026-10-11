@@ -27,6 +27,9 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 #[allow(clippy::missing_safety_doc)]
 pub mod bridge;
 
+/// M-G1b: read grants bound to an explicit user selection (Candidate != Authority).
+pub mod grant;
+
 /// Same bound as M1/M2 authority code.
 pub const MAX_TOKEN_BYTES: usize = 16 * 1024;
 /// Largest Wasm payload that fits in one 4 KiB v2 frame.
@@ -54,6 +57,25 @@ pub enum DenyCode {
     Scope,
     /// Request id is zero or not strictly greater than the last admitted id.
     Replay,
+    /// M-G1b: grant lifetime outside 1..=120 s, or grant past `not_after`.
+    Expired,
+    /// M-G1b: selection/grant `expected_version` differs from the object version.
+    VersionConflict,
+}
+
+impl DenyCode {
+    /// Numeric code from CONTRACTS_v0 C5.
+    pub fn contract_code(self) -> u16 {
+        match self {
+            Self::Malformed => 1,
+            Self::Authentication => 2,
+            Self::Scope => 3,
+            Self::Replay => 4,
+            Self::Expired => 7,
+            Self::PolicyDenied => 10,
+            Self::VersionConflict => 12,
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
