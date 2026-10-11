@@ -26,7 +26,7 @@ La chiusura condizionale consente di iniziare la progettazione di M5 (port seL4/
 5. Eseguire SAVE → RECALL → selezione esatta → CONFIRM → APPLY → KEEP/rollback, i 100 casi di injection end-to-end e i guasti dei servizi reali. Le regressioni del parser non sostituiscono queste prove.
 6. Misurare RAM a riposo e prestazioni sull'intero runtime. Il target <1,5 GB non può essere ricavato dal solo working set del modello o ignorando la memoria impegnata.
 
-M5 riguarda il port seL4/QEMU. La sua progettazione può procedere in parallelo; l'avanzamento ufficiale di release a M5 resta subordinato alla validazione delle condizioni pendenti di M4.
+M5 riguarda il port seL4/QEMU. La progettazione può procedere in parallelo; l'avanzamento ufficiale di release a M5 resta subordinato alla validazione delle condizioni pendenti di M4. Vedere il [design Gate M5](M5_DESIGN.md), proposto e non ancora implementato.
 
 ### Verifica del provider e del supervisor
 
