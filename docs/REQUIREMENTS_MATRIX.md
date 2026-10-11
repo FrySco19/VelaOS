@@ -22,7 +22,7 @@ Agenti: **UX**, **seL4** (boot/piattaforma), **PCB** (authority/policy), **Execu
 | --- | --- | --- | --- | --- |
 | G1-01 | UI mostra piano/intento prima dell'esecuzione | unverified | — | UX |
 | G1-02 | Utente emette Biscuit attenuato per operazione/oggetto/durata | prototype | `poc/m1`, `poc/m2/src/authority.rs` (host) | PCB |
-| G1-03 | PDP host (std) verifica Biscuit contro root pinned e rifiuta fuori scope; firma solo se consentito | documented | `BRIDGE_CONTRACT.md` | PCB |
+| G1-03 | PDP host (std) verifica Biscuit contro root pinned e rifiuta fuori scope; firma solo se consentito | implemented (host; in-guest rinviato) | `poc/m5_executor/policy` - 12/12 test host (M-G1a) | PCB |
 | G1-04 | PCB produce admission strutturata firmata (envelope v0) | documented | `docs/CONTRACTS_v0.md` §C1 | PCB |
 | G1-05 | Executor verifica firma admission, binding byte esatti, quote | prototype | `app/src/bridge.rs` (frame v2, Ed25519) | Executor |
 | G1-06 | Wasm senza import ambientali, risultato bounded | prototype | `PHASE_2_3_REPORT.md` (risultato 7, WASI rifiutato) | Executor |
@@ -30,7 +30,7 @@ Agenti: **UX**, **seL4** (boot/piattaforma), **PCB** (authority/policy), **Execu
 | G1-08 | LFS persiste risultato + receipt idempotente `(epoch, request_id)` | documented | `docs/CONTRACTS_v0.md` §C4 | Executor |
 | G1-09 | Output non autorizzato non viene persistito (test negativo) | unverified | — | QA |
 | G1-10 | UI mostra autorizzazione, risultato, provenienza, undo/compensazione | unverified | — | UX |
-| G1-11 | Test host: Biscuit fuori scope rifiutato senza esecuzione Wasm | unverified | prima milestone, `coordination/PLAN_GROK.md` | PCB |
+| G1-11 | Test host: Biscuit fuori scope rifiutato senza esecuzione Wasm | implemented (host) | `poc/m5_executor/policy/tests/admit.rs` (deny = nessun frame firmato; il PDP non linka runtime Wasm) | PCB |
 
 ## Gate 2 — Robustezza e sicurezza
 
