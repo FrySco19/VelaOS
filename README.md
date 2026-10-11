@@ -120,7 +120,12 @@ approximately 4.55 GB. Full repeated and integrated qualification remains open.
 The invariant-prefix adapter subsequently scored 296/300 on one round with a
 129.40 ms maximum: host focus travels as structured context, and native policy
 still prevents the model from manufacturing a selection. Its repeated gate is
-recorded separately from these earlier trials.
+recorded separately from these earlier trials. The latest 20-round run had a
+single 264.23 ms route-cache-miss sample (p95 163.46 ms), so the strict planner
+gate remains failed. A focused cache authorization benchmark measured a 0.601 ms
+maximum over 6,000 hits with fresh Biscuit checks. The outlier was local
+ready-model inference, not a cache hit or a QEMU measurement; no authorization
+fast path was introduced.
 Idle measurements were process-level, not total-OS
 measurements, so the <1.5 GB target is also not yet certified. Detailed
 measurements and caveats are recorded in [RUNTIME_STATUS.md](docs/RUNTIME_STATUS.md).

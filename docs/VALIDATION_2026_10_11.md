@@ -39,6 +39,12 @@ post-idle private commit was 842 MB. One streaming round had 295/300 composed
 routes correct, 121.65 ms p95 and 245.77 ms maximum. This single ready-model round
 does not prove repeated consistency, cold wake latency or the <1.5 GB OS target.
 The planner/cache gates now enforce 250 ms rather than the inconsistent 400 ms.
+The later typed-focus v2, 20-round ready-model run produced 6000 valid outputs
+and identical classifications, but its maximum was 264.2297 ms (one route-cache
+miss; p95 163.4565 ms), so the planner gate remains failed. This is local model
+inference timing, not QEMU. A separate 6000-hit cache authorization microbenchmark
+performed fresh Biscuit validation on every hit and measured p95 0.257 ms / max
+0.601 ms; no fast path that skips authorization was added.
 
 The next consumer-readiness work is protected persistent identity/UI ingress,
 durable service integration in the chosen boot platform, error/restart handling

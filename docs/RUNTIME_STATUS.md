@@ -10,6 +10,8 @@ Il runtime Rust M2–M4 è pubblicato nella PR di sviluppo. **M4 è condizionata
 | Tre benchmark dual-lane | >100.000 msg/s, p99 <100 µs, regressione <20% | 10 GB generati, non file LFS bulk durevoli |
 | Planner senza route cache, 20 ripetizioni | 6.000 output validi; router 98,33–98,67%; massimo 246,959 ms | Stabilità fallita su una richiesta ambigua; modello da solo 92,33–92,67% |
 | Router con cache, 20 ripetizioni | 98,67%, piani identici; massimo cold 171,351 ms, warm 0,524 ms | 300 chiamate modello + 5.700 cache hit entro TTL; non prova stabilità dopo scadenza |
+| Adapter typed-focus v2, 20 ripetizioni | 6.000 output validi; 296/300 instradati per round; p95 163,4565 ms, massimo 264,2297 ms | Unico superamento su route-cache miss al round 16/caso 295; gate <250 ms fallito, non è una misura QEMU |
+| Autorizzazione cache isolata, 6.000 hit | Nuova verifica Biscuit per hit; p95 0,257 ms, massimo 0,601 ms | Nessun modello o byte oggetto; non autorizza a riusare o saltare capability |
 | SLM con nuovo launcher Rust | Riposo: commit 599 MB, working set 490 MB; risveglio con inferenza 2.945 ms | Scaricamento automatico dopo 5s; picco campionato attivo: commit 4,55 GB, working set 610 MB; non è la RAM dell'intero OS. Il risveglio è separato dal giro di latenza sotto |
 | Nuovo profilo SLM, un giro da 300 richieste a modello pronto | 300 output validi; Router 295/300; p95 155,918 ms, massimo 307,335 ms | Non chiude il gate: massimo oltre 250 ms, nessuna prova di consistenza su 20 giri; il risveglio a freddo non è incluso |
 
@@ -21,6 +23,19 @@ il modello non può inventare una selezione. Il primo giro v2 ha ottenuto 296/30
 p95 120,35 ms e massimo 129,40 ms. Il precedente giro v1 da 6.000 richieste aveva
 classificazioni identiche e 295/300 in ogni round, ma sette campioni oltre 250 ms
 (massimo 258,47 ms): il suo gate rimane fallito e i dati sono conservati.
+
+La più recente ripetizione v2 ha prodotto 6.000/6.000 output validi e 296/300
+route composte corrette in ciascuno dei 20 round, con classificazioni normalizzate
+identiche. Ha p95 163,4565 ms e un solo massimo oltre soglia, 264,2297 ms
+(round 16, caso 295). Quel campione è un **miss** della route cache mentre il
+modello era pronto; il tempo include inferenza locale e Router/Biscuit, non è un
+cache hit né una misura QEMU. Il protocollo integrato distinto ha 5.700 cache hit
+con verifica fresca, ma il suo massimo warm registrato è 14,5466 ms e non soddisfa
+il relativo limite di 5 ms. In una prova breve e isolata di 6.000 hit, l'intero
+percorso cache più nuova verifica Biscuit ha p95 0,257 ms e massimo 0,601 ms.
+L'evidenza non giustifica l'omissione del controllo di autorità e non consente di
+dichiarare superato il gate stretto dei 250 ms. I dati v2 completi restano
+conservati nei due rapporti JSON locali dell'esecuzione.
 
 ## Condizioni pendenti per la chiusura completa di M4
 

@@ -41,6 +41,33 @@ retained: seven samples exceeded 250 ms, with maximum 258.47 ms, so it failed.
 
 `cache_gate` measures 6000 real cache hits with fresh Biscuit checks. No model or object-byte transfer is involved. Build/test commands are development tooling, not user-facing LFS paths.
 
+## Typed-focus adapter rerun — 2026-10-11
+
+The latest typed-focus adapter's 20-round ready-model run retained 6000 valid
+outputs and identical normalized intents, with 296/300 composed routes correct
+in every round. Its p95 was 163.4565 ms; its maximum was 264.2297 ms, so the
+strict `<250 ms` planner gate **failed**. The sole sample above 250 ms was on
+round 16, case 295, during a **route-cache miss**. The recorded latency includes
+the local model request and trusted Router/Biscuit authorization. It was not a
+cache hit, and it was not measured under QEMU; attributing it to QEMU
+cryptographic overhead is unsupported.
+
+The separate integrated cache protocol made 300 model calls followed by 5700
+exact proposal-cache hits, revalidating authority on each hit. Its stored
+warm-hit maximum was 14.5466 ms, so that end-to-end warm protocol did not meet
+its own 5 ms maximum. A focused 6000-hit authorization microbenchmark
+(`cargo run --release --bin cache_gate -- REPORT`) measured p95 0.257 ms and
+maximum 0.601 ms, with 6000 fresh Biscuit checks and no model calls. This
+indicates the renewal/authorization check is not the source of the 264.23 ms
+cache-miss outlier. It does not justify skipping authorization; current
+capability validation remains on every hit.
+
+Full diagnostic outputs are retained locally as
+`invariant-prefix-planner-20.json` and `invariant-prefix-router-cache.json`.
+These results use the frozen synthetic development corpus, not an independent
+holdout or a production service path. The planner maximum remains a failed
+acceptance gate; CI success is not benchmark qualification.
+
 ## Recorded qualification — 2026-10-11
 
 The readable result summaries link losslessly compressed `.json.gz` archives containing every case. SHA256 hashes refer to the complete uncompressed reports; archive round trips were checked before publication. The runners write full JSON when reproduced.
