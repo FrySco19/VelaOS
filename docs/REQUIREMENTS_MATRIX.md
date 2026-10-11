@@ -11,10 +11,10 @@ Agenti: **UX**, **seL4** (boot/piattaforma), **PCB** (authority/policy), **Execu
 | G0-02 | Test host M1 verdi | implemented | `poc/m1` — 6/6 oggi | QA |
 | G0-03 | Test host M2 verdi | implemented | `poc/m2` — 7/7 oggi | QA |
 | G0-04 | Test host M5 keygen (descriptor/crypto) verdi | implemented | `poc/m5_executor/keygen` — 2/2 oggi | QA |
-| G0-05 | Boot QEMU bridge M5 riproducibile (`verify-bridge`) | prototype | `poc/m5_executor/PHASE_2_3_REPORT.md`, `phase-2-3-boot.log` (non rieseguito oggi) | seL4 |
+| G0-05 | Boot QEMU bridge M5 riproducibile (`verify-bridge`) | implemented (QEMU) | `verify-bridge` rieseguito 2026-10-12 su `grok/sel4-platform`: PASS, log `docs/reports/m5-verify-bridge-2026-10-12-sel4-platform.log`; `docs/SEL4_GATE1_SLICE.md` §2 | seL4 |
 | G0-06 | Contratti v0 congelati (envelope, ownership, autorità, receipt, errori, target) | documented | `docs/CONTRACTS_v0.md` | PCB |
 | G0-07 | M5 nella CI (almeno test host keygen) | unverified | nessun workflow M5 | QA |
-| G0-08 | Target di riferimento dichiarato (QEMU virt AArch64) | documented | `docs/CONTRACTS_v0.md` §C6 | seL4 |
+| G0-08 | Target di riferimento dichiarato (QEMU virt AArch64) | implemented (config check) | `docs/CONTRACTS_v0.md` §C6, `docs/PLATFORM_SEL4.md` §2; pin verificati da `poc/m5_executor/check-pins.py` (31/31 oggi) + `.github/workflows/m5-platform-pins.yml` (non ancora eseguito su GitHub) | seL4 |
 
 ## Gate 1 — Vertical slice autorizzata
 
@@ -37,7 +37,7 @@ Agenti: **UX**, **seL4** (boot/piattaforma), **PCB** (authority/policy), **Execu
 | id | requisito | stato | evidenza | owner |
 | --- | --- | --- | --- | --- |
 | G2-01 | Replay entro sessione rifiutato | prototype | `PHASE_2_3_REPORT.md` (replay → status 4) | Executor |
-| G2-02 | Replay attraverso reboot (epoch persistente) | documented | `BRIDGE_CONTRACT.md` | seL4 |
+| G2-02 | Replay attraverso reboot (epoch persistente) | documented | `BRIDGE_CONTRACT.md`; design supervisore/epoch OWN-v3 in `docs/SEL4_GATE1_SLICE.md` §3 (nessuno storage in guest) | seL4 |
 | G2-03 | Expiry con clock fidato | documented | `BRIDGE_CONTRACT.md` | seL4 |
 | G2-04 | Revoca e cancellazione | prototype | revoca handle host in `poc/m2/src/authority.rs`; nessuna nel bridge | PCB |
 | G2-05 | Crash prima/durante/dopo esecuzione e commit | prototype | crash-gate M1 (processi host); nulla su seL4 | QA |
