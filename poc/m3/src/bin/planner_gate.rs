@@ -94,7 +94,7 @@ fn main() -> Result<()> {
     let passed = rounds == 20
         && round_correct.iter().all(|c| *c >= 286)
         && valid == 300 * rounds
-        && max < 400.0
+        && max < 250.0
         && identical;
     let report = serde_json::json!({"corpus_blake3":blake3::hash(&bytes).to_hex().to_string(),"rounds":rounds,
         "kernel_prompt_blake3":blake3::hash(vela_control_plane_m3::PROMPT.as_bytes()).to_hex().to_string(),

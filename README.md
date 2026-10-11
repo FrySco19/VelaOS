@@ -73,7 +73,7 @@ guest and checks bounded Wasm plus the fixed intent flow with a 60-second limit.
 | M1 — LFS authority | **CLOSED** | Rust storage prototype with encrypted objects, signed commits, and Biscuit-bound capabilities; crash gate recorded over 10,000 process terminations. Not a distributed or production storage service. |
 | M2 — IPC and WASM | **CLOSED** | Dual-lane IPC and WASM prototype tests cover typed transport, authorized reads, and adversarial traps. Current host-native peer isolation and durable bulk-file integration are not complete. |
 | M3 — intent routing | **CLOSED** | Constrained local intent router, finite templates, deterministic Rust policy, and capability revalidation at cache hits. It remains a prototype and does not authorize operations by model output. |
-| M4 — recovery and SLM footprint | **CONDITIONALLY CLOSED** | Persistent-provider, confirmation, and rollback implementation is present. mmap, 512-token context, and KV-offload configuration is in place; physical hardware/CI memory and latency qualification remains pending. |
+| M4 — recovery and SLM footprint | **CONDITIONALLY CLOSED** | Persistent provider, confirmation, rollback and live hybrid-recall integration tests pass. Streaming CUDA loading replaces rejected mmap; measured worker peak working set 589 MB, active private commit 4.55 GB. Full-system qualification remains pending. |
 | M5 Gate A — reproducible seL4 boot | **CLOSED** | The pinned Microkit 2.3.0 image built and booted the AArch64 seL4 guest in QEMU. |
 | M5 Gate B — domain isolation | **IN PROGRESS** | Five statically declared protection domains with separate ELFs, CSpaces, and VSpaces now build and boot. Capability manifests, restricted authority, negative reachability tests, and crash/restart tests remain. |
 | M5 Gate C — PCB capability derivation | **IN PROGRESS** | A separately booted custom seL4 root task creates a live child with isolated CSpace/VSpace, mints a badged send capability into its CSpace, receives and verifies the child’s IPC badge, replies, then deletes the grant and suspends the child. Biscuit validation, policy profiles, timed leases, and deny/revocation tests remain. |
@@ -90,8 +90,8 @@ completed. See [runtime status and limitations](docs/RUNTIME_STATUS.md).
 Gate C's root-task proof boots as a separate seL4 image; it is not part of the
 five-domain Microkit image. It demonstrates live capability derivation and an
 IPC round-trip, but not Biscuit validation or the complete policy broker.
-Gate D's fixed Wasm probe runs in the five-domain Microkit image; it has no
-WASI or host imports and is not yet wired to bus/LFS task ingress.
+Gate D's fixed Wasm probe runs in the five-domain Microkit image with no
+WASI or host imports; Gate E connects it to a fixed bus/LFS task flow.
 Gate E connects those domains for one deterministic demonstration flow, but
 its PCB uses a fixed label rule and its LFS write is volatile, not durable.
 Gate F's timing method observes serial-marker intervals on the QEMU host
@@ -113,8 +113,11 @@ met them**:
 The latest recorded 300-request SLM run had a 155.918 ms p95 and a 307.335 ms
 maximum with the model already loaded, so that run did **not** meet the maximum
 latency target. Cold wake-up was measured separately at approximately 2.945 s.
-The newer mmap/512-token/KV-offload profile still needs hardware/CI
-qualification. Earlier idle measurements were process-level, not total-OS
+The measured 512-token streaming profile had 121.65 ms p95 and 245.77 ms maximum
+in one new round. The rejected mmap profile retained 3.94 GB resident host pages;
+streaming reduced that sample to 589 MB, while active private commit stayed
+approximately 4.55 GB. Full repeated and integrated qualification remains open.
+Idle measurements were process-level, not total-OS
 measurements, so the <1.5 GB target is also not yet certified. Detailed
 measurements and caveats are recorded in [RUNTIME_STATUS.md](docs/RUNTIME_STATUS.md).
 
@@ -141,7 +144,7 @@ docker run --rm -it velaos-gate-a
 ```
 
 The image pins seL4 Microkit 2.3.0, `rust-sel4` v5.0.0, and its matching Rust
-nightly. The guest prints the Gate A success message to QEMU's serial output.
+nightly. The guest prints Wasm verification and the completed fixed intent to QEMU's serial output.
 Use `Ctrl+A`, then `X` to exit QEMU. This smoke test does not validate Gate B
 isolation or physical hardware behavior. See the [Gate A README](poc/m5_sel4/README.md)
 for toolchain details and scope.
@@ -155,7 +158,7 @@ for toolchain details and scope.
 | [`poc/m2/`](poc/m2/README.md) | Neural Bus, typed IPC, and WASM boundary prototypes. |
 | [`poc/m3/`](poc/m3/README.md) | Local intent routing, deterministic policy, and evaluation corpus. |
 | [`poc/m4/`](poc/m4/README.md) | Recovery coordinator, persistent provider, and rollback supervisor. |
-| [`poc/m5_sel4/`](poc/m5_sel4/README.md) | Gate A boot and initial Gate B Microkit/Rust/QEMU protection-domain scaffold. |
+| [`poc/m5_sel4/`](poc/m5_sel4/README.md) | Microkit/Rust/QEMU domain, capability, bounded Wasm and fixed-flow proofs. |
 | [`GATE_F_G_REPORT.md`](GATE_F_G_REPORT.md) | Gate F timing observations and Gate G resource/residual-risk review. |
 | [`docs/M5_DESIGN.md`](docs/M5_DESIGN.md) | Proposed seL4 protection-domain architecture and M5 acceptance gates. |
 | [`docs/RUNTIME_STATUS.md`](docs/RUNTIME_STATUS.md) | Runtime evidence, measurements, and outstanding limitations. |

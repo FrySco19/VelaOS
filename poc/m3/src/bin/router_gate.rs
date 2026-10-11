@@ -120,7 +120,7 @@ fn main() -> Result<()> {
     let cold_max = *cold.last().unwrap();
     let warm_max = *warm.last().unwrap();
     let passed =
-        scores.iter().all(|c| *c >= 286) && identical && cold_max < 400.0 && warm_max < 5.0;
+        scores.iter().all(|c| *c >= 286) && identical && cold_max < 250.0 && warm_max < 5.0;
     let report = serde_json::json!({"protocol":"300 real ready-model misses then 5700 exact-cache hits with fresh authorization within 120s TTL",
         "corpus_blake3":blake3::hash(&bytes).to_hex().to_string(),"model_calls":300,"cache_hits":5700,
         "kernel_prompt_blake3":blake3::hash(vela_control_plane_m3::PROMPT.as_bytes()).to_hex().to_string(),

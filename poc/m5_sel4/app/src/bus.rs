@@ -21,26 +21,44 @@ impl Handler for HandlerImpl {
         channel: Channel,
         msg_info: MessageInfo,
     ) -> Result<MessageInfo, Self::Error> {
-        assert_eq!(channel, Channel::new(0));
-        assert_eq!(msg_info.label(), gate_e::AUTHORIZED_LABEL);
+        if !gate_e::accepts(channel, 0, &msg_info, gate_e::AUTHORIZED_LABEL) {
+            return Ok(gate_e::denied());
+        }
+        for malformed in [
+            MessageInfo::new(0, 0),
+            MessageInfo::new(gate_e::EXECUTE_LABEL, 1),
+        ] {
+            let rejected = Channel::new(gate_e::BUS_TO_EXECUTOR).pp_call(malformed);
+            assert_eq!(rejected.label(), gate_e::DENIED_LABEL);
+        }
+        for malformed in [
+            MessageInfo::new(0, 0),
+            MessageInfo::new(gate_e::WASM_RESULT_LABEL_BASE + gate_e::WASM_RESULT, 1),
+        ] {
+            let rejected = Channel::new(gate_e::BUS_TO_LFS).pp_call(malformed);
+            assert_eq!(rejected.label(), gate_e::DENIED_LABEL);
+        }
+        debug_println!("VelaOS Gate E: downstream malformed frames rejected");
 
         debug_println!("VelaOS Gate F: BEGIN bus_to_executor");
         let execution = Channel::new(gate_e::BUS_TO_EXECUTOR)
             .pp_call(MessageInfo::new(gate_e::EXECUTE_LABEL, 0));
-        assert_eq!(
-            execution.label(),
-            gate_e::WASM_RESULT_LABEL_BASE + gate_e::WASM_RESULT
-        );
+        if execution.label() != gate_e::WASM_RESULT_LABEL_BASE + gate_e::WASM_RESULT
+            || execution.count() != 0
+        {
+            return Ok(gate_e::denied());
+        }
         debug_println!("VelaOS Gate F: END bus_to_executor");
         debug_println!("VelaOS Gate E: bus routed result toward LFS");
 
         debug_println!("VelaOS Gate F: BEGIN bus_to_lfs");
         let log_ack =
             Channel::new(gate_e::BUS_TO_LFS).pp_call(MessageInfo::new(execution.label(), 0));
-        assert_eq!(
-            log_ack.label(),
-            gate_e::LFS_ACK_LABEL_BASE + gate_e::WASM_RESULT
-        );
+        if log_ack.label() != gate_e::LFS_ACK_LABEL_BASE + gate_e::WASM_RESULT
+            || log_ack.count() != 0
+        {
+            return Ok(gate_e::denied());
+        }
         debug_println!("VelaOS Gate F: END bus_to_lfs");
         Ok(MessageInfo::new(
             gate_e::FINAL_RESULT_LABEL_BASE + gate_e::WASM_RESULT,

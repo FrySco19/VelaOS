@@ -14,3 +14,18 @@ pub const WASM_RESULT_LABEL_BASE: MessageLabel = 0x400;
 pub const LFS_ACK_LABEL_BASE: MessageLabel = 0x500;
 pub const FINAL_RESULT_LABEL_BASE: MessageLabel = 0x600;
 pub const WASM_RESULT: MessageLabel = 42;
+pub const DENIED_LABEL: MessageLabel = 0x7ff;
+
+pub fn accepts(
+    channel: sel4_microkit::Channel,
+    expected_channel: usize,
+    message: &sel4_microkit::MessageInfo,
+    label: MessageLabel,
+) -> bool {
+    channel == sel4_microkit::Channel::new(expected_channel)
+        && message.label() == label
+        && message.count() == 0
+}
+pub fn denied() -> sel4_microkit::MessageInfo {
+    sel4_microkit::MessageInfo::new(DENIED_LABEL, 0)
+}

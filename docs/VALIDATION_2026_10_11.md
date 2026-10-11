@@ -32,10 +32,13 @@ proof. Boot checks do not close M5 gates B–G or constitute a security audit.
 
 ## Memory and release limits
 
-No new whole-system RAM or SLM latency qualification was performed in this
-validation. The current mmap/512-token profile remains unqualified. Previous
-worker-only measurements and their failed latency/active-commit criteria remain
-in the runtime report; they do not establish the <1.5 GB OS idle target.
+No whole-system RAM qualification was performed. New worker-only 512-token
+trials rejected mmap's 3.94 GB peak working set and selected streaming loading,
+which peaked at 589 MB resident memory. Active private commit remained 4.55 GB;
+post-idle private commit was 842 MB. One streaming round had 295/300 composed
+routes correct, 121.65 ms p95 and 245.77 ms maximum. This single ready-model round
+does not prove repeated consistency, cold wake latency or the <1.5 GB OS target.
+The planner/cache gates now enforce 250 ms rather than the inconsistent 400 ms.
 
 The next consumer-readiness work is protected persistent identity/UI ingress,
 durable service integration in the chosen boot platform, error/restart handling

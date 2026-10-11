@@ -6,6 +6,8 @@ import sys
 import time
 
 REQUIRED = (
+    b"VelaOS Gate E: 101 malformed PCB frames rejected; domain remains live",
+    b"VelaOS Gate E: downstream malformed frames rejected",
     b"VelaOS Gate D: fuel exhaustion and 64 KiB memory cap verified",
     b"VelaOS Gate E: intent completed with result 42",
     b"VelaOS Gate F: END end_to_end",

@@ -41,7 +41,9 @@ pub const MEMORY_ARGS: &[&str] = &[
     "--fit",
     "off",
     "--load-mode",
-    "mmap",
+    // The mapped 512-token profile retained ~3.94 GB resident host pages in
+    // live inference despite CUDA tensor placement. Stream uploads instead.
+    "none",
     "--lazy-mode",
     "off",
     "--no-host",
@@ -147,7 +149,7 @@ mod tests {
     #[test]
     fn pins_model_and_kv_cache_to_cuda_with_bounded_context() {
         assert_eq!(value_for("--gpu-layers"), "999");
-        assert_eq!(value_for("--load-mode"), "mmap");
+        assert_eq!(value_for("--load-mode"), "none");
         assert_eq!(value_for("--ctx-size"), "512");
         assert!(MEMORY_ARGS.contains(&"--kv-offload"));
         assert!(!MEMORY_ARGS.contains(&"--no-kv-offload"));

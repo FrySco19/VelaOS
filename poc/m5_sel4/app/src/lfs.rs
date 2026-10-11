@@ -23,12 +23,15 @@ impl Handler for HandlerImpl {
         channel: Channel,
         msg_info: MessageInfo,
     ) -> Result<MessageInfo, Self::Error> {
-        assert_eq!(channel, Channel::new(0));
-        let result = msg_info
-            .label()
-            .checked_sub(gate_e::WASM_RESULT_LABEL_BASE)
-            .expect("LFS rejected a malformed result label");
-        assert_eq!(result, gate_e::WASM_RESULT);
+        if !gate_e::accepts(
+            channel,
+            0,
+            &msg_info,
+            gate_e::WASM_RESULT_LABEL_BASE + gate_e::WASM_RESULT,
+        ) {
+            return Ok(gate_e::denied());
+        }
+        let result = gate_e::WASM_RESULT;
         self.last_result = Some(result);
         debug_println!(
             "VelaOS Gate E: LFS recorded volatile result {}",

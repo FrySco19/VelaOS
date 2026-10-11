@@ -53,6 +53,14 @@ completed intent markers within 60 seconds, and terminates QEMU afterward.
 Missing markers, excessive output or detected faults fail the test. The 2 GiB
 configured guest capacity is not an idle RAM measurement.
 
+The fixed-flow handlers reject unexpected channels, labels and register counts
+with a typed denial response, before state changes. The boot fixture sends 101
+malformed PCB frames and invalid downstream frames, then completes a valid
+intent. The smoke harness requires those rejection markers too. These are binary
+framing tests, **not** the M4 100-case LLM prompt-injection gate. Probe assertions
+are demonstration checks; imported/untrusted Wasm admission and service restart
+remain open. This proof still uses a fixed label policy rather than Biscuit.
+
 ## Gate C root-task boot proof
 
 Microkit's static channel model does not dynamically pass capabilities between

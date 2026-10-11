@@ -41,8 +41,9 @@ impl Handler for HandlerImpl {
         channel: Channel,
         msg_info: MessageInfo,
     ) -> Result<MessageInfo, Self::Error> {
-        assert_eq!(channel, Channel::new(0));
-        assert_eq!(msg_info.label(), gate_e::EXECUTE_LABEL);
+        if !gate_e::accepts(channel, 0, &msg_info, gate_e::EXECUTE_LABEL) {
+            return Ok(gate_e::denied());
+        }
         debug_println!("VelaOS Gate F: BEGIN wasm_invocation");
         let result = execute_bounded_module();
         debug_println!("VelaOS Gate F: END wasm_invocation");
