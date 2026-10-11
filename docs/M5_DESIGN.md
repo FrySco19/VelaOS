@@ -381,6 +381,7 @@ M5 is complete only when the following evidence is recorded for the pinned sourc
 
 ### Gate E — bus/LFS/restore integration
 
+- The five-domain Microkit image now carries one fixed protected-call flow from Orchestrator to PCB, Bus, Executor, and LFS. The executor creates a fresh bounded Wasmi Store, runs the no-import sample, and returns result `42`; LFS records that result in its volatile PD state and replies. QEMU serial markers confirm the flow end to end. This is not Biscuit authorization, a dynamic-capability path, durable storage, or M4 restore/rollback integration.
 - Run an end-to-end bounded flow from authorized ingress through policy, bus, exact LFS read, and task result; separately verify confirmation-required restore and rollback/recovery.
 - Test replay, malformed frames, wrong caller/route/schema, slow consumer, service crash, PCB restart, LFS failure, queue exhaustion, and shared-frame cleanup.
 - Preserve M4's durable operation and rollback invariants; M5 isolation does not replace them.

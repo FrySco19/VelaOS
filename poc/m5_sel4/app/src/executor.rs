@@ -2,7 +2,9 @@
 #![no_main]
 #![feature(asm_cfg)]
 
-use sel4_microkit::{Handler, NullHandler, debug_println, protection_domain};
+mod gate_e;
+
+use sel4_microkit::{Channel, Handler, Infallible, MessageInfo, debug_println, protection_domain};
 use wasmi::{Config, Engine, Linker, Module, Store, StoreLimitsBuilder, TrapCode};
 
 const WASM_FUEL_LIMIT: u64 = 10_000_000;
@@ -12,18 +14,46 @@ const MAX_WASM_MEMORY_BYTES: usize = 64 * 1024;
 const WASM_TEST_MODULE: &[u8] = &[
     0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00, // header
     0x01, 0x05, 0x01, 0x60, 0x00, 0x01, 0x7f, // (type (func (result i32)))
-    0x03, 0x03, 0x02, 0x00, 0x00, // two functions using type 0
+    0x03, 0x04, 0x03, 0x00, 0x00, 0x00, // three functions using type 0
     0x05, 0x04, 0x01, 0x01, 0x01, 0x02, // one memory, min 1 page, max 2
-    0x07, 0x0e, 0x02, 0x03, b'r', b'u', b'n', 0x00, 0x00, 0x04, b'b', b'u', b'r', b'n', 0x00,
-    0x01, // export run and burn
-    0x0a, 0x11, 0x02, 0x06, 0x00, 0x41, 0x01, 0x40, 0x00, 0x0b, // grow one page
+    0x07, 0x15, 0x03, 0x03, b'r', b'u', b'n', 0x00, 0x00, 0x04, b'g', b'r', b'o', b'w', 0x00, 0x01,
+    0x04, b'b', b'u', b'r', b'n', 0x00, 0x02, // export run, grow and burn
+    0x0a, 0x16, 0x03, 0x04, 0x00, 0x41, 0x2a, 0x0b, // run returns 42
+    0x06, 0x00, 0x41, 0x01, 0x40, 0x00, 0x0b, // grow one page
     0x08, 0x00, 0x03, 0x40, 0x0c, 0x00, 0x0b, 0x00, 0x0b, // infinite loop for fuel test
 ];
 
 #[protection_domain(heap_size = 2 * 1024 * 1024)]
 fn init() -> impl Handler {
     debug_println!("VelaOS Gate D: bounded Wasm executor online");
+    execute_bounded_module();
+    debug_println!("VelaOS Gate D: fuel exhaustion and 64 KiB memory cap verified");
+    HandlerImpl
+}
 
+struct HandlerImpl;
+
+impl Handler for HandlerImpl {
+    type Error = Infallible;
+
+    fn protected(
+        &mut self,
+        channel: Channel,
+        msg_info: MessageInfo,
+    ) -> Result<MessageInfo, Self::Error> {
+        assert_eq!(channel, Channel::new(0));
+        assert_eq!(msg_info.label(), gate_e::EXECUTE_LABEL);
+        let result = execute_bounded_module();
+        assert_eq!(result, gate_e::WASM_RESULT as i32);
+        debug_println!("VelaOS Gate E: executor returned Wasm result 42");
+        Ok(MessageInfo::new(
+            gate_e::WASM_RESULT_LABEL_BASE + result as gate_e::MessageLabel,
+            0,
+        ))
+    }
+}
+
+fn execute_bounded_module() -> i32 {
     let mut config = Config::default();
     config
         .consume_fuel(true)
@@ -49,10 +79,10 @@ fn init() -> impl Handler {
     let instance = linker
         .instantiate_and_start(&mut store, &module)
         .expect("failed to instantiate Wasm module without host imports");
-    let run = instance
-        .get_typed_func::<(), i32>(&store, "run")
-        .expect("Wasm module is missing run export");
-    let growth_result = run
+    let grow = instance
+        .get_typed_func::<(), i32>(&store, "grow")
+        .expect("Wasm module is missing grow export");
+    let growth_result = grow
         .call(&mut store, ())
         .expect("bounded memory-growth probe failed");
     assert_eq!(
@@ -64,6 +94,10 @@ fn init() -> impl Handler {
         fuel_remaining < WASM_FUEL_LIMIT,
         "Wasm execution did not consume fuel"
     );
+    let run = instance
+        .get_typed_func::<(), i32>(&store, "run")
+        .expect("Wasm module is missing run export");
+    let result = run.call(&mut store, ()).expect("bounded Wasm task failed");
 
     store
         .set_fuel(FUEL_PROBE_LIMIT)
@@ -76,10 +110,5 @@ fn init() -> impl Handler {
         Err(error) => panic!("fuel probe trapped unexpectedly: {error:?}"),
         Ok(_) => panic!("fuel probe completed without exhausting its budget"),
     }
-
-    debug_println!(
-        "VelaOS Gate D: fuel exhaustion and 64 KiB memory cap verified; fuel remaining: {}",
-        fuel_remaining
-    );
-    NullHandler::new()
+    result
 }

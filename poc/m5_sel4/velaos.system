@@ -1,18 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <system>
-    <protection_domain name="pcb" priority="100" stack_size="0x10_000">
+    <protection_domain name="pcb" priority="110" stack_size="0x10_000">
         <program_image path="pcb.elf" />
     </protection_domain>
     <protection_domain name="orchestrator" priority="100" stack_size="0x10_000">
         <program_image path="orchestrator.elf" />
     </protection_domain>
-    <protection_domain name="bus" priority="100" stack_size="0x10_000">
+    <protection_domain name="bus" priority="120" stack_size="0x10_000">
         <program_image path="bus.elf" />
     </protection_domain>
-    <protection_domain name="lfs" priority="100" stack_size="0x10_000">
+    <protection_domain name="lfs" priority="130" stack_size="0x10_000">
         <program_image path="lfs.elf" />
     </protection_domain>
-    <protection_domain name="executor" priority="100" stack_size="0x10_000">
+    <protection_domain name="executor" priority="130" stack_size="0x10_000">
         <program_image path="executor.elf" />
     </protection_domain>
+    <channel>
+        <end pd="orchestrator" id="0" pp="true" />
+        <end pd="pcb" id="0" />
+    </channel>
+    <channel>
+        <end pd="pcb" id="1" pp="true" />
+        <end pd="bus" id="0" />
+    </channel>
+    <channel>
+        <end pd="bus" id="1" pp="true" />
+        <end pd="executor" id="0" />
+    </channel>
+    <channel>
+        <end pd="bus" id="2" pp="true" />
+        <end pd="lfs" id="0" />
+    </channel>
 </system>

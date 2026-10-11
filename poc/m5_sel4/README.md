@@ -95,3 +95,24 @@ The executor prints `VelaOS Gate D: fuel exhaustion and 64 KiB memory cap
 verified` after both bounds pass. This is not a task-ingress or full Gate D
 implementation: epoch deadlines, per-task IPC payload limits, concurrency,
 cancellation, fresh-store cleanup, and bus/LFS integration remain.
+
+## Gate E protected-call flow
+
+The five-domain image wires protected-call channels from Orchestrator to PCB,
+PCB to Bus, Bus to Executor, and Bus to LFS. The fixed intent is authorized by
+a demonstration label check, the executor runs the bounded Wasmi sample and
+returns `42`, and the LFS PD records that value in its volatile in-memory state.
+The LFS stub does not persist to disk; this flow is not Biscuit validation or
+the dynamically delegated Gate C capability path.
+
+```powershell
+docker build -f poc/m5_sel4/Dockerfile -t velaos-gate-e poc/m5_sel4
+docker run --rm -it velaos-gate-e
+```
+
+QEMU serial output should include `VelaOS Gate E: PCB authorized fixed
+intent`, `VelaOS Gate E: executor returned Wasm result 42`,
+`VelaOS Gate E: LFS recorded volatile result 42`, and `VelaOS Gate E: intent
+completed with result 42`. The labels and single-flow route are fixture-only;
+deny cases, untrusted input, durable object lookup, and restore/rollback are
+not covered.
