@@ -1,0 +1,133 @@
+{
+  "date": "2026-10-11",
+  "scope": "Windows development SLM worker only; not whole VelaOS",
+  "model": "Gemma 4 E2B Q4_0",
+  "backend": "llama.cpp b11539 CUDA 12.4",
+  "gpu": "RTX 2060 6 GiB WDDM",
+  "model_sha256": "fa401b55b07ee70a54c6dae3903c783a6e65064312529ea57175cb5f8dec6634",
+  "profile": "all GPU layers, explicit .*=CUDA0 tensor placement, fit off, load none, no host, context 1024, batch 512, ubatch 128, one slot, cache RAM 0, two checkpoints, idle unload 5s",
+  "launcher_idle_private_bytes": 741376,
+  "launcher_idle_working_set_bytes": 4296704,
+  "verified_log_model_buffer_lines": [
+    "load_tensors:        CUDA0 model buffer size =  3494.28 MiB",
+    "load_tensors:        CUDA0 model buffer size =  3494.28 MiB",
+    "load_tensors:        CUDA0 model buffer size =  3494.28 MiB"
+  ],
+  "private_bytes_peak_sampled": 4551987200,
+  "working_set_peak_sampled": 609738752,
+  "sample_interval_ms": 250,
+  "idle_private_bytes": 599150592,
+  "idle_working_set_bytes": 490201088,
+  "idle_reported_sleeping": true,
+  "wake_inference_ms": 2945.4469,
+  "second_idle_private_bytes": 594862080,
+  "second_idle_working_set_bytes": 487546880,
+  "raw_valid": 300,
+  "samples": 300,
+  "correct": [
+    295
+  ],
+  "raw_correct": [
+    277
+  ],
+  "p95_ms": 155.9182,
+  "max_ms": 307.33480000000003,
+  "zero_checkpoint_trial": {
+    "idle_private_bytes": 573693952,
+    "p95_ms": 276.1234,
+    "correct": [
+      295
+    ],
+    "max_ms": 297.162
+  },
+  "two_checkpoint_without_tensor_override_trial": {
+    "date": "2026-10-11",
+    "scope": "Windows development SLM worker only; not whole VelaOS",
+    "model": "Gemma 4 E2B Q4_0",
+    "backend": "llama.cpp b11539 CUDA 12.4",
+    "gpu": "RTX 2060 6 GiB WDDM",
+    "model_sha256": "fa401b55b07ee70a54c6dae3903c783a6e65064312529ea57175cb5f8dec6634",
+    "profile": "all GPU layers, fit off, load none, no host, context 1024, batch 512, ubatch 128, one slot, cache RAM 0, two checkpoints, idle unload 5s",
+    "private_bytes_peak_sampled": 4557619200,
+    "working_set_peak_sampled": 2872696832,
+    "sample_interval_ms": 250,
+    "idle_private_bytes": 592842752,
+    "idle_working_set_bytes": 488054784,
+    "idle_reported_sleeping": true,
+    "wake_inference_ms": 10970.3265,
+    "second_idle_private_bytes": 599470080,
+    "second_idle_working_set_bytes": 497917952,
+    "raw_valid": 300,
+    "samples": 300,
+    "correct": [
+      295
+    ],
+    "raw_correct": [
+      277
+    ],
+    "p95_ms": 174.64450000000002,
+    "max_ms": 291.9502,
+    "zero_checkpoint_trial": {
+      "max_ms": 297.162,
+      "p95_ms": 276.1234,
+      "idle_private_bytes": 573693952,
+      "correct": [
+        295
+      ]
+    },
+    "cuda_trial_mmap_lazy_on_no_repack": {
+      "idle_before_unload_private_bytes": 2233978880,
+      "working_set_bytes": 2001068032,
+      "probe_cases": 8
+    },
+    "cuda_trial_load_none_no_repack": {
+      "ready_private_bytes": 4412624896,
+      "ready_working_set_bytes": 2748411904
+    },
+    "vulkan_trial": {
+      "ready_working_set_bytes": 2492665856,
+      "ready_private_bytes": 4095827968,
+      "reason": "warmup did not finish during trial; not adopted",
+      "inference_verified": false
+    },
+    "limitations": [
+      "Historical 4.70 GB baseline is not a paired current-process run",
+      "Sampled peak is not an exact allocator peak",
+      "Only one frozen corpus round; not 20-round M3 qualification",
+      "Active private memory is not constrained below 1.5 GB",
+      "Post-idle cold wake latency is separate from ready-model latency",
+      "No whole-OS RAM or shared-driver global commit qualification",
+      "No loader leak proven; upstream frees upload buffers already",
+      "Bootstrap executable hash does not authenticate all dependent DLLs"
+    ],
+    "m4_closed": false,
+    "whole_os_memory_gate_passed": false
+  },
+  "cuda_trial_mmap_lazy_on_no_repack": {
+    "working_set_bytes": 2001068032,
+    "idle_before_unload_private_bytes": 2233978880,
+    "probe_cases": 8
+  },
+  "cuda_trial_load_none_no_repack": {
+    "ready_working_set_bytes": 2748411904,
+    "ready_private_bytes": 4412624896
+  },
+  "vulkan_trial": {
+    "reason": "warmup did not finish during trial; not adopted",
+    "inference_verified": false,
+    "ready_private_bytes": 4095827968,
+    "ready_working_set_bytes": 2492665856
+  },
+  "limitations": [
+    "Historical 4.70 GB baseline is not a paired current-process run",
+    "Sampled peak is not an exact allocator peak",
+    "Only one frozen corpus round; not 20-round M3 qualification",
+    "Active private memory is not constrained below 1.5 GB",
+    "Post-idle cold wake latency is separate from ready-model latency",
+    "No whole-OS RAM or shared-driver global commit qualification",
+    "No loader leak proven; upstream frees upload buffers already",
+    "Bootstrap executable hash does not authenticate all dependent DLLs"
+  ],
+  "m4_closed": false,
+  "whole_os_memory_gate_passed": false
+}

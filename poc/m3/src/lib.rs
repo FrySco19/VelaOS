@@ -1,6 +1,7 @@
 //! Finite semantic compilation: the model selects a manifest template, Rust owns its DAG.
 pub mod backend;
 pub mod cache;
+pub mod worker;
 use anyhow::{Result, ensure};
 use biscuit_auth::{AuthorizerLimits, Biscuit, PublicKey, builder::AuthorizerBuilder};
 use serde::{Deserialize, Serialize};
