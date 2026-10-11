@@ -1,0 +1,27 @@
+VelaOS Gate D: no-WASI Wasmi executor initialized
+VelaOS Gate D: imported WASI host call rejected
+VelaOS Gate D: fuel exhaustion and 64 KiB memory cap verified
+VelaOS Phase 2: Executor Ed25519 verified request=1
+VelaOS Phase 3: Executor executed authenticated payload result=7
+VelaOS Phase 2/3: PCB reply request=1 status=0 value=7 attempts=1
+VelaOS Phase 2: Executor denied frame status=2
+VelaOS Phase 2/3: PCB reply request=2 status=2 value=0 attempts=1
+VelaOS Phase 2: tampered return-8 payload rejected before execution
+VelaOS Phase 2: Executor denied frame status=2
+VelaOS Phase 2/3: PCB reply request=3 status=2 value=0 attempts=1
+VelaOS Phase 2: Executor denied frame status=1
+VelaOS Phase 2/3: PCB reply request=4 status=1 value=0 attempts=1
+VelaOS Phase 2: Executor denied frame status=3
+VelaOS Phase 2/3: PCB reply request=5 status=3 value=0 attempts=1
+VelaOS Phase 2: Executor denied frame status=4
+VelaOS Phase 2/3: PCB reply request=1 status=4 value=0 attempts=1
+VelaOS Phase 2: Executor Ed25519 verified request=6
+VelaOS Phase 2/3: PCB reply request=6 status=6 value=0 attempts=2
+VelaOS Phase 3: signed infinite loop stopped by fuel
+VelaOS Phase 2: Executor Ed25519 verified request=7
+VelaOS Phase 2/3: PCB reply request=7 status=5 value=0 attempts=2
+VelaOS Phase 3: signed WASI import rejected
+VelaOS Phase 2: Executor Ed25519 verified request=8
+VelaOS Phase 3: Executor executed authenticated payload result=7
+VelaOS Phase 2/3: PCB reply request=8 status=0 value=7 attempts=3
+VelaOS Phase 2/3: ALL CHECKS PASSED; authenticated Wasm returned 7 via IPC

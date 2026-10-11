@@ -46,6 +46,6 @@ COPY Makefile executor.system check-wx.py ./
 COPY app/ ./app/
 
 RUN chmod +x app/rustc-wrapper.sh
-RUN make build
+RUN --mount=type=secret,id=pcb_seed,required=true VELA_PCB_SEED=/run/secrets/pcb_seed make build
 
 CMD ["make", "run"]

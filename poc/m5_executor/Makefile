@@ -15,7 +15,7 @@ all: build
 
 build: $(LOADER)
 
-$(BUILD)/cargo-target/.built: app/Cargo.toml app/Cargo.lock app/src/main.rs app/src/bridge.rs app/src/bin/pcb.rs app/rust-toolchain.toml app/rustc-wrapper.sh app/.cargo/config.toml app/targets/aarch64-sel4-microkit.json
+$(BUILD)/cargo-target/.built: app/Cargo.toml app/Cargo.lock app/src/main.rs app/src/bridge.rs app/src/trusted_key.rs app/src/bin/pcb.rs app/rust-toolchain.toml app/rustc-wrapper.sh app/.cargo/config.toml app/targets/aarch64-sel4-microkit.json
 	mkdir -p $(BUILD)
 	cd app && SEL4_INCLUDE_DIRS="$(SEL4_INCLUDE_DIRS)" CARGO_TARGET_DIR="../$(CARGO_TARGET_DIR)" cargo build --locked --release --bin velaos-executor
 	cd app && SEL4_INCLUDE_DIRS="$(SEL4_INCLUDE_DIRS)" CARGO_TARGET_DIR="../$(CARGO_TARGET_DIR)" cargo build --locked --release --bin velaos-pcb

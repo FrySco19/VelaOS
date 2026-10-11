@@ -6,7 +6,8 @@ mod bridge;
 
 use core::sync::atomic::{Ordering, fence};
 use sel4_microkit::{
-    Channel, ChannelSet, Handler, debug_println, memory_region_symbol, protection_domain,
+    Channel, Handler, MessageInfo, debug_println, memory_region_symbol, protection_domain,
+    with_msg_regs_mut,
 };
 use wasmi::{Config, Engine, Linker, Module, Store, StoreLimits, StoreLimitsBuilder, TrapCode};
 
@@ -43,34 +44,127 @@ fn init() -> impl Handler {
     debug_println!("VelaOS Gate D: fuel exhaustion and 64 KiB memory cap verified");
     ExecutorHandler {
         shared_page: memory_region_symbol!(shared_page_addr: *mut u8).as_ptr(),
+        last_consumed: 0,
+        attempts: 0,
     }
 }
 
 struct ExecutorHandler {
     shared_page: *mut u8,
+    last_consumed: u32,
+    attempts: u64,
 }
 
 impl Handler for ExecutorHandler {
     type Error = core::convert::Infallible;
 
-    fn notified(&mut self, channels: ChannelSet) -> Result<(), Self::Error> {
-        if !channels.contains(Channel::new(0)) {
-            debug_println!("VelaOS C-D bridge: ignored unrelated notification");
-            return Ok(());
+    fn protected(
+        &mut self,
+        channel: Channel,
+        message: MessageInfo,
+    ) -> Result<MessageInfo, Self::Error> {
+        if channel != Channel::new(0)
+            || message.label() != bridge::EXECUTE_LABEL as _
+            || message.count() != 0
+        {
+            return Ok(self.reply(bridge::Status::Malformed, 0, 0));
         }
-
         fence(Ordering::Acquire);
-        match unsafe { bridge::parse_descriptor(self.shared_page) } {
-            Ok(descriptor) => debug_println!(
-                "VelaOS C-D bridge: Executor received descriptor request_id={} token_len={} payload_len={}",
-                descriptor.request_id,
-                descriptor.token_len,
-                descriptor.payload_len
-            ),
-            Err(_) => debug_println!("VelaOS C-D bridge: rejected malformed descriptor"),
+        // SAFETY: Microkit maps the entire 4 KiB region readable in this domain.
+        // The producer can mutate its mapping. Verify AND execute this same
+        // private snapshot, never a shared-memory slice after authentication.
+        let snapshot = unsafe { bridge::snapshot(self.shared_page) };
+        let verified = match bridge::verify_frame(&snapshot, self.last_consumed) {
+            Ok(verified) => verified,
+            Err(status) => {
+                debug_println!(
+                    "VelaOS Phase 2: Executor denied frame status={}",
+                    status as u64
+                );
+                return Ok(self.reply(
+                    status,
+                    0,
+                    u32::from_le_bytes(snapshot[8..12].try_into().unwrap()),
+                ));
+            }
+        };
+        self.last_consumed = verified.descriptor.request_id;
+        debug_println!(
+            "VelaOS Phase 2: Executor Ed25519 verified request={}",
+            self.last_consumed
+        );
+        let payload = &snapshot[verified.descriptor.payload_offset
+            ..verified.descriptor.payload_offset + verified.descriptor.payload_len];
+        let outcome =
+            run_authenticated(payload, verified.fuel, verified.memory, &mut self.attempts);
+        let (status, value) = match outcome {
+            Ok(value) => (bridge::Status::Success, value),
+            Err(status) => (status, 0),
+        };
+        if status == bridge::Status::Success {
+            debug_println!(
+                "VelaOS Phase 3: Executor executed authenticated payload result={}",
+                value
+            );
         }
-        Ok(())
+        Ok(self.reply(status, value, verified.descriptor.request_id))
     }
+}
+
+impl ExecutorHandler {
+    fn reply(&self, status: bridge::Status, value: i32, request_id: u32) -> MessageInfo {
+        with_msg_regs_mut(|regs| {
+            regs[0] = status as _;
+            regs[1] = value as u32 as _;
+            regs[2] = request_id as _;
+            regs[3] = self.attempts as _;
+        });
+        MessageInfo::new(bridge::REPLY_LABEL as _, 4)
+    }
+}
+
+fn run_authenticated(
+    payload: &[u8],
+    fuel: u64,
+    memory: usize,
+    attempts: &mut u64,
+) -> Result<i32, bridge::Status> {
+    let mut config = Config::default();
+    config
+        .consume_fuel(true)
+        .set_max_stack_height(16 * 1024)
+        .set_max_recursion_depth(64);
+    let engine = Engine::new(&config);
+    let module = Module::new(&engine, payload).map_err(|_| bridge::Status::Wasm)?;
+    if module.imports().next().is_some() {
+        return Err(bridge::Status::Wasm);
+    }
+    let limits = StoreLimitsBuilder::new()
+        .memory_size(memory)
+        .memories(1)
+        .instances(1)
+        .tables(0)
+        .table_elements(0)
+        .build();
+    let mut store = Store::new(&engine, limits);
+    store.limiter(|limits| limits);
+    store.set_fuel(fuel).map_err(|_| bridge::Status::Wasm)?;
+    let linker = Linker::<StoreLimits>::new(&engine); // NO WASI / host imports.
+    *attempts += 1;
+    let map_trap = |error: wasmi::Error| {
+        if error.as_trap_code() == Some(TrapCode::OutOfFuel) {
+            bridge::Status::Fuel
+        } else {
+            bridge::Status::Wasm
+        }
+    };
+    let instance = linker
+        .instantiate_and_start(&mut store, &module)
+        .map_err(map_trap)?;
+    let run = instance
+        .get_typed_func::<(), i32>(&store, "run")
+        .map_err(|_| bridge::Status::Wasm)?;
+    run.call(&mut store, ()).map_err(map_trap)
 }
 
 fn run_fixture() -> i32 {
