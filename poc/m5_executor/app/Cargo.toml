@@ -10,6 +10,10 @@ autobins = false
 name = "velaos-executor"
 path = "src/main.rs"
 
+[[bin]]
+name = "velaos-pcb"
+path = "src/bin/pcb.rs"
+
 [dependencies]
 sel4-microkit = { git = "https://github.com/seL4/rust-sel4", rev = "d441a880938209f661201704dfbee7b91c5aa905" }
 wasmi = { version = "=2.0.0", default-features = false, features = ["stable", "validate", "prefer-btree-collections"] }

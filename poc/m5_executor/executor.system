@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <system>
+    <memory_region name="pcb_executor_page" size="0x1_000" />
+
+    <protection_domain name="pcb" priority="100" stack_size="0x10_000">
+        <program_image path="pcb.elf" />
+        <map mr="pcb_executor_page" vaddr="0x4000_0000" perms="rw" setvar_vaddr="shared_page_addr" />
+    </protection_domain>
+
     <protection_domain name="executor" priority="100" stack_size="0x10_000">
         <program_image path="executor.elf" />
+        <map mr="pcb_executor_page" vaddr="0x4000_0000" perms="r" setvar_vaddr="shared_page_addr" />
     </protection_domain>
+
+    <channel>
+        <end pd="pcb" id="0" />
+        <end pd="executor" id="0" notify="false" />
+    </channel>
 </system>

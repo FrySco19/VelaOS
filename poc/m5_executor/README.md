@@ -45,9 +45,24 @@ general filesystem/network attack surface.
 - The executor PD has a 2 MiB Microkit heap. This is a prototype allocation
   bound, not a measured full-system RAM budget or an admission guarantee for
   arbitrary production modules.
-- No WASI, host functions, network, filesystem, token verifier, PCB channel, or
-  shared-memory page is wired yet. In particular, Biscuit tokens are not passed
-  to the guest; task ABI and trusted payload handling remain future work.
+  - Phase 1 of the PCB–Executor bridge maps a 4 KiB page read/write in PCB and
+    read-only in Executor. PCB publishes a bounded mock descriptor, mock token,
+    and payload, then signals Microkit notification channel 0. Executor validates
+    descriptor bounds and logs the received lengths. This is IPC scaffolding only:
+    no Biscuit cryptographic verification, capability grant, or payload execution
+    is performed by the bridge.
+  - Bridge build and runtime handshake verified on 2026-10-11: both AArch64 Rust
+    binaries compiled, both ELF W^X checks passed, Microkit generated the two-PD
+    loader image, and QEMU logged PCB publication followed by Executor receipt of
+    request 1 with token length 18 and payload length 17. QEMU was stopped after
+    the handshake using a 20-second timeout.
+  - A follow-up rebuild after making unsafe writer calls explicit was interrupted
+    by a read-only filesystem error in the Rust/BuildKit output paths and a WSL
+    daemon disconnect. The explicit unsafe-block change is formatting/safety
+    annotation only; a clean rebuild of that final source state remains pending.
+  - No WASI, guest host functions, network, filesystem, token verifier, or
+    production task ABI is wired yet. The pre-existing embedded Wasmi fixture is
+    still run as an independent Executor self-test, not on the shared payload.
 
 ## Memory mapping and W^X strategy
 
@@ -68,9 +83,10 @@ WASI imports.
 
 ## Scope and next gate work
 
-This is the engine/bootstrap phase only. It does not connect to the PCB or
-consume dynamic task modules. Before integration, add a bounded validated task
-envelope, explicit shared-page ownership/lifecycle, malformed-module and
-forbidden-import tests, fuel exhaustion over IPC, cancellation/revocation
-semantics, and measurements on the target. QEMU boot does not qualify physical
-hardware, whole-system RAM, or a hard real-time latency guarantee.
+The engine self-test and Phase 1 PCB–Executor handshake are separate. Before
+cryptographic or runtime integration, add a bounded production task envelope,
+explicit shared-page ownership/lifecycle, Biscuit verification and capability
+attenuation, malformed-module and forbidden-import tests over IPC,
+cancellation/revocation semantics, and target measurements. QEMU boot does not
+qualify physical hardware, whole-system RAM, or a hard real-time latency
+guarantee.

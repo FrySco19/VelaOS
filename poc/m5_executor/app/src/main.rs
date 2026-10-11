@@ -2,7 +2,12 @@
 #![no_main]
 #![feature(asm_cfg)]
 
-use sel4_microkit::{Handler, NullHandler, debug_println, protection_domain};
+mod bridge;
+
+use core::sync::atomic::{Ordering, fence};
+use sel4_microkit::{
+    Channel, ChannelSet, Handler, debug_println, memory_region_symbol, protection_domain,
+};
 use wasmi::{Config, Engine, Linker, Module, Store, StoreLimits, StoreLimitsBuilder, TrapCode};
 
 const TASK_FUEL: u64 = 10_000_000;
@@ -36,7 +41,36 @@ fn init() -> impl Handler {
     debug_println!("VelaOS Gate D: no-WASI Wasmi executor initialized");
     debug_println!("VelaOS Gate D: imported WASI host call rejected");
     debug_println!("VelaOS Gate D: fuel exhaustion and 64 KiB memory cap verified");
-    NullHandler::new()
+    ExecutorHandler {
+        shared_page: memory_region_symbol!(shared_page_addr: *mut u8).as_ptr(),
+    }
+}
+
+struct ExecutorHandler {
+    shared_page: *mut u8,
+}
+
+impl Handler for ExecutorHandler {
+    type Error = core::convert::Infallible;
+
+    fn notified(&mut self, channels: ChannelSet) -> Result<(), Self::Error> {
+        if !channels.contains(Channel::new(0)) {
+            debug_println!("VelaOS C-D bridge: ignored unrelated notification");
+            return Ok(());
+        }
+
+        fence(Ordering::Acquire);
+        match unsafe { bridge::parse_descriptor(self.shared_page) } {
+            Ok(descriptor) => debug_println!(
+                "VelaOS C-D bridge: Executor received descriptor request_id={} token_len={} payload_len={}",
+                descriptor.request_id,
+                descriptor.token_len,
+                descriptor.payload_len
+            ),
+            Err(_) => debug_println!("VelaOS C-D bridge: rejected malformed descriptor"),
+        }
+        Ok(())
+    }
 }
 
 fn run_fixture() -> i32 {
