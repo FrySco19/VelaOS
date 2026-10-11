@@ -1,6 +1,6 @@
 # Stato di implementazione — 11 ottobre 2026
 
-Il runtime Rust M2–M4 è pubblicato nella PR di sviluppo. M4 resta aperto: non esiste ancora un sistema completo o installabile. Il checkout storico e la VM precedente non sono stati usati come prova della nuova architettura.
+Il runtime Rust M2–M4 è pubblicato nella PR di sviluppo. **M4 è condizionatamente chiuso come milestone d'implementazione; M5 è pronto per la progettazione, non per l'avanzamento di release.** La chiusura non certifica le soglie prestazionali o di memoria né un sistema completo o installabile. La validazione hardware/CI del profilo mmap/512-token/KV-offload, l'integrazione Neural Bus/UI e le prove end-to-end restano in sospeso; un esito negativo o una regressione riapre M4. Il checkout storico e la VM precedente non sono stati usati come prova della nuova architettura.
 
 | Verifica | Risultato misurato | Confine |
 | --- | --- | --- |
@@ -15,7 +15,9 @@ Il runtime Rust M2–M4 è pubblicato nella PR di sviluppo. M4 resta aperto: non
 
 I test e Clippy con warning negati passano localmente. I controlli CI non eseguono il modello GPU né qualificano le prestazioni del sistema completo.
 
-## Lavoro necessario per arrivare alla fine di M4
+## Condizioni pendenti per la chiusura completa di M4
+
+La chiusura condizionale consente di iniziare la progettazione di M5 (port seL4/QEMU), ma non dichiara superato il gate di sistema né autorizza una release M5. Restano da soddisfare le condizioni seguenti; regressioni o risultati fuori soglia riaprono M4:
 
 1. Portare l'ingresso del compiler e gli accessi LFS su servizi Neural Bus persistenti con identità protette. I template di piano non devono trasportare byte degli oggetti.
 2. Collegare il richiamo ibrido M0 al servizio Rust e alla selezione esplicita di OID/handle, conservando gli epoch fissati e filtrando per capability.
@@ -24,7 +26,7 @@ I test e Clippy con warning negati passano localmente. I controlli CI non eseguo
 5. Eseguire SAVE → RECALL → selezione esatta → CONFIRM → APPLY → KEEP/rollback, i 100 casi di injection end-to-end e i guasti dei servizi reali. Le regressioni del parser non sostituiscono queste prove.
 6. Misurare RAM a riposo e prestazioni sull'intero runtime. Il target <1,5 GB non può essere ricavato dal solo working set del modello o ignorando la memoria impegnata.
 
-M5 segue il gate M4 e riguarda il port seL4/QEMU. Nessuna chiusura di M4 o avanzamento ufficiale a M5 è dichiarato da questo documento.
+M5 riguarda il port seL4/QEMU. La sua progettazione può procedere in parallelo; l'avanzamento ufficiale di release a M5 resta subordinato alla validazione delle condizioni pendenti di M4.
 
 ### Verifica del provider e del supervisor
 
@@ -36,6 +38,8 @@ Il bootstrap fidato deve fornire chiavi persistenti protette, capability del pro
 
 Il nuovo launcher `poc/m3/src/worker.rs` gestisce il backend CUDA b11539, verifica il modello fissato con buffer SHA256 da 64 KiB e applica limiti al contesto, al batch e alle cache. `--gpu-layers all` lasciava 2152,50 MiB di embedding nel buffer CPU: il posizionamento esplicito `.*=CUDA0` elimina quel buffer modello CPU, come verificato dai log (3494,28 MiB di pesi su CUDA). Il loader upstream libera già i buffer di upload: il dato storico di 4,70 GB non dimostra un leak.
 
-Lo scaricamento dopo 5s senza richieste riduce il commit del worker a 599.150.592 byte e, dopo un secondo ciclo di inferenza/scaricamento, a 594.862.080 byte. Il launcher impegna altri 741.376 byte nell'ultima misura. Il picco attivo campionato resta 4.551.987.200 byte: non è implementato un cap di commit attivo sotto 1,5 GB. Il working set attivo campionato è invece 609.738.752 byte. Non attribuiamo automaticamente il commit residuo a un leak o a una particolare allocazione del driver senza ulteriori prove.
+Lo scaricamento dopo 5s senza richieste riduce il commit del worker a 599.150.592 byte e, dopo un secondo ciclo di inferenza/scaricamento, a 594.862.080 byte. Il launcher impegna altri 741.376 byte nell'ultima misura. Il picco attivo campionato resta 4.551.987.200 byte: non è implementato un cap di commit attivo sotto 1,5 GB. Il working set attivo campionato è invece 609.738.752 byte. Questi valori appartengono al profilo precedente (`--load-mode none`, contesto 1024); il solo contatore di commit privato non prova che l'intero GGUF sia stato allocato nell'heap CPU, dato che i log attestano anche 3.494,28 MiB di buffer modello CUDA. Non attribuiamo automaticamente il commit residuo a un leak o a una particolare allocazione del driver senza ulteriori prove.
 
-Il risveglio automatico è stato verificato con una vera richiesta di inferenza (2.945,447 ms). Il costo di riattivazione è un trade-off deliberato e accettato per il profilo a memoria inattiva ridotta: pre-caricare il modello eviterebbe quel costo ma manterrebbe occupate risorse che lo scaricamento dopo 5s rilascia. Il valore di 2.945 ms non è incluso nel giro delle 300 richieste, eseguito a modello pronto. In quel giro il massimo di 307,335 ms supera comunque il limite di 250 ms; il test con zero checkpoint non ha risolto il superamento e ha peggiorato il p95, quindi non è stato adottato. Non dichiariamo superato il gate di latenza né attribuiamo la coda massima esclusivamente al risveglio a freddo. I [risultati memoria](../poc/m3/memory-results.json) e il [giro completo da 300 casi](../poc/m3/memory-planner-gate.json) includono anche prove fallite e limiti. Il target RAM dell'intero OS e il gate M4 restano aperti; l'ingresso di produzione deve ancora usare il Neural Bus.
+Il launcher ora richiede caricamento mmap, 999 layer GPU, KV-cache offload e contesto massimo di 512 token. Questo profilo non è stato ancora misurato: i risultati riportati sopra e i limiti di latenza appartengono alla configurazione precedente. La riduzione del contesto può ridurre il KV cache, ma non dimostra da sola una diminuzione significativa del commit dei pesi né una latenza massima sotto 250 ms. I criteri di memoria attiva e latenza restano in attesa di una nuova misura sul backend CUDA fissato e fanno parte delle condizioni pendenti per la chiusura completa di M4.
+
+Il risveglio automatico è stato verificato con una vera richiesta di inferenza (2.945,447 ms). Il costo di riattivazione è un trade-off deliberato e accettato per il profilo a memoria inattiva ridotta: pre-caricare il modello eviterebbe quel costo ma manterrebbe occupate risorse che lo scaricamento dopo 5s rilascia. Il valore di 2.945 ms non è incluso nel giro delle 300 richieste, eseguito a modello pronto. In quel giro il massimo di 307,335 ms supera comunque il limite di 250 ms; il test con zero checkpoint non ha risolto il superamento e ha peggiorato il p95, quindi non è stato adottato. Non dichiariamo superato il gate di latenza né attribuiamo la coda massima esclusivamente al risveglio a freddo. I [risultati memoria](../poc/m3/memory-results.json) e il [giro completo da 300 casi](../poc/m3/memory-planner-gate.json) includono anche prove fallite e limiti. Il target RAM dell'intero OS resta da misurare e l'ingresso di produzione deve ancora usare il Neural Bus: la chiusura condizionale non sostituisce queste prove.

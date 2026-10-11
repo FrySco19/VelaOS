@@ -34,19 +34,20 @@ fn verify_artifact(path: &Path, expected: &str) -> Result<()> {
 /// One GPU slot, bounded context/scratch and no persistent host prompt snapshots.
 pub const MEMORY_ARGS: &[&str] = &[
     "--gpu-layers",
-    "all",
+    "999",
     // Gemma input/per-layer embeddings are not covered by layer count alone.
     "--override-tensor",
     ".*=CUDA0",
     "--fit",
     "off",
     "--load-mode",
-    "none",
+    "mmap",
     "--lazy-mode",
     "off",
     "--no-host",
     "--ctx-size",
-    "1024",
+    "512",
+    "--kv-offload",
     "--batch-size",
     "512",
     "--ubatch-size",
@@ -128,5 +129,27 @@ impl Drop for LocalWorker {
             let _ = self.child.kill();
             let _ = self.child.wait();
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::MEMORY_ARGS;
+
+    fn value_for(option: &str) -> &'static str {
+        MEMORY_ARGS
+            .windows(2)
+            .find(|pair| pair[0] == option)
+            .map(|pair| pair[1])
+            .expect("required memory setting")
+    }
+
+    #[test]
+    fn pins_model_and_kv_cache_to_cuda_with_bounded_context() {
+        assert_eq!(value_for("--gpu-layers"), "999");
+        assert_eq!(value_for("--load-mode"), "mmap");
+        assert_eq!(value_for("--ctx-size"), "512");
+        assert!(MEMORY_ARGS.contains(&"--kv-offload"));
+        assert!(!MEMORY_ARGS.contains(&"--no-kv-offload"));
     }
 }
