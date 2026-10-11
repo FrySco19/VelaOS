@@ -1,5 +1,7 @@
 # C–D bridge lifecycle and remaining integration gates
 
+Executor-side obligations (snapshot, Ed25519-only admission, limits, no imports/WASI, u32 result, C5 status mapping, replay, fuel vs deadline) are versioned in [EXECUTOR_CONTRACT.md](EXECUTOR_CONTRACT.md) (EXEC-v2.1) and asserted by host tests in `executor-host/` with fixtures in `fixtures/`.
+
 ## Implemented v2 ownership and acknowledgement
 
 Only PCB owns write access to the one shared page. There is one caller and at most one request in flight. PCB publishes all bytes before protected call label 0x701, then must not reuse or mutate the page until the synchronous reply (label 0x702, four registers). Executor captures an owned snapshot before any parsing/verification and never executes bytes read again from shared storage. PCB verifies response label/count, status and matching request ID for every successfully parsed frame. Malformed replies have no trusted request ID and report status 1; the single in-flight call provides correlation for that error.
@@ -7,6 +9,8 @@ Only PCB owns write access to the one shared page. There is one caller and at mo
 A successful or failed task reply is the acknowledgement permitting page reuse. Valid authenticated request IDs are consumed before instantiation. Repeated calls with a consumed ID are rejected without execution; invalid signatures do not consume IDs. IDs cannot wrap or restart within an Executor session. No seL4 notification carries task delivery here: notification coalescing/duplicates cannot lose requests because notification dispatch is not the ingress. An asynchronous future ingress needs a bounded sequence-numbered queue and a separately acknowledged consumer cursor; notifications may then be hints only.
 
 If Executor crashes or never replies, PCB must not assume an acknowledgement, overwrite the page or replay a side-effecting task. Recovery needs a separate supervisor, authenticated session epoch and durable admission/result state. These are not implemented. Fuel alone does not bound module parsing or ensure a wall-clock response deadline.
+
+Fuel exhaustion itself is a reply, not a crash (R1, closed 2026-10-12): the Executor's Wasmi is built with `portable-dispatch`, so a task admitted at `MAX_FUEL` returns status 6 over IPC from the 64 KiB native stack and the Executor keeps serving. `verify-bridge` asserts this with PCB requests 9 (`LOOP_MODULE` at `MAX_FUEL`, `status=6 value=0 attempts=4`, marker `MAX_FUEL stack-safe status=6`) and 10 (`status=0 value=7 attempts=5`); log `docs/reports/m5-verify-bridge-2026-10-12-r1-max-fuel.log`. Other domain faults (bugs, heap exhaustion) still produce no reply and need the supervisor above.
 
 ## Required authorization boundary (not yet implemented)
 
@@ -28,7 +32,7 @@ The present return-7 result reaches PCB registers only. It is not persisted into
 
 ## Evidence required before closure
 
-1. Reproducible build/boot plus descriptor, authentication, scope, replay, fuel and import rejection: implemented in the Rust host runner and guest assertions.
+1. Reproducible build/boot plus descriptor, authentication, scope, replay, fuel (64 and `MAX_FUEL`, R1) and import rejection: implemented in the Rust host runner and guest assertions.
 2. Expiry, cross-boot replay, revocation, cancellation and crash/restart tests: pending the real authority/clock/supervisor integration.
 3. Request → PCB → Executor → result → LFS including unauthorized result writes and interrupted persistence: pending.
 4. RAM accounting for every domain plus kernel/shared mappings, and end-to-end latency distributions on a specified target/workload: pending. QEMU's configured 2 GiB is capacity, not consumption. ELF W^X checks establish properties only of the examined load segments; runtime mappings need separate inspection.

@@ -103,6 +103,15 @@ fn init() -> impl Handler {
 
     let final_task = bridge::signed_frame(&key.sk, 8, bridge::RETURN_7_MODULE, bridge::MAX_FUEL);
     exchange(page, &final_task, bridge::Status::Success, 3);
+
+    // R1: a signed infinite loop admitted at MAX_FUEL must exhaust fuel (status 6)
+    // without overflowing the Executor's 64 KiB native stack, and the Executor
+    // must keep serving afterwards (Wasmi built with `portable-dispatch`).
+    let max_fuel_loop = bridge::signed_frame(&key.sk, 9, bridge::LOOP_MODULE, bridge::MAX_FUEL);
+    exchange(page, &max_fuel_loop, bridge::Status::Fuel, 4);
+    debug_println!("VelaOS Phase 3: MAX_FUEL stack-safe status=6");
+    let after_max_fuel = bridge::signed_frame(&key.sk, 10, bridge::RETURN_7_MODULE, bridge::MAX_FUEL);
+    exchange(page, &after_max_fuel, bridge::Status::Success, 5);
     debug_println!("VelaOS Phase 2/3: ALL CHECKS PASSED; authenticated Wasm returned 7 via IPC");
     NullHandler::new()
 }

@@ -1,0 +1,86 @@
+qemu-system-aarch64 \
+	-machine virt,virtualization=on \
+	-cpu cortex-a53 \
+	-m size=2G \
+	-nic none \
+	-serial mon:stdio \
+	-nographic \
+	-device loader,file=build/loader.img,addr=0x70000000,cpu-num=0
+LDR|INFO: Setting all interrupts to Group 1
+LDR|INFO: GICv2 ITLinesNumber: 0x00000008
+LDR|INFO|CPU0: CurrentEL=EL2
+LDR|INFO|CPU0: Resetting CNTVOFF
+LDR|INFO: disabling MMU (if it was enabled)
+LDR|INFO: PSCI version is 0.2
+LDR|INFO: loader for seL4 starting
+LDR|INFO: flags:
+             seL4 configured as hypervisor
+LDR|INFO: kernel:      entry:   0x0000008060000000
+LDR|INFO: root server: physmem: 0x0000000060258000 -- 0x000000006062c000
+LDR|INFO:              virtmem: 0x0000000000200000 -- 0x00000000005d4000
+LDR|INFO:              entry  : 0x0000000000222fe8
+LDR|INFO: region: 0x00000000   addr: 0x0000000060000000   size: 0x0000000000258000   offset: 0x0000000000000000   type: 0x0000000000000001
+LDR|INFO: region: 0x00000001   addr: 0x0000000060258000   size: 0x000000000000b2b8   offset: 0x0000000000258000   type: 0x0000000000000001
+LDR|INFO: region: 0x00000002   addr: 0x00000000602732b8   size: 0x000000000001475c   offset: 0x00000000002632b8   type: 0x0000000000000001
+LDR|INFO: region: 0x00000003   addr: 0x0000000060297a18   size: 0x0000000000010088   offset: 0x0000000000277a14   type: 0x0000000000000001
+LDR|INFO: region: 0x00000004   addr: 0x00000000602a8000   size: 0x0000000000020400   offset: 0x0000000000287a9c   type: 0x0000000000000001
+LDR|INFO: region: 0x00000005   addr: 0x00000000602c9000   size: 0x0000000000361000   offset: 0x00000000002a7e9c   type: 0x0000000000000001
+LDR|INFO: region: 0x00000006   addr: 0x000000006062b000   size: 0x00000000000001f8   offset: 0x0000000000608e9c   type: 0x0000000000000001
+LDR|INFO: copying region 0x00000000
+LDR|INFO: copying region 0x00000001
+LDR|INFO: copying region 0x00000002
+LDR|INFO: copying region 0x00000003
+LDR|INFO: copying region 0x00000004
+LDR|INFO: copying region 0x00000005
+LDR|INFO: copying region 0x00000006
+LDR|INFO|CPU0: active CPUs to start: 0x00000001
+LDR|INFO|CPU0: enabling MMU
+LDR|INFO|CPU0: CurrentEL=EL2
+LDR|INFO|CPU0: Resetting CNTVOFF
+LDR|INFO|CPU0: enabling MMU
+LDR|INFO|CPU0: jumping to kernel
+Bootstrapping kernel
+Warning: Could not infer GIC interrupt target ID, assuming 0.
+Available phys memory regions: 1
+  [60000000..c0000000)
+Reserved virt address space regions: 2
+  [8060000000..8060258000)
+  [8060258000..806062c000)
+Booting all finished, dropped to user space
+INFO  [sel4_capdl_initializer::initialize] Starting CapDL initializer
+INFO  [sel4_capdl_initializer::initialize] Starting threads
+MON|INFO: Microkit Monitor started!
+VelaOS Gate D: no-WASI Wasmi executor initialized
+VelaOS Gate D: imported WASI host call rejected
+VelaOS Gate D: fuel exhaustion and 64 KiB memory cap verified
+VelaOS Phase 2: Executor Ed25519 verified request=1
+VelaOS Phase 3: Executor executed authenticated payload result=7
+VelaOS Phase 2/3: PCB reply request=1 status=0 value=7 attempts=1
+VelaOS Phase 2: Executor denied frame status=2
+VelaOS Phase 2/3: PCB reply request=2 status=2 value=0 attempts=1
+VelaOS Phase 2: tampered return-8 payload rejected before execution
+VelaOS Phase 2: Executor denied frame status=2
+VelaOS Phase 2/3: PCB reply request=3 status=2 value=0 attempts=1
+VelaOS Phase 2: Executor denied frame status=1
+VelaOS Phase 2/3: PCB reply request=4 status=1 value=0 attempts=1
+VelaOS Phase 2: Executor denied frame status=3
+VelaOS Phase 2/3: PCB reply request=5 status=3 value=0 attempts=1
+VelaOS Phase 2: Executor denied frame status=4
+VelaOS Phase 2/3: PCB reply request=1 status=4 value=0 attempts=1
+VelaOS Phase 2: Executor Ed25519 verified request=6
+VelaOS Phase 2/3: PCB reply request=6 status=6 value=0 attempts=2
+VelaOS Phase 3: signed infinite loop stopped by fuel
+VelaOS Phase 2: Executor Ed25519 verified request=7
+VelaOS Phase 2/3: PCB reply request=7 status=5 value=0 attempts=2
+VelaOS Phase 3: signed WASI import rejected
+VelaOS Phase 2: Executor Ed25519 verified request=8
+VelaOS Phase 3: Executor executed authenticated payload result=7
+VelaOS Phase 2/3: PCB reply request=8 status=0 value=7 attempts=3
+VelaOS Phase 2: Executor Ed25519 verified request=9
+VelaOS Phase 2/3: PCB reply request=9 status=6 value=0 attempts=4
+VelaOS Phase 3: MAX_FUEL stack-safe status=6
+VelaOS Phase 2: Executor Ed25519 verified request=10
+VelaOS Phase 3: Executor executed authenticated payload result=7
+VelaOS Phase 2/3: PCB reply request=10 status=0 value=7 attempts=5
+VelaOS Phase 2/3: ALL CHECKS PASSED; authenticated Wasm returned 7 via IPC
+qemu-system-aarch64: terminating on signal 15 from pid 1 (timeout)

@@ -1,0 +1,32 @@
+name: M5 platform pins
+on:
+  push:
+    paths:
+      - 'poc/m5_executor/Makefile'
+      - 'poc/m5_executor/Dockerfile'
+      - 'poc/m5_executor/executor.system'
+      - 'poc/m5_executor/check-pins.py'
+      - 'poc/m5_executor/app/Cargo.toml'
+      - 'poc/m5_executor/app/rust-toolchain.toml'
+      - 'docs/CONTRACTS_v0.md'
+      - '.github/workflows/m5-platform-pins.yml'
+  pull_request:
+    paths:
+      - 'poc/m5_executor/Makefile'
+      - 'poc/m5_executor/Dockerfile'
+      - 'poc/m5_executor/executor.system'
+      - 'poc/m5_executor/check-pins.py'
+      - 'poc/m5_executor/app/Cargo.toml'
+      - 'poc/m5_executor/app/rust-toolchain.toml'
+      - 'docs/CONTRACTS_v0.md'
+      - '.github/workflows/m5-platform-pins.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pins:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check seL4/Microkit platform pins (no guest build)
+        run: python3 poc/m5_executor/check-pins.py
