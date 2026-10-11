@@ -364,6 +364,8 @@ M5 is complete only when the following evidence is recorded for the pinned sourc
 
 ### Gate C — Biscuit-to-capability broker
 
+- The current Microkit image is intentionally static: channels provide protected calls and notifications but do not transfer capabilities between CSpaces. Dynamic grants therefore require a privileged bootstrap/root-task design, not only PCB application code.
+- A standalone root-task proof under `poc/m5_sel4/pcb_root/` boots as a separate seL4 image in QEMU. It creates a live child with its own CSpace and VSpace, mints a badged send-only endpoint capability into the child CSpace, receives the child’s IPC and verifies its badge, replies, then deletes the grant and suspends the child. This confirms the core dynamic derivation and transfer path; it does not integrate Biscuit verification, configurable policy profiles, timed leases, or deny/revocation tests, so Gate C remains open.
 - Test valid, invalid-signature, expired, revoked, wrong-principal, wrong-OID, wrong-operation, stale-epoch, replayed-confirmation, and attenuated-token cases.
 - Assert denied requests create no endpoint/frame grant and cause no persistent side effect.
 - Verify exact rights, recipient CSpace, lease duration, operation binding, and post-completion revocation for each grant profile.

@@ -45,3 +45,32 @@ Use `Ctrl+A`, then `X` to exit QEMU.
 This verifies five statically declared Microkit protection domains on the
 pinned QEMU virtual platform. It is not the full M5 architecture, a connected
 service graph, dynamic capability routing, or hardware qualification.
+
+## Gate C root-task boot proof
+
+Microkit's static channel model does not dynamically pass capabilities between
+protection domains. The separate `pcb_root` package uses the pinned
+`sel4-root-task` support to boot a root-task PCB proof. It creates a live child
+with its own CSpace and VSpace, mints a badged send-only endpoint capability
+into the child's CSpace, receives and verifies the child's badge, replies, then
+deletes the grant and suspends the child. The child uses a configured MCS
+scheduling context. The pinned `sel4-kernel-loader-add-payload` currently needs
+two small source compatibility fixes; `patch-payload-helper.sh` applies them
+only to the exact pinned checkout and is safe to rerun.
+
+Build and boot the custom root task separately from the default Microkit image:
+
+```powershell
+docker build -f poc/m5_sel4/Dockerfile -t velaos-gate-c poc/m5_sel4
+docker run --rm --entrypoint make velaos-gate-c run-gate-c
+```
+
+Expected serial markers include `Gate C: minted badged send capability into
+live recipient CSpace`, `Gate C: recipient used the grant; badge verified`, and
+`Gate C: revoked the recipient endpoint capability`.
+
+This remains a proof of the kernel capability-derivation and IPC path, not a
+complete PCB policy implementation. The root-task PCB uses a fixed badge in
+place of Biscuit validation; configurable grant profiles, token validation,
+timed lease expiry, attempts to use revoked caps, and authorization deny tests
+are not implemented.

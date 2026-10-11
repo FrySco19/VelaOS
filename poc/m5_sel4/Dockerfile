@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     cmake \
     curl \
+    gcc-aarch64-linux-gnu \
     git \
     libclang-dev \
     ninja-build \
@@ -46,9 +47,13 @@ WORKDIR /work
 
 COPY Makefile velaos.system ./
 COPY app/ ./app/
+COPY pcb_root/ ./pcb_root/
+COPY patch-payload-helper.sh ./
 
-RUN chmod +x app/rustc-wrapper.sh
+RUN chmod +x app/rustc-wrapper.sh pcb_root/rustc-wrapper.sh patch-payload-helper.sh
 
 RUN make build
+
+RUN make gate-c
 
 CMD ["make", "run"]
