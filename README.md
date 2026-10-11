@@ -158,6 +158,31 @@ Use `Ctrl+A`, then `X` to exit QEMU. This smoke test does not validate Gate B
 isolation or physical hardware behavior. See the [Gate A README](poc/m5_sel4/README.md)
 for toolchain details and scope.
 
+## Boot the published QEMU preview image
+
+Download `velaos-qemu-loader.img` and `velaos-qemu-loader.img.sha256` from the
+[VelaOS 2.2 runtime/QEMU preview release](https://github.com/FrySco19/VelaOS/releases/tag/v2.2-runtime-preview)
+into the same directory. On WSL/Linux, install QEMU if needed and verify the
+image checksum before boot:
+
+```bash
+sudo apt install qemu-system-arm
+sha256sum -c velaos-qemu-loader.img.sha256
+qemu-system-aarch64 \
+  -machine virt,virtualization=on \
+  -cpu cortex-a53 \
+  -m 2G \
+  -nic none \
+  -serial mon:stdio \
+  -nographic \
+  -device loader,file=velaos-qemu-loader.img,addr=0x70000000,cpu-num=0
+```
+
+The QEMU release image is not `pcb-root.img`: that filename belongs to the
+separate Gate C root-task proof. Exit QEMU with `Ctrl+A`, then `X`. The preview
+guest is a development demonstration with volatile LFS state, not an installable
+or security-qualified OS.
+
 ## Repository map
 
 | Path | Contents |
