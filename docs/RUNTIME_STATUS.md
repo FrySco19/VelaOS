@@ -6,7 +6,7 @@ Il runtime Rust M2–M4 è pubblicato nella PR di sviluppo. **M4 è condizionata
 | --- | --- | --- |
 | Wasm, capability e streaming | 12 test M2 superati | Componenti Wasm reali; peer nativi fidati sull'host di sviluppo |
 | Router e cache | 2 test M3 superati | Template finiti; capability ricontrollate a ogni cache hit |
-| Restore e recovery | 11 test M4 superati | Provider persistente M1, journal firmato, watchdog e sessione nativa SAVE/selezione/CONFIRM/KEEP; ingresso UI di produzione e richiamo semantico non collegati |
+| Restore e recovery | 11 test M4 standard + 1 test M0 reale superati | Provider persistente M1, journal firmato, watchdog e sessione nativa SAVE/RECALL/selezione/CONFIRM/KEEP; ingresso UI di produzione non collegato |
 | Tre benchmark dual-lane | >100.000 msg/s, p99 <100 µs, regressione <20% | 10 GB generati, non file LFS bulk durevoli |
 | Planner senza route cache, 20 ripetizioni | 6.000 output validi; router 98,33–98,67%; massimo 246,959 ms | Stabilità fallita su una richiesta ambigua; modello da solo 92,33–92,67% |
 | Router con cache, 20 ripetizioni | 98,67%, piani identici; massimo cold 171,351 ms, warm 0,524 ms | 300 chiamate modello + 5.700 cache hit entro TTL; non prova stabilità dopo scadenza |
@@ -20,7 +20,7 @@ I test e Clippy con warning negati passano localmente. I controlli CI non eseguo
 La chiusura condizionale consente di iniziare la progettazione di M5 (port seL4/QEMU), ma non dichiara superato il gate di sistema né autorizza una release M5. Restano da soddisfare le condizioni seguenti; regressioni o risultati fuori soglia riaprono M4:
 
 1. Portare l'ingresso del compiler e gli accessi LFS su servizi Neural Bus persistenti con identità protette. I template di piano non devono trasportare byte degli oggetti.
-2. Collegare il richiamo ibrido M0 al servizio Rust e alla selezione esplicita di OID/handle, conservando gli epoch fissati e filtrando per capability.
+2. Portare il collegamento M0/sessione Rust, ora verificato con embedding reali offline, nel servizio persistente di produzione e nell'interfaccia umana, mantenendo epoch e filtro capability.
 3. Implementato il provider persistente nel dominio di prova isolato: oggetti M1 reali, verifica degli OID, head firmato e gestione del precedente stato durante applicazioni interrotte. La pubblicazione transazionale riguarda il solo head; nessuna atomicità tra database o modifica di interfacce fisiche è dichiarata.
 4. Implementati supervisor persistente, watchdog da 120s e gestori del client autenticato con ticket CONFIRM monouso e ticket KEEP separato. Il grant di recovery è emesso da una radice dedicata, ristretto a transazione/dominio/OID esatti e revocato nel ledger al completamento; non eredita la scadenza del token utente. Resta da collegare l'ingresso UI autenticato al servizio Neural Bus di produzione.
 5. Eseguire SAVE → RECALL → selezione esatta → CONFIRM → APPLY → KEEP/rollback, i 100 casi di injection end-to-end e i guasti dei servizi reali. Le regressioni del parser non sostituiscono queste prove.
@@ -35,11 +35,15 @@ SAVE e lettura delle card usano il token del client, senza delegare i permessi d
 provider. Ranking estranei o duplicati vengono rifiutati; la selezione umana resta
 esplicita e il supervisor ricontrolla la capability. Il test attraversa storage,
 conferma, trasferimento M2 e riapertura durevole. Usa una classifica di fixture:
-non certifica ancora l'integrazione del modello di embedding M0.
+non esegue il modello di embedding M0. Il test separato `live_m0_session_to_durable_keep`
+è invece passato in 14,78 secondi con E5 fissato e LanceDB reali, senza rete:
+salvataggio, card autorizzate, ricerca ibrida, selezione esatta, conferma, KEEP e
+riapertura durevole. Conferma e selezione sono eventi fidati del test; non una UI.
 
 La nuova CI seL4 ricostruisce l'immagine fissata e controlla i marker Wasm/intent
 entro 60 secondi, terminando QEMU in modo controllato. Non misura la RAM del guest
-e non qualifica i benchmark attraverso tempi della seriale.
+e non qualifica i benchmark attraverso tempi della seriale. La ricostruzione
+locale del container e lo smoke sul nuovo guest sono passati.
 
 ### Verifica del provider e del supervisor
 

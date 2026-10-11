@@ -17,3 +17,16 @@ jobs:
         run: docker build -f poc/m5_sel4/Dockerfile -t velaos-ci poc/m5_sel4
       - name: Verify bounded Wasm and connected fixed intent
         run: docker run --rm --entrypoint python3 velaos-ci smoke_boot.py build/loader.img
+      - name: Export verified QEMU loader
+        run: |
+          docker create --name velaos-artifact velaos-ci
+          docker cp velaos-artifact:/work/build/loader.img velaos-qemu-loader.img
+          docker rm velaos-artifact
+          sha256sum velaos-qemu-loader.img > velaos-qemu-loader.img.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: velaos-qemu-prototype
+          path: |
+            velaos-qemu-loader.img
+            velaos-qemu-loader.img.sha256
+          if-no-files-found: error

@@ -86,6 +86,32 @@ impl Session {
         self.candidates = accepted;
         Ok(())
     }
+    /// The trusted host supplies the pinned M0 adapter. Only authorized card
+    /// metadata crosses this callback; failure invalidates all cached candidates.
+    pub fn recall_with(
+        &mut self,
+        provider: &PersistentProvider,
+        query: &str,
+        ranker: impl FnOnce(&[Listed], &str) -> Result<Vec<String>>,
+    ) -> Result<Vec<String>> {
+        ensure!(
+            !query.trim().is_empty() && query.len() <= 4096,
+            "invalid recall query"
+        );
+        let cards = self.cards(provider, 0)?;
+        let ranked = match ranker(&cards, query) {
+            Ok(ranked) => ranked,
+            Err(error) => {
+                self.candidates.clear();
+                return Err(error);
+            }
+        };
+        if let Err(error) = self.rank(&ranked) {
+            self.candidates.clear();
+            return Err(error);
+        }
+        Ok(self.candidates.clone())
+    }
     /// Called by the trusted human-selection event, never automatically by the SLM.
     pub fn select(&mut self, supervisor: &Supervisor, oid: &str) -> Result<()> {
         ensure!(self.phase() == SessionPhase::Browsing, "pending operation");

@@ -1,6 +1,8 @@
 # Gate M5 — seL4 / QEMU Architecture Design
 
-**Status:** Proposed architecture; not implemented or validated
+**Status:** Target architecture with a partial QEMU prototype. Static domains,
+bounded Wasm and a fixed connected intent are implemented; durable LFS, Biscuit
+policy, SLM and full gate qualification are pending. See `GATE_F_G_REPORT.md`.
 **Scope:** Port the VelaOS control and data-plane prototype into isolated seL4 protection domains, initially booted and tested under QEMU.
 **Predecessors:** M2 Neural Bus, M3 deterministic intent/router boundary, and M4 LFS/restore coordinator. Their current Rust/Linux prototypes are design inputs, not evidence that their services already run on seL4.
 

@@ -529,6 +529,89 @@ mod tests {
         Ok(())
     }
     #[test]
+    #[ignore = "requires the pinned offline M0 Python environment and embedding assets"]
+    fn live_m0_session_to_durable_keep() -> Result<()> {
+        use crate::session::Session;
+        use std::{
+            io::Write,
+            process::{Command, Stdio},
+        };
+        let dir = tempfile::tempdir()?;
+        let root = KeyPair::new();
+        let issuer = RecoveryIssuer::new(KeyPair::new());
+        let recovery_root = issuer.public_key();
+        let provider = provider(dir.path(), &root, recovery_root)?;
+        let token = BiscuitBuilder::new().code("right(\"alice\",\"NetConfig\",\"read\"); right(\"alice\",\"NetConfig\",\"write\"); right(\"alice\",\"NetConfig\",\"list\");")?.build(&root)?.to_vec()?;
+        let client = AuthenticatedClient::connect(root.public(), "alice".into(), token)?;
+        let mut session = Session::new(client);
+        let selected = session.save(&provider, "live-save", &value("ZEPHYR-731"))?;
+        session.save(&provider, "live-decoy", &value("CafeGuest-5G"))?;
+        let candidates = session.recall_with(&provider, "ZEPHYR-731", |cards, query| {
+            let mut child = Command::new(std::env::var("VELA_M0_PYTHON")?)
+                .args(["-X", "utf8"])
+                .arg(std::env::var("VELA_M0_ADAPTER")?)
+                .env("HF_HUB_OFFLINE", "1")
+                .stdin(Stdio::piped())
+                .stdout(Stdio::piped())
+                .stderr(Stdio::null())
+                .spawn()?;
+            let mut input = child
+                .stdin
+                .take()
+                .ok_or_else(|| anyhow!("missing adapter input"))?;
+            writeln!(
+                input,
+                "{}",
+                serde_json::json!({"schema":"vela.recall.cards.v1","cards":cards,"query":query})
+            )?;
+            drop(input);
+            let output = child.wait_with_output()?;
+            ensure!(output.status.success(), "M0 adapter failed");
+            ensure!(output.stdout.len() <= 65536, "oversized M0 result");
+            let ranked: serde_json::Value = serde_json::from_slice(&output.stdout)?;
+            ensure!(
+                ranked["status"] == "RankedCandidates" && ranked["auto_resolve"] == false,
+                "invalid M0 result"
+            );
+            ensure!(ranked["embedding_epoch"] == "intfloat/multilingual-e5-small@614241f622f53c4eeff9890bdc4f31cfecc418b3:onnx-fp32:mean:l2:query-passage:v1", "wrong embedding epoch");
+            ranked["candidates"]
+                .as_array()
+                .ok_or_else(|| anyhow!("missing candidates"))?
+                .iter()
+                .map(|candidate| {
+                    candidate["oid"]
+                        .as_str()
+                        .map(String::from)
+                        .ok_or_else(|| anyhow!("invalid candidate"))
+                })
+                .collect()
+        })?;
+        assert_eq!(candidates.first(), Some(&selected.oid));
+        let signing = SigningKey::from_bytes(&[47; 32]);
+        let journal =
+            RestoreCoordinator::unlock(&dir.path().join("supervisor.redb"), signing.clone())?;
+        let supervisor = Supervisor::start(journal, provider.clone(), issuer, root.public())?;
+        // Trusted human-selection fixture: never automatically select a model result.
+        session.select(&supervisor, &selected.oid)?;
+        session.confirm(&supervisor)?;
+        assert_eq!(provider.active_oid()?, selected.oid);
+        session.keep(&supervisor)?;
+        drop(session);
+        drop(supervisor);
+        drop(provider);
+        let reopened = self::provider(dir.path(), &root, recovery_root)?;
+        let journal = RestoreCoordinator::unlock(&dir.path().join("supervisor.redb"), signing)?;
+        let supervisor = Supervisor::start(
+            journal,
+            reopened.clone(),
+            RecoveryIssuer::new(KeyPair::new()),
+            root.public(),
+        )?;
+        assert!(supervisor.health()?.is_none());
+        assert_eq!(reopened.active_oid()?, selected.oid);
+        Ok(())
+    }
+    #[test]
     fn restart_between_rollback_intent_and_provider_staging() -> Result<()> {
         let dir = tempfile::tempdir()?;
         let root = KeyPair::new();

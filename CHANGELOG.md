@@ -4,6 +4,7 @@
 
 - Collegata una sessione Rust autenticata a SAVE, card autorizzate, selezione esatta, CONFIRM e KEEP, con ticket privati monouso.
 - Verificati undici test M4, inclusa la persistenza dopo la riapertura e il rifiuto di SAVE/recall con permessi scaduti; il test della sessione usa una classifica di fixture, non inferenza M0.
+- Passato anche il test separato con vero E5 e LanceDB Vector + BM25 fino a CONFIRM, KEEP e riapertura durevole; aggiunto alla CI dopo bootstrap degli asset verificati. L'interfaccia umana resta aperta.
 - Pubblicati i prototipi seL4 dei gate B–G: domini separati, grant IPC, Wasm limitato e flusso fisso con risultato 42. Storage guest ancora volatile.
 - Aggiunta CI di build e avvio QEMU con scadenza e marker obbligatori, separata dalla qualificazione delle prestazioni.
 - Aggiornati i limiti: UI di produzione, integrazione semantica, budget globale di memoria e port durevole restano aperti. Nessuna release consumer completa dichiarata.

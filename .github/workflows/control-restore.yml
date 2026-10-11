@@ -1,15 +1,16 @@
 name: Control plane and restore checks
 on:
   pull_request:
-    paths: ['poc/m1/**', 'poc/m2/**', 'poc/m3/**', 'poc/m4/**', '.github/workflows/control-restore.yml']
+    paths: ['poc/m0/**', 'poc/m1/**', 'poc/m2/**', 'poc/m3/**', 'poc/m4/**', '.github/workflows/control-restore.yml']
   push:
-    paths: ['poc/m3/**', 'poc/m4/**', '.github/workflows/control-restore.yml']
+    paths: ['poc/m0/**', 'poc/m3/**', 'poc/m4/**', '.github/workflows/control-restore.yml']
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   rust:
     runs-on: windows-latest
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - name: Install pinned Rust
@@ -38,4 +39,30 @@ jobs:
           cargo +1.96.1 clippy --manifest-path poc/m3/Cargo.toml --locked --all-targets -- -D warnings
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           cargo +1.96.1 clippy --manifest-path poc/m4/Cargo.toml --locked --all-targets -- -D warnings
+          exit $LASTEXITCODE
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned M0 dependencies from script metadata
+        shell: pwsh
+        run: |
+          python -c "import pathlib,tomllib,subprocess,sys; text=pathlib.Path('poc/m0/hybrid_recall.py').read_text(encoding='utf-8'); block=text.split('# /// script',1)[1].split('# ///',1)[0]; metadata=tomllib.loads('\n'.join(line[2:] for line in block.splitlines() if line.startswith('# '))); subprocess.check_call([sys.executable,'-m','pip','install',*metadata['dependencies']])"
+          exit $LASTEXITCODE
+      - uses: actions/cache@v4
+        with:
+          path: poc/m0/.model-cache
+          key: m0-e5-windows-${{ hashFiles('poc/m0/hybrid_recall.py') }}
+      - name: Bootstrap hash-verified embedding assets
+        shell: pwsh
+        run: |
+          python poc/m0/hybrid_recall.py --download-model --repeat 1 --output ci-m0-bootstrap.json
+          exit $LASTEXITCODE
+      - name: Real hybrid recall through durable CONFIRM and KEEP
+        shell: pwsh
+        env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/poc/m2/target
+        run: |
+          $env:VELA_M0_PYTHON=(Get-Command python).Source
+          $env:VELA_M0_ADAPTER=(Resolve-Path poc/m0/bridge_recall.py).Path
+          cargo +1.96.1 test --manifest-path poc/m4/Cargo.toml --locked live_m0_session_to_durable_keep -- --ignored --nocapture
           exit $LASTEXITCODE

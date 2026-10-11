@@ -10,8 +10,11 @@ atomicity. Recovery authority is independent of the original user token expiry.
 bounded untrusted rankings, explicit exact-OID selection, CONFIRM and KEEP.
 Private single-use tickets remain outside model output. Eleven Rust tests and Clippy
 pass locally, including session SAVE through KEEP and database reopening. This
-new test supplies a ranking fixture, not M0 inference. The real hybrid bridge,
-protected production UI ingress, full injection matrix, process-kill qualification
+default test supplies a ranking fixture. The additional `live_m0_session_to_durable_keep`
+test passes with the real E5/LanceDB Vector + BM25 adapter, then exact selection,
+CONFIRM, KEEP and durable reopen. It is enabled explicitly after pinned asset
+bootstrap in CI. Selection and confirmation are trusted test events, not a real UI.
+Protected production UI ingress, full injection matrix, process-kill qualification
 and global memory measurements remain open. The seL4 fixed demo uses volatile
 storage and does not replace the native durable provider.
 
@@ -35,7 +38,7 @@ The malformed-output test covers distinct attempts to inject authority, caller, 
 1. A persistent protected LFS service and production control/bulk ingress, rather than local native library adapters.
 2. A real network-device provider and production authenticated ingress. The native isolated persistent provider, client boundary and automatic supervisor are implemented.
 3. Production provisioning and process-kill qualification of the implemented dedicated exact-object recovery authority.
-4. The complete SAVE → semantic RECALL → explicit exact selection → prepare → human CONFIRM → verified APPLY → KEEP/rollback path.
+4. Expose the now-tested native SAVE → semantic RECALL → explicit selection → CONFIRM → APPLY → KEEP path through a protected production human interface and persistent Bus services.
 5. A frozen 100-case injection matrix exercised against the actual ingress, capability broker, Wasm tasks and side-effect provider, plus crash/failure recovery tests.
 6. Integrated idle RAM below 1.5 GB measured on the VelaOS runtime, not inferred from one worker on the Windows development host.
 

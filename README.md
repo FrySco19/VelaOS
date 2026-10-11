@@ -60,8 +60,9 @@ Gate A/B's reproducible QEMU protection-domain scaffold and exact commands are i
 
 The native [M4 session](poc/m4/README.md) now connects authorized saves,
 candidate selection and single-use confirmation to persistent recovery. Its
-integration test uses a ranking fixture; live M0 search and a consumer UI are
-still pending. The [seL4 CI](.github/workflows/sel4-boot.yml) builds the pinned
+default integration test uses a ranking fixture. A separate offline test now
+passes with real M0 embeddings and hybrid search through durable KEEP/reopen;
+a consumer UI remains pending. The [seL4 CI](.github/workflows/sel4-boot.yml) builds the pinned
 guest and checks bounded Wasm plus the fixed intent flow with a 60-second limit.
 
 ## Project status
