@@ -1,5 +1,7 @@
 # C–D bridge lifecycle and remaining integration gates
 
+Executor-side obligations (snapshot, Ed25519-only admission, limits, no imports/WASI, u32 result, C5 status mapping, replay, fuel vs deadline) are versioned in [EXECUTOR_CONTRACT.md](EXECUTOR_CONTRACT.md) (EXEC-v2.0) and asserted by host tests in `executor-host/` with fixtures in `fixtures/`.
+
 ## Implemented v2 ownership and acknowledgement
 
 Only PCB owns write access to the one shared page. There is one caller and at most one request in flight. PCB publishes all bytes before protected call label 0x701, then must not reuse or mutate the page until the synchronous reply (label 0x702, four registers). Executor captures an owned snapshot before any parsing/verification and never executes bytes read again from shared storage. PCB verifies response label/count, status and matching request ID for every successfully parsed frame. Malformed replies have no trusted request ID and report status 1; the single in-flight call provides correlation for that error.
