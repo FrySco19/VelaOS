@@ -1,0 +1,18 @@
+[package]
+name = "vela-shell"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.90"
+license = "GPL-3.0-only"
+publish = false
+description = "VelaOS Zero-App Shell runtime (host model): idle -> interpreting -> glass -> authorizing -> result. Clicks emit UserSelection to SelectionGatedPdp."
+
+[dependencies]
+vela-intent = { path = "../../intent" }
+vela-executor-policy = { path = "../../m5_executor/policy" }
+vela-executor-host = { path = "../../m5_executor/executor-host" }
+
+[dev-dependencies]
+# Root keys / delegations / PCB key for tests and the demo example only.
+biscuit-auth = { version = "=6.0.0", default-features = false, features = ["datalog-macro"] }
+ed25519-compact = { version = "=2.6.0", default-features = false }
