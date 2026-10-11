@@ -74,6 +74,32 @@ pub struct ProviderConfig {
     pub service_token: Vec<u8>,
 }
 impl PersistentProvider {
+    /// Trusted native ingress only: object bytes never enter the planner.
+    pub fn save_authorized(
+        &self,
+        token: &[u8],
+        caller: &str,
+        idempotency: &str,
+        value: &Value,
+    ) -> Result<vela_lfs_m1::Committed> {
+        self.lfs
+            .lock()
+            .map_err(|_| anyhow!("LFS poisoned"))?
+            .put(token, caller, idempotency, value)
+    }
+
+    /// Only semantic cards leave the native storage boundary.
+    pub fn cards_authorized(
+        &self,
+        token: &[u8],
+        caller: &str,
+        after_commit: u64,
+    ) -> Result<Vec<vela_lfs_m1::Listed>> {
+        self.lfs
+            .lock()
+            .map_err(|_| anyhow!("LFS poisoned"))?
+            .list(token, caller, after_commit, 100)
+    }
     pub fn new(
         lfs: Lfs,
         metadata: Database,

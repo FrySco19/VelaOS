@@ -52,6 +52,9 @@ pub struct AuthenticatedClient {
     session: [u8; 32],
 }
 impl AuthenticatedClient {
+    pub(super) fn credentials(&self) -> (&str, &[u8]) {
+        (&self.caller, &self.token)
+    }
     pub fn connect(root: PublicKey, caller: String, token: Vec<u8>) -> Result<Self> {
         ensure!(token.len() <= 16384, "oversized client capability");
         Router::new(root).validate(
@@ -446,6 +449,84 @@ mod tests {
     use vela_lfs_m1::Lfs;
     fn value(ssid: &str) -> serde_json::Value {
         serde_json::json!({"schema":"vela.net.config.v1","ssid":ssid,"dns":"9.9.9.9"})
+    }
+    #[test]
+    fn native_session_save_candidates_confirm_keep_and_restart() -> Result<()> {
+        use crate::session::{Session, SessionPhase};
+        let dir = tempfile::tempdir()?;
+        let root = KeyPair::new();
+        let issuer = RecoveryIssuer::new(KeyPair::new());
+        let recovery_root = issuer.public_key();
+        let provider = provider(dir.path(), &root, recovery_root)?;
+        let token = BiscuitBuilder::new().code("right(\"alice\",\"NetConfig\",\"read\"); right(\"alice\",\"NetConfig\",\"write\"); right(\"alice\",\"NetConfig\",\"list\");")?.build(&root)?.to_vec()?;
+        let client = AuthenticatedClient::connect(root.public(), "alice".into(), token)?;
+        let mut session = Session::new(client);
+        let saved = session.save(&provider, "session-save", &value("Saved"))?;
+        assert_eq!(
+            session
+                .save(&provider, "session-save", &value("Saved"))?
+                .oid,
+            saved.oid
+        );
+        let cards = session.cards(&provider, 0)?;
+        assert!(cards.iter().any(|card| card.oid == saved.oid));
+        assert!(session.rank(&["f".repeat(64)]).is_err());
+        assert!(
+            session
+                .rank(&[saved.oid.clone(), saved.oid.clone()])
+                .is_err()
+        );
+        session.rank(std::slice::from_ref(&saved.oid))?;
+        let signing = SigningKey::from_bytes(&[47; 32]);
+        let journal =
+            RestoreCoordinator::unlock(&dir.path().join("supervisor.redb"), signing.clone())?;
+        let supervisor = Supervisor::start(journal, provider.clone(), issuer, root.public())?;
+        assert!(session.confirm(&supervisor).is_err());
+        session.select(&supervisor, &saved.oid)?;
+        assert_eq!(session.phase(), SessionPhase::Prepared);
+        assert!(session.cards(&provider, 0).is_err());
+        session.confirm(&supervisor)?;
+        assert_eq!(session.phase(), SessionPhase::AwaitingKeep);
+        assert_eq!(provider.snapshot()?.1, value("Saved"));
+        assert!(session.confirm(&supervisor).is_err());
+        session.keep(&supervisor)?;
+        assert!(session.keep(&supervisor).is_err());
+        drop(session);
+        drop(supervisor);
+        drop(provider);
+        let reopened = self::provider(dir.path(), &root, recovery_root)?;
+        let journal = RestoreCoordinator::unlock(&dir.path().join("supervisor.redb"), signing)?;
+        let supervisor = Supervisor::start(
+            journal,
+            reopened.clone(),
+            RecoveryIssuer::new(KeyPair::new()),
+            root.public(),
+        )?;
+        assert!(supervisor.health()?.is_none());
+        assert_eq!(reopened.snapshot()?.0, saved.oid);
+        Ok(())
+    }
+    #[test]
+    fn native_session_denies_expired_save_and_recall() -> Result<()> {
+        use crate::session::Session;
+        let dir = tempfile::tempdir()?;
+        let root = KeyPair::new();
+        let issuer = RecoveryIssuer::new(KeyPair::new());
+        let provider = provider(dir.path(), &root, issuer.public_key())?;
+        let before = provider.active_oid()?;
+        let mut client =
+            AuthenticatedClient::connect(root.public(), "alice".into(), user_token(&root, false)?)?;
+        client.token = Zeroizing::new(user_token(&root, true)?);
+        let mut session = Session::new(client);
+        assert!(
+            session
+                .save(&provider, "expired-save", &value("Forbidden"))
+                .is_err()
+        );
+        assert!(session.cards(&provider, 0).is_err());
+        assert!(session.rank(std::slice::from_ref(&before)).is_err());
+        assert_eq!(provider.active_oid()?, before);
+        Ok(())
     }
     #[test]
     fn restart_between_rollback_intent_and_provider_staging() -> Result<()> {

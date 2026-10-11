@@ -3,11 +3,12 @@
 This scaffold builds five distinct Rust protection domains with seL4 Microkit
 2.3.0 for `qemu_virt_aarch64`, packages them as one Microkit loader image, and
 starts QEMU. Microkit creates a separate CSpace and VSpace for each declared
-protection domain. Gate B currently demonstrates static domain separation and
-boot; it does not yet configure service IPC channels, dynamic capability
-delegation, or negative isolation tests.
+protection domain. The Gate E prototype now uses static protected-call channels
+to execute a fixed Wasm intent and store result 42 in volatile LFS state.
+Dynamic grant routing, durable storage and negative isolation tests remain open.
 
-Each domain prints an online marker and then waits in Microkit's handler loop.
+Domains initialize and enter Microkit's handler loop; the orchestrator submits
+the fixed demonstration intent during initialization.
 Because the debug output is shared, concurrent startup messages may interleave.
 
 ## Pinned toolchain
@@ -42,9 +43,15 @@ Use `Ctrl+A`, then `X` to exit QEMU.
 
 ## Scope
 
-This verifies five statically declared Microkit protection domains on the
-pinned QEMU virtual platform. It is not the full M5 architecture, a connected
-service graph, dynamic capability routing, or hardware qualification.
+This verifies five statically declared Microkit protection domains and a fixed
+connected flow on QEMU. It is not the full M5 architecture, durable M1 storage,
+SLM integration, dynamic capability routing or hardware qualification.
+
+The bounded CI smoke test is `docker run --rm --entrypoint python3 velaos-gate-a
+smoke_boot.py build/loader.img`. It requires the Wasm fuel/memory proof and the
+completed intent markers within 60 seconds, and terminates QEMU afterward.
+Missing markers, excessive output or detected faults fail the test. The 2 GiB
+configured guest capacity is not an idle RAM measurement.
 
 ## Gate C root-task boot proof
 

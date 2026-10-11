@@ -1,8 +1,26 @@
-# M4 — durable restore coordinator (gate open)
+# M4 — persistent property domain and rollback (qualification open)
+
+The current `provider.rs` stores real encrypted M1 objects and a signed durable
+logical head in an isolated property domain. `supervisor.rs` adds a persistent
+recovery ledger, exact-object rollback authority and a 120-second watchdog. It
+does not configure a physical network interface or claim cross-database/device
+atomicity. Recovery authority is independent of the original user token expiry.
+
+`session.rs` now connects authenticated SAVE, capability-filtered card enumeration,
+bounded untrusted rankings, explicit exact-OID selection, CONFIRM and KEEP.
+Private single-use tickets remain outside model output. Eleven Rust tests and Clippy
+pass locally, including session SAVE through KEEP and database reopening. This
+new test supplies a ranking fixture, not M0 inference. The real hybrid bridge,
+protected production UI ingress, full injection matrix, process-kill qualification
+and global memory measurements remain open. The seL4 fixed demo uses volatile
+storage and does not replace the native durable provider.
+
+The sections below describe the original coordinator fixture and its gate scope;
+the provider/supervisor items have since been implemented at the native API level.
 
 The Rust coordinator persists an Ed25519-signed, hash-chained redb operation log before applying a change. Preparation binds the caller, exact target OID and previous snapshot. An unexported random confirmation ticket is delivered only to the trusted client boundary. The planner cannot forge a confirmation field in its restricted output.
 
-Confirmation rechecks capability, ticket, deadline and the previous active state's content hash. The provider must implement atomic compare-and-apply. The resulting state is checked against the exact target OID. Keeping the change requires a fresh write capability, the same caller/ticket and a live timer. Ticket replay is rejected.
+Confirmation rechecks capability, ticket, deadline and the previous active state's content hash. The legacy coordinator's provider contract requires atomic compare-and-apply; the new persistent provider separately stages and verifies its logical head without claiming device atomicity. The resulting state is checked against the exact target OID. Keeping the change requires a fresh write capability, the same caller/ticket and a live timer. Ticket replay is rejected.
 
 Unkept changes roll back after timeout. On journal reopening, an unfinished apply rolls back rather than extending an uncertain clock. A conflicting third-party state becomes `RecoveryRequired`; it is not overwritten automatically. Reading target and previous object bytes uses the typed iceoryx2 adapter in M2; no LLM sees or handles those bytes.
 
@@ -15,8 +33,8 @@ The malformed-output test covers distinct attempts to inject authority, caller, 
 ## Remaining before M4 closure
 
 1. A persistent protected LFS service and production control/bulk ingress, rather than local native library adapters.
-2. A real network provider, a trusted authenticated confirmation client and an automatic persistent rollback supervisor.
-3. A dedicated, exact-object rollback authority that remains usable for recovery without preserving unrestricted or expired user authority.
+2. A real network-device provider and production authenticated ingress. The native isolated persistent provider, client boundary and automatic supervisor are implemented.
+3. Production provisioning and process-kill qualification of the implemented dedicated exact-object recovery authority.
 4. The complete SAVE → semantic RECALL → explicit exact selection → prepare → human CONFIRM → verified APPLY → KEEP/rollback path.
 5. A frozen 100-case injection matrix exercised against the actual ingress, capability broker, Wasm tasks and side-effect provider, plus crash/failure recovery tests.
 6. Integrated idle RAM below 1.5 GB measured on the VelaOS runtime, not inferred from one worker on the Windows development host.

@@ -1,5 +1,13 @@
 # Changelog
 
+## Runtime persistente e port seL4 — 2026-10-11
+
+- Collegata una sessione Rust autenticata a SAVE, card autorizzate, selezione esatta, CONFIRM e KEEP, con ticket privati monouso.
+- Verificati undici test M4, inclusa la persistenza dopo la riapertura e il rifiuto di SAVE/recall con permessi scaduti; il test della sessione usa una classifica di fixture, non inferenza M0.
+- Pubblicati i prototipi seL4 dei gate B–G: domini separati, grant IPC, Wasm limitato e flusso fisso con risultato 42. Storage guest ancora volatile.
+- Aggiunta CI di build e avvio QEMU con scadenza e marker obbligatori, separata dalla qualificazione delle prestazioni.
+- Aggiornati i limiti: UI di produzione, integrazione semantica, budget globale di memoria e port durevole restano aperti. Nessuna release consumer completa dichiarata.
+
 ## Architettura AI-native — 2026-10-10
 
 - Reso esplicito il pivot del repository dal prototipo desktop Debian/KDE al sistema personale AI-native basato sui gate M0–M2.

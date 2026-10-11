@@ -1,0 +1,19 @@
+name: seL4 bounded boot proof
+on:
+  pull_request:
+    paths: ['poc/m5_sel4/**', '.github/workflows/sel4-boot.yml']
+  push:
+    paths: ['poc/m5_sel4/**', '.github/workflows/sel4-boot.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  boot:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build pinned Microkit image and root-task proof
+        run: docker build -f poc/m5_sel4/Dockerfile -t velaos-ci poc/m5_sel4
+      - name: Verify bounded Wasm and connected fixed intent
+        run: docker run --rm --entrypoint python3 velaos-ci smoke_boot.py build/loader.img

@@ -1,5 +1,6 @@
 //! Durable restore journal, isolated persistent provider and recovery supervisor.
 pub mod provider;
+pub mod session;
 pub mod supervisor;
 use anyhow::{Result, anyhow, ensure};
 use ed25519_dalek::{Signature, Signer, SigningKey};

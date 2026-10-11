@@ -6,7 +6,7 @@ Il runtime Rust M2–M4 è pubblicato nella PR di sviluppo. **M4 è condizionata
 | --- | --- | --- |
 | Wasm, capability e streaming | 12 test M2 superati | Componenti Wasm reali; peer nativi fidati sull'host di sviluppo |
 | Router e cache | 2 test M3 superati | Template finiti; capability ricontrollate a ogni cache hit |
-| Restore e recovery | 9 test M4 superati | Provider persistente di proprietà nel dominio isolato M1; journal firmato e watchdog; ingresso UI di produzione non collegato |
+| Restore e recovery | 11 test M4 superati | Provider persistente M1, journal firmato, watchdog e sessione nativa SAVE/selezione/CONFIRM/KEEP; ingresso UI di produzione e richiamo semantico non collegati |
 | Tre benchmark dual-lane | >100.000 msg/s, p99 <100 µs, regressione <20% | 10 GB generati, non file LFS bulk durevoli |
 | Planner senza route cache, 20 ripetizioni | 6.000 output validi; router 98,33–98,67%; massimo 246,959 ms | Stabilità fallita su una richiesta ambigua; modello da solo 92,33–92,67% |
 | Router con cache, 20 ripetizioni | 98,67%, piani identici; massimo cold 171,351 ms, warm 0,524 ms | 300 chiamate modello + 5.700 cache hit entro TTL; non prova stabilità dopo scadenza |
@@ -26,7 +26,20 @@ La chiusura condizionale consente di iniziare la progettazione di M5 (port seL4/
 5. Eseguire SAVE → RECALL → selezione esatta → CONFIRM → APPLY → KEEP/rollback, i 100 casi di injection end-to-end e i guasti dei servizi reali. Le regressioni del parser non sostituiscono queste prove.
 6. Misurare RAM a riposo e prestazioni sull'intero runtime. Il target <1,5 GB non può essere ricavato dal solo working set del modello o ignorando la memoria impegnata.
 
-M5 riguarda il port seL4/QEMU. La progettazione può procedere in parallelo; l'avanzamento ufficiale di release a M5 resta subordinato alla validazione delle condizioni pendenti di M4. Vedere il [design Gate M5](M5_DESIGN.md), proposto e non ancora implementato.
+M5 riguarda il port seL4/QEMU. Il prototipo ora avvia cinque domini e completa un intent fisso con Wasm e risultato 42; lo storage nel guest è volatile, senza SLM né verifica Biscuit integrata. Il port completo e la release restano subordinati alle condizioni pendenti di M4. Vedere il [design](M5_DESIGN.md), il [port riproducibile](../poc/m5_sel4/README.md) e il [rapporto dei limiti](../GATE_F_G_REPORT.md).
+
+### Sessione nativa e pubblicazione
+
+La nuova sessione mantiene fino a 100 OID autorizzati e ticket non serializzabili.
+SAVE e lettura delle card usano il token del client, senza delegare i permessi del
+provider. Ranking estranei o duplicati vengono rifiutati; la selezione umana resta
+esplicita e il supervisor ricontrolla la capability. Il test attraversa storage,
+conferma, trasferimento M2 e riapertura durevole. Usa una classifica di fixture:
+non certifica ancora l'integrazione del modello di embedding M0.
+
+La nuova CI seL4 ricostruisce l'immagine fissata e controlla i marker Wasm/intent
+entro 60 secondi, terminando QEMU in modo controllato. Non misura la RAM del guest
+e non qualifica i benchmark attraverso tempi della seriale.
 
 ### Verifica del provider e del supervisor
 
