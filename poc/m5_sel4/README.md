@@ -74,3 +74,24 @@ complete PCB policy implementation. The root-task PCB uses a fixed badge in
 place of Biscuit validation; configurable grant profiles, token validation,
 timed lease expiry, attempts to use revoked caps, and authorization deny tests
 are not implemented.
+
+## Gate D bounded Wasm proof
+
+The `executor` protection domain uses Wasmi 2.0.0 with default features
+disabled, no `std`, no WASI, and an empty linker (no host imports). The embedded
+probe runs with a 10-million-unit fuel budget, a 64 KiB linear-memory limit, a
+16 KiB value-stack limit, and a recursion-depth limit of 64. It also exercises
+an infinite loop with a small fuel budget and checks that an attempted
+second-page memory growth is denied.
+
+Build and boot the QEMU image:
+
+```powershell
+docker build -f poc/m5_sel4/Dockerfile -t velaos-gate-d poc/m5_sel4
+docker run --rm -it velaos-gate-d
+```
+
+The executor prints `VelaOS Gate D: fuel exhaustion and 64 KiB memory cap
+verified` after both bounds pass. This is not a task-ingress or full Gate D
+implementation: epoch deadlines, per-task IPC payload limits, concurrency,
+cancellation, fresh-store cleanup, and bus/LFS integration remain.

@@ -70,7 +70,7 @@ Gate A/B's reproducible QEMU protection-domain scaffold and exact commands are i
 | M5 Gate A — reproducible seL4 boot | **CLOSED** | The pinned Microkit 2.3.0 image built and booted the AArch64 seL4 guest in QEMU. |
 | M5 Gate B — domain isolation | **IN PROGRESS** | Five statically declared protection domains with separate ELFs, CSpaces, and VSpaces now build and boot. Capability manifests, restricted authority, negative reachability tests, and crash/restart tests remain. |
 | M5 Gate C — PCB capability derivation | **IN PROGRESS** | A separately booted custom seL4 root task creates a live child with isolated CSpace/VSpace, mints a badged send capability into its CSpace, receives and verifies the child’s IPC badge, replies, then deletes the grant and suspends the child. Biscuit validation, policy profiles, timed leases, and deny/revocation tests remain. |
-| M5 Gate D — bounded Wasm executor | **BLOCKED** | The pinned bare-metal seL4 target has no `std`/OS substrate for Wasmtime. A supported runtime or a separately qualified seL4-compatible host layer is needed; no WASM execution gate is claimed. |
+| M5 Gate D — bounded Wasm executor | **IN PROGRESS** | The executor PD runs Wasmi 2.0.0 without `std` or WASI. QEMU verifies a 10M fuel budget, fuel-exhaustion trap, 64 KiB memory cap, and a 16 KiB Wasm stack bound; task IPC, epoch deadlines, concurrency, and cancellation remain. |
 
 “Closed” for M0–M3 refers to the stated component-gate scope; it does not mean
 those components have been integrated into a complete seL4 operating system.
@@ -80,6 +80,8 @@ completed. See [runtime status and limitations](docs/RUNTIME_STATUS.md).
 Gate C's root-task proof boots as a separate seL4 image; it is not part of the
 five-domain Microkit image. It demonstrates live capability derivation and an
 IPC round-trip, but not Biscuit validation or the complete policy broker.
+Gate D's fixed Wasm probe runs in the five-domain Microkit image; it has no
+WASI or host imports and is not yet wired to bus/LFS task ingress.
 
 ## Non-negotiable engineering targets
 

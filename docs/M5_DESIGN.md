@@ -373,6 +373,7 @@ M5 is complete only when the following evidence is recorded for the pinned sourc
 
 ### Gate D — bounded Wasm execution
 
+- The executor protection domain now embeds a fixed Wasm probe and runs it with Wasmi 2.0.0 built without `std`, WASI, or host imports. The QEMU run verifies that a fuel-metered infinite loop traps at a 64-unit probe budget, that the production Store is configured with a 10-million-unit budget, that memory growth beyond 64 KiB is denied, and that Wasmi's value stack and recursion depth are capped. This is an executor-boundary proof, not yet a task-ingress API or complete Gate D closure.
 - Run allowed and disallowed components; reject undeclared imports and all WASI imports.
 - Demonstrate memory limit, fuel exhaustion, epoch timeout, input/output bound, concurrency cap, cancellation, and fresh-Store cleanup.
 - Verify a task cannot retain or transfer a native capability, access a host pointer, or use a stale object handle after completion/revocation.
@@ -402,7 +403,7 @@ M5 is complete only when the following evidence is recorded for the pinned sourc
 3. Choose and validate Biscuit verifier support, root-key provisioning, trusted time source, revocation distribution, and restart semantics in the PCB.
 4. Specify endpoint badges, CSpace slot allocation, capability derivation roots, revoke granularity, and CNode lifecycle against the pinned kernel.
 5. Decide whether bus-to-LFS bulk transfer starts with copies or a fixed shared-frame pool; prove slot lifecycle and revocation before optimizing.
-6. Pin Wasmtime version, compilation mode, fuel/epoch profiles, and component signature/manifest format for the target.
+6. Wasmi 2.0.0 is pinned as the current `no_std` runtime candidate; specify the fuel profile, optional wall-clock deadline, and component signature/manifest format before exposing task ingress.
 7. Define the trusted confirmation client's identity and IPC/device boundary; console input in QEMU is a test client, not a production authentication design.
 8. Define storage-driver isolation and durability assumptions. QEMU power loss is not equivalent to physical power-loss testing.
 9. Decide whether an inference service is in M5 scope. The initial design keeps SLM/GPU execution out of the privileged path and does not assume GPU passthrough.
