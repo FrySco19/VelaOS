@@ -17,6 +17,8 @@ fn exchange(
     expected: bridge::Status,
     attempts: u64,
 ) {
+    // Single-flight ownership: PCB writes only before pp_call, then freezes the
+    // page until the matching synchronous reply acknowledges completion.
     // SAFETY: Microkit maps the complete page rw in this PCB domain.
     unsafe {
         bridge::publish(page, frame);
@@ -34,6 +36,13 @@ fn exchange(
         ]
     });
     assert_eq!(result[0], expected as u64);
+    let request_id = u32::from_le_bytes(frame[8..12].try_into().unwrap());
+    if expected != bridge::Status::Malformed {
+        assert_eq!(
+            result[2], request_id as u64,
+            "reply acknowledged wrong request"
+        );
+    }
     assert_eq!(
         result[3], attempts,
         "unauthenticated bytes entered Wasm execution"

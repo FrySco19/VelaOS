@@ -30,6 +30,39 @@ mod bridge;
 mod tests {
     use super::*;
     #[test]
+    fn descriptor_boundaries_and_overlap_are_rejected() {
+        let key = KeyPair::from_seed(Seed::new([31; 32]));
+        let frame = bridge::signed_frame(&key.sk, 9, bridge::RETURN_7_MODULE, 1000);
+        assert_eq!(bridge::parse_descriptor(&frame).unwrap().request_id, 9);
+        for (offset, value) in [
+            (4, 0),
+            (6, 19),
+            (12, 0),
+            (12, 4095),
+            (14, 0),
+            (14, 95),
+            (16, 0),
+            (16, 20),
+            (16, 4095),
+            (18, 0),
+            (18, 65535),
+        ] {
+            let mut malformed = frame;
+            malformed[offset..offset + 2].copy_from_slice(&(value as u16).to_le_bytes());
+            assert_eq!(
+                bridge::parse_descriptor(&malformed).unwrap_err(),
+                bridge::Status::Malformed
+            );
+        }
+        // The last byte of the page is valid; moving it one byte beyond is not.
+        let mut boundary = frame;
+        boundary[16..18].copy_from_slice(&4095u16.to_le_bytes());
+        boundary[18..20].copy_from_slice(&1u16.to_le_bytes());
+        assert!(bridge::parse_descriptor(&boundary).is_ok());
+        boundary[18..20].copy_from_slice(&2u16.to_le_bytes());
+        assert!(bridge::parse_descriptor(&boundary).is_err());
+    }
+    #[test]
     fn signed_snapshot_rejects_tampering_scope_replay_and_bounds() {
         let keys = KeyPair::from_seed(Seed::new([27; 32]));
         let valid = bridge::signed_frame(&keys.sk, 1, bridge::RETURN_7_MODULE, 1000);

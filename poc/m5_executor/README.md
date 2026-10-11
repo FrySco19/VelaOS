@@ -43,3 +43,15 @@ A timeout exit alone is not a pass: require the final ALL CHECKS PASSED marker a
 This is a scoped Ed25519 token proof, not a Biscuit/Datalog verifier. Replay tracking lasts only for the current boot; persistent replay state, clock-based TTL, revocation, cancellation and production key provisioning remain future work. The local test PCB ELF embeds its signing seed: do not distribute that binary as a production secret-bearing image. BuildKit protects the raw seed mount, not secret material intentionally compiled into PCB.
 
 QEMU execution verifies this bridge and its rejection cases, not a completed OS, physical hardware qualification or a general proof against every runtime vulnerability. No LLM participates in byte transport or authorization.
+
+## Automated bridge verification
+
+The Rust host runner rebuilds the image, captures complete QEMU output, requires each expected reply exactly once, rejects faults and validates the idle timeout only after completion. After generating the local key, run from the repository root:
+
+```powershell
+cargo run --locked --manifest-path poc/m5_executor/keygen/Cargo.toml --bin verify-bridge -- poc/m5_executor .local/m5-executor.seed .local/m5-bridge-repro.log
+```
+
+On Windows with Docker accessed through WSL, provide Docker-visible absolute context/seed names and append `--wsl`; the log destination remains a host filename. Run `cargo test --locked --manifest-path poc/m5_executor/keygen/Cargo.toml` separately for descriptor and cryptographic host tests.
+
+See [ownership, acknowledgement and remaining gates](BRIDGE_CONTRACT.md). The single-flight protected call deliberately replaces unreliable notification-only delivery.

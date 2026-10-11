@@ -23,3 +23,7 @@ The counter proves rejected authentication/scope/replay frames did not reach ins
 The harness required the exact completion marker, rejected panic/FAULT output, and accepted timeout exit 124 only after all assertions passed. The timeout stops an idle Microkit guest; it is not the success criterion.
 
 See [serial output](phase-2-3-boot.log). Production limitations, including boot-local replay and the test-only signing key embedded in PCB ELF, are recorded in [README](README.md). No physical-hardware or total-OS memory measurement was performed.
+
+## Reproducibility follow-up — current source
+
+Repeated build and QEMU after adding PCB request/ack correlation assertions. The Rust verify-bridge runner required each reply marker exactly once, checked every rejection and the final result, rejected guest faults, and accepted exit 124 only after completion. Result: PASS. Host descriptor/crypto tests: 2 passed, 0 failed. This verifies the single-flight protected-call lifecycle; no notification queue is claimed. See BRIDGE_CONTRACT.md for the authority and LFS gates still open.
