@@ -1,0 +1,25 @@
+[package]
+name = "vela-restore-m4"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.90"
+license = "GPL-3.0-only"
+
+[dependencies]
+anyhow = "=1.0.100"
+biscuit-auth = { version = "=6.0.0", default-features = false, features = ["datalog-macro"] }
+blake3 = "=1.8.2"
+ed25519-dalek = "=2.2.0"
+rand = "=0.8.5"
+redb = "=4.3.0"
+serde = { version = "=1.0.228", features = ["derive"] }
+serde_json = "=1.0.145"
+serde_jcs = "=0.2.0"
+vela-lfs-m1 = { path = "../m1" }
+vela-neural-bus-m2 = { path = "../m2" }
+vela-control-plane-m3 = { path = "../m3" }
+
+zeroize = "=1.8.2"
+
+[dev-dependencies]
+tempfile = "=3.23.0"

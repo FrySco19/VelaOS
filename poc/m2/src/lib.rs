@@ -1,5 +1,7 @@
 //! Control-plane capability checks and typed data-plane primitives. No LLM invocation.
+pub mod authority;
 pub mod sandbox;
+pub mod streaming;
 
 use anyhow::{Result, ensure};
 use biscuit_auth::{AuthorizerLimits, Biscuit, PublicKey, builder::AuthorizerBuilder};
@@ -14,18 +16,21 @@ use zeroize::Zeroizing;
 pub enum Schema {
     NetConfigV1,
     Bulk4KiB,
+    BulkStreamV1,
 }
 impl Schema {
     pub fn tag(self) -> u32 {
         match self {
             Self::NetConfigV1 => 1,
             Self::Bulk4KiB => 2,
+            Self::BulkStreamV1 => 3,
         }
     }
     fn right(self) -> &'static str {
         match self {
             Self::NetConfigV1 => "NetConfig",
             Self::Bulk4KiB => "Bulk4KiB",
+            Self::BulkStreamV1 => "BulkStream",
         }
     }
 }

@@ -1,0 +1,28 @@
+[package]
+name = "vela-control-plane-m3"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.90"
+license = "GPL-3.0-only"
+
+[dependencies]
+anyhow = "=1.0.100"
+biscuit-auth = { version = "=6.0.0", default-features = false, features = ["datalog-macro"] }
+blake3 = "=1.8.2"
+serde = { version = "=1.0.228", features = ["derive"] }
+serde_json = "=1.0.145"
+sha2 = "=0.10.9"
+zeroize = "=1.8.2"
+
+[[bin]]
+name = "planner-probe"
+path = "src/bin/planner_probe.rs"
+
+[[bin]]
+name = "slm-worker"
+path = "src/bin/slm_worker.rs"
+
+# Streaming verification of a multi-GB artifact must not use an unoptimized
+# compression loop in development builds.
+[profile.dev.package.sha2]
+opt-level = 3

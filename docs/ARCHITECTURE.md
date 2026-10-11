@@ -1,43 +1,76 @@
-# Architettura corrente: M0–M2
+# Architettura corrente e confini verificati
 
-VelaOS sta costruendo un sistema personale AI-native con autorità deterministica e dati locali. M0, M1 e M2 sono spike/prototipi separati: non sono ancora un servizio integrato né una distribuzione installabile. La precedente preview Debian/KDE è conservata in `components/`, `build/` e nei documenti desktop; non è l'implementazione dell'architettura corrente.
+VelaOS usa intent, query semantiche e OID/handle per gli oggetti. I percorsi del
+repository sono infrastruttura di sviluppo, non il namespace degli oggetti utente.
+Il runtime nativo Rust e il port seL4 sono oggi due prove distinte; il guest non
+contiene ancora tutti i servizi del runtime persistente.
 
 ```mermaid
 flowchart LR
-  Request[Richiesta] --> Recall[M0: richiamo ibrido]
-  Recall -->|OID candidati, non permessi| Selection[Selezione esplicita]
-  Selection --> Policy[Capability Biscuit e validazione]
-  Policy -->|handle esatto| LFS[M1: storage LFS Rust]
-  LFS -->|oggetti autorizzati| Bus[M2: frame tipizzati / iceoryx2]
-  Wasm[Componente Wasm: WIT run] -. runtime boundary in sviluppo .-> Bus
+  Human[Richiesta umana] --> SLM[SLM locale: intent finito]
+  SLM --> Policy[Router Rust e policy Biscuit]
+  Policy --> UI[Sessione nativa fidata]
+  UI -->|capability corrente| Cards[Card autorizzate M1]
+  Cards -->|solo metadata| Recall[M0: E5 + Vector/BM25]
+  Recall -->|OID candidati, nessuna authority| UI
+  UI -->|selezione esatta e ticket umano| Supervisor[Supervisor persistente]
+  Supervisor --> Provider[Provider di proprietà isolato]
+  Provider -->|handle esatto e quota| Bus[M2: trasporto tipizzato iceoryx2]
+  Bus --> LFS[Oggetti cifrati M1]
 ```
 
-Il flusso rappresenta le responsabilità e il bridge sperimentale, non un prodotto end-to-end. Il sandbox Wasmtime non è ancora connesso al bus o a un planner. I risultati semantici sono candidati: non possono concedere accesso né scegliere byte senza policy e un handle esatto.
+Il diagramma descrive responsabilità e collegamenti nativi. La sessione e il
+richiamo reale sono verificati dai test; l'interfaccia e l'ingresso Bus di
+produzione non sono ancora implementati. I test di sessione non chiamano il SLM.
+Il compiler SLM è testato separatamente: l'intero percorso umano consumer non è
+ancora qualificato.
 
-## Milestone
+## Control plane
 
-| Fase | Responsabilità | Stato verificato |
-| --- | --- | --- |
-| M0 | Embedding locale, BM25 e fusione RRF; restituisce OID candidati. | Gate sintetico chiuso: 186/200 recall@1 e p95 25,67 ms. Non è un benchmark indipendente su dati reali. |
-| M1 | Canonicalizzazione BLAKE3, storage redb, cifratura a chunk, commit firmati, policy Biscuit e handle a scadenza. | Kernel e gate di 10.000 terminazioni di processo registrati come passati. Non prova power-loss, servizio distribuito o integrazione in produzione. |
-| M2 | Autorità delle route, frame tipizzati e trasporto IPC; boundary Wasmtime per task. | Bridge iceoryx2 multi-processo provata localmente. Target di throughput, isolamento dei peer e nuovo build Wasmtime restano aperti. |
+Il modello compila solo `save`, `recall`, `restore`, `clarify` o `unsupported`.
+Non emette codice eseguibile, capability, caller fidato o byte degli oggetti.
+Il Router Rust controlla schema, contesto fidato e permessi; la cache ricontrolla
+l'autorità a ogni uso. Il modello non può trasformare un'intenzione in authority.
 
-## Confini dei componenti
+M0 riceve card filtrate con la capability corrente, usa l'epoch E5 fissato e
+restituisce OID ordinati. La sessione scarta OID estranei o duplicati. La scelta
+esatta rimane un evento umano fidato, seguito da nuova autorizzazione nativa.
+CONFIRM e KEEP consumano ticket privati diversi, associati alla sessione.
 
-- **Recall M0:** Python è confinato allo spike di ricerca semantica. I risultati includono score/OID, non capability o byte. Il gate usa cinque card e 200 parafrasi sintetiche.
-- **LFS M1:** `poc/m1/` contiene il kernel Rust. Gli OID identificano il plaintext canonico; lo storage conserva dati cifrati e un log append-only firmato. L'apertura restituisce attualmente un buffer interno, non uno stream zero-copy.
-- **Neural Bus M2:** `poc/m2/` valida Biscuit e route prima del data plane iceoryx2. La misurazione 62.222 msg/s è ping/ack sequenziale da 4 KiB; lo staging dei byte LFS nel loan fa una copia. Il trasporto bulk con backpressure non è implementato.
-- **Wasm boundary M2:** `poc/m2/src/sandbox.rs` carica un componente Wasmtime attraverso l'interfaccia WIT `run`. La configurazione limita la memoria privata a 16–64 MiB, imposta fuel e ammette al massimo due task concorrenti. Il linker è vuoto: nessuna importazione WASI o capacità host viene registrata. Il codice è presente, ma compile, test e integrazione non sono ancora verificati.
+## Data plane e persistenza
 
-## Mappa del repository
+M1 conserva oggetti canonici cifrati e commit firmati. M2 usa veri loan iceoryx2,
+frame tipizzati, expiry e quote native. Il caricamento/decrittazione LFS e lo
+staging nel loan comportano copie: non si dichiara zero-copy end-to-end. Le lane
+fast e bulk hanno limiti di buffer/crediti; il bulk LFS durevole resta da integrare.
+Nessun byte dell'oggetto passa attraverso il SLM.
 
-| Percorso | Scopo |
-| --- | --- |
-| `poc/m0/` | Spike Python di hybrid recall e valutazione congelata. |
-| `poc/m1/` | Kernel Rust LFS, test e report del gate crash. |
-| `poc/m2/` | Neural Bus Rust, test IPC e boundary Wasmtime in sviluppo. |
-| `docs/` | Gate, limiti, roadmap e procedure; alcune guide desktop sono storiche. |
-| `components/`, `build/`, `tools/` | Implementazione e pipeline della precedente preview Debian/KDE. |
-| `archive/` | Prototipo web ancora più vecchio, separato dalla preview desktop. |
+Il provider M4 pubblica una head logica firmata nel dominio di prova isolato,
+verifica l'OID dell'effetto e registra staging e recovery. Non configura un
+dispositivo fisico e non dichiara atomicità tra database e hardware. Il supervisor
+registra intent prima degli effetti e ripristina operazioni incompiute al riavvio.
+L'autorità di rollback è vincolata alla transazione, dominio e coppia di OID;
+resta utilizzabile dopo la scadenza del token utente e viene revocata a KEEP.
 
-Per dettagli e riproduzione dei gate, partire da [README](../README.md), [M0](../poc/m0/README.md), [M1](../poc/m1/README.md) e [M2](../poc/m2/README.md).
+## Isolamento e port seL4
+
+Il runtime M2 usa Wasmtime senza WASI e senza import ambientali, con limiti di
+memoria, fuel e concorrenza. Il port no-std seL4 usa un executor Wasmi limitato
+per il modulo dimostrativo: non è una portabilità già completata di Wasmtime.
+
+QEMU avvia Orchestrator, PCB, Bus, Executor e LFS in cinque domini Microkit.
+I canali statici completano un intent fisso con risultato 42. Il PCB del flusso
+usa una regola di label, non Biscuit; il grant dinamico è provato in un'immagine
+root-task separata. LFS nel guest è volatile. SLM/GPU, storage M1 durevole,
+recovery, lease e driver consumer non sono ancora collegati al guest.
+
+## Risorse e prove
+
+Caricamento SLM streaming, tensor placement CUDA e scaricamento dopo 5s riducono
+la residenza host nei campioni registrati. Il commit attivo resta circa 4,55 GB;
+la RAM dell'intero OS sotto 1,5 GB non è dimostrata. Le misure del worker Windows,
+la capacità guest QEMU e i tempi della seriale sono quantità diverse.
+
+I dettagli riproducibili e le prove fallite restano in [RUNTIME_STATUS.md](RUNTIME_STATUS.md),
+[VALIDATION_2026_10_11.md](VALIDATION_2026_10_11.md) e [GATE_F_G_REPORT.md](../GATE_F_G_REPORT.md).
+La preview desktop storica in `components/` e `build/` non implementa questa architettura.
