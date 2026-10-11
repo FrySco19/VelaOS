@@ -1,0 +1,13 @@
+[package]
+name = "vela-m0-recall"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.90"
+license = "GPL-3.0-only"
+publish = false
+description = "Host adapter: runs the real M0 recall bridge (poc/m0/bridge_recall.py: multilingual-e5-small + LanceDB BM25 + RRF) as an intent Retriever lane. Returns ranked handles only; holds no authority."
+
+# No crypto, no Biscuit, no policy crate: this lane can only rank.
+[dependencies]
+vela-intent = { path = "../../intent" }
+serde_json = "=1.0.145"
