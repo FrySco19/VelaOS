@@ -37,6 +37,9 @@ pub mod ledger_wire;
 /// M-G1b end-to-end admission: UserSelection -> Biscuit grant -> signed frame.
 pub mod pipeline;
 
+/// M-G1c simulated LFS writer + PCB notary orchestration (State Ledger).
+pub mod ledger;
+
 /// Same bound as M1/M2 authority code.
 pub const MAX_TOKEN_BYTES: usize = 16 * 1024;
 /// Largest Wasm payload that fits in one 4 KiB v2 frame.
