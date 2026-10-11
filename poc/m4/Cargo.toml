@@ -19,5 +19,7 @@ vela-lfs-m1 = { path = "../m1" }
 vela-neural-bus-m2 = { path = "../m2" }
 vela-control-plane-m3 = { path = "../m3" }
 
+zeroize = "=1.8.2"
+
 [dev-dependencies]
 tempfile = "=3.23.0"

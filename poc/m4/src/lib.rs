@@ -1,4 +1,6 @@
-//! Durable restore coordinator; provider integration remains explicitly separate from test fixtures.
+//! Durable restore journal, isolated persistent provider and recovery supervisor.
+pub mod provider;
+pub mod supervisor;
 use anyhow::{Result, anyhow, ensure};
 use ed25519_dalek::{Signature, Signer, SigningKey};
 use rand::{RngCore, rngs::OsRng};

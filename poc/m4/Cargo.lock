@@ -2146,6 +2146,7 @@ dependencies = [
  "vela-control-plane-m3",
  "vela-lfs-m1",
  "vela-neural-bus-m2",
+ "zeroize",
 ]
 
 [[package]]
