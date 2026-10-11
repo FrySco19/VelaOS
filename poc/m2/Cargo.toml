@@ -26,3 +26,11 @@ wasmtime = { version = "=36.0.2", default-features = false, features = ["compone
 name = "bus-spike"
 path = "src/bin/bus_spike.rs"
 required-features = ["fixture-e2e"]
+
+[[bin]]
+name = "dual-lane-gate"
+path = "src/bin/dual_lane_gate.rs"
+required-features = ["fixture-e2e"]
+
+[dev-dependencies]
+wat = "=1.236.1"

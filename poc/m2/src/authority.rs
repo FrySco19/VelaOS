@@ -17,6 +17,18 @@ pub const MAX_CAPABILITY_TTL: Duration = Duration::from_secs(120);
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct OpaqueHandle([u8; 32]);
 
+impl OpaqueHandle {
+    /// A wire identifier is not a grant: the host registry must still authorize every use.
+    pub fn from_wire(bytes: &[u8]) -> Result<Self> {
+        Ok(Self(bytes.try_into().map_err(|_| {
+            anyhow!("opaque handle must have 32 bytes")
+        })?))
+    }
+    pub fn to_wire(&self) -> [u8; 32] {
+        self.0
+    }
+}
+
 impl fmt::Debug for OpaqueHandle {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("OpaqueHandle([REDACTED])")
@@ -162,6 +174,15 @@ impl TaskAuthority {
             .grants
             .write()
             .map_err(|_| anyhow!("capability registry poisoned"))?;
+        grants.retain(|_, grant| {
+            grant
+                .lock()
+                .is_ok_and(|g| !g.revoked && Instant::now() < g.deadline)
+        });
+        ensure!(
+            grants.len() < 128,
+            "host capability registry capacity reached"
+        );
         ensure!(!grants.contains_key(&handle), "opaque handle collision");
         grants.insert(handle, Arc::new(Mutex::new(grant)));
         Ok(handle)
@@ -208,6 +229,53 @@ impl TaskAuthority {
             u64::try_from(plaintext.len())?,
         )?;
         Ok(plaintext)
+    }
+
+    /// Native LFS response crosses a typed iceoryx2 loan before a bounded guest copy.
+    /// This in-process service adapter is not an independently deployed LFS process.
+    pub fn open_lfs_via_bus(
+        &self,
+        lfs: &vela_lfs_m1::Lfs,
+        handle: &OpaqueHandle,
+        caller: &str,
+    ) -> Result<Zeroizing<Vec<u8>>> {
+        use crate::{Frame, PolicyGate, Schema};
+        use iceoryx2::{port::update_connections::UpdateConnections, prelude::*};
+        let bytes = self.open_lfs(lfs, handle, caller)?;
+        ensure!(
+            bytes.len() <= 4096,
+            "NetConfig response exceeds fast-lane frame"
+        );
+        let parent = self.lookup(handle)?;
+        let token = parent
+            .lock()
+            .map_err(|_| anyhow!("capability grant poisoned"))?
+            .parent_token
+            .clone();
+        let gate = PolicyGate::new(self.root);
+        let route = gate.issue(&token, caller, Schema::NetConfigV1, Duration::from_secs(1))?;
+        let endpoint = gate.endpoint(&route, caller, Schema::NetConfigV1)?;
+        let node = NodeBuilder::new().create::<ipc::Service>()?;
+        let channel = node
+            .service_builder(&route.channel.as_str().try_into()?)
+            .publish_subscribe::<Frame>()
+            .max_publishers(1)
+            .max_subscribers(1)
+            .create()?;
+        let receiver = channel.subscriber_builder().create()?;
+        let publisher = channel.publisher_builder().create()?;
+        publisher.update_connections()?;
+        let mut loan = publisher.loan_uninit()?.write_payload(Frame::empty());
+        loan.payload_mut().bytes[..bytes.len()].copy_from_slice(&bytes);
+        endpoint.stamp(loan.payload_mut(), 0, bytes.len())?;
+        ensure!(loan.send()? == 1, "guest response receiver absent");
+        let sample = receiver
+            .receive()?
+            .ok_or_else(|| anyhow!("guest response unavailable"))?;
+        let received = endpoint.verify(sample.payload(), 0)?;
+        // A revocation between source read and guest delivery must block the copy.
+        self.authorize_and_charge(handle, caller, CapabilityOperation::Read, 0)?;
+        Ok(Zeroizing::new(received.to_vec()))
     }
 
     pub fn revoke(&self, handle: &OpaqueHandle) -> Result<bool> {

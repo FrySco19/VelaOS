@@ -15,9 +15,11 @@
 | --- | --- | --- |
 | M0 — richiamo ibrido | Gate superato sul fixture sintetico | 186/200 parafrasi (93% recall@1), p95 25,67 ms. Non misura qualità su dati personali reali. [Risultati e limiti](poc/m0/GATE.md) |
 | M1 — storage LFS | Gate crash superato | Kernel Rust con oggetti cifrati, commit firmati e capability Biscuit; gate registrato su 10.000 terminazioni di processo. Non è ancora un servizio di storage distribuito. [Implementazione e validazione](poc/m1/README.md) |
-| M2 — isolamento e throughput | In corso | Bridge Rust con IPC iceoryx2 tra processi reali: 62.222 messaggi/s e p99 round-trip 17 µs nel test sequenziale da 4 KiB. Il boundary Wasmtime compila e passa i test base in GitHub Actions; isolamento avversariale, target >100.000 msg/s e streaming concorrente non sono dimostrati. [Stato M2](poc/m2/README.md) |
+| M2 — isolamento e throughput | Gate completo aperto | Tre test dual-lane tra processi reali superano 100.000 msg/s, p99 <100 µs e regressione concorrente <20% durante 10 GB di byte generati. Wasm reale esegue letture autorizzate e trap avversariali. Restano isolamento dei peer nativi, servizio LFS persistente e file bulk durevoli. [Stato M2](poc/m2/README.md) |
+| M3 — intent router | Implementazione e qualificazione in corso | Gemma locale, cinque template vincolati, policy Rust e cache con nuova verifica delle capability. Corpus sintetico congelato; trial falliti conservati. [Protocollo e limiti](poc/m3/README.md) |
+| M4 — ripristino | Coordinatore implementato; gate aperto | Journal firmato, conferma vincolata, verifica dello stato e rollback testati su provider in memoria. Provider reale, client, supervisor e percorso end-to-end ancora da integrare. [Stato M4](poc/m4/README.md) |
 
-I numeri descrivono test specifici, non garanzie di prodotto. Il test M2 è ping/ack sequenziale, non throughput pipelined; il trasferimento dallo storage al loan IPC effettua una copia. Il target di sistema è meno di 1,5 GB di RAM a riposo, ancora da misurare. Il progetto non è pronto per dati sensibili o uso come sistema principale.
+I numeri descrivono test specifici, non garanzie di prodotto. La vecchia misura M2 da 17 µs è ping/ack sequenziale; i nuovi test dual-lane sono pipelined. Il trasferimento dallo storage al loan IPC effettua una copia. Il target di sistema è meno di 1,5 GB di RAM a riposo, ancora da misurare sull'intero runtime. Il progetto non è pronto per uso come sistema principale.
 
 ## Architettura in breve
 
@@ -39,10 +41,12 @@ Il modello non concede permessi e non risolve direttamente gli oggetti. Il codic
 | [`poc/m0/`](poc/m0/README.md) | Esperimento di semantic hybrid recall; Python è confinato a questo spike. |
 | [`poc/m1/`](poc/m1/README.md) | Kernel storage Rust: canonicalizzazione, cifratura, commit firmati e handle capability-bound. |
 | [`poc/m2/`](poc/m2/README.md) | Bridge Neural Bus Rust/iceoryx2 e boundary Wasmtime in sviluppo. |
+| [`poc/m3/`](poc/m3/README.md) | Compiler semantico locale, policy dei template, cache e corpus di valutazione. |
+| [`poc/m4/`](poc/m4/README.md) | Coordinatore di restore con journal firmato, ticket e rollback. |
 | [`archive/`](archive/README.md) | Prototipo storico della shell web. |
 | `components/`, `build/` | Sorgenti e pipeline della precedente preview Debian/KDE; non implementano l'architettura M0-M2. |
 
-Rust 1.90 o successivo. Per riprodurre i controlli si usano i manifest dei singoli crate; i comandi e i prerequisiti sono nei rispettivi README. Il build Wasmtime non è stato ancora verificato in locale al 2026-10-10. La guida [BUILD.md](docs/BUILD.md) riguarda la vecchia preview desktop e lo dichiara esplicitamente.
+I controlli usano Rust 1.96.1 e i manifest dei singoli crate. Wasmtime compila ed esegue i test reali anche sull'host Windows di sviluppo. La guida [BUILD.md](docs/BUILD.md) riguarda la vecchia preview desktop e lo dichiara esplicitamente.
 
 ## Contribuire
 

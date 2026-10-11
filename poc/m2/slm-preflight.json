@@ -1,0 +1,62 @@
+{
+  "model_sha256": "fa401b55b07ee70a54c6dae3903c783a6e65064312529ea57175cb5f8dec6634",
+  "samples": [
+    {
+      "usage": {
+        "completion_tokens": 17,
+        "prompt_tokens": 31,
+        "total_tokens": 48,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "iteration": 0,
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 31,
+        "prompt_ms": 38269.075,
+        "prompt_per_token_ms": 1234.4862903225805,
+        "prompt_per_second": 0.8100535484591672,
+        "predicted_n": 17,
+        "predicted_ms": 14626.812,
+        "predicted_per_token_ms": 914.17575,
+        "predicted_per_second": 1.0938815648960278
+      },
+      "elapsed_ms": 53057.9641,
+      "private_bytes": 4681973760,
+      "working_set_bytes": 630956032,
+      "content": "{\n  \"status\": \"ready\"\n}"
+    },
+    {
+      "usage": {
+        "completion_tokens": 17,
+        "prompt_tokens": 31,
+        "total_tokens": 48,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "iteration": 1,
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 31,
+        "prompt_ms": 48.283,
+        "prompt_per_token_ms": 1.5575161290322581,
+        "prompt_per_second": 642.0479257709753,
+        "predicted_n": 17,
+        "predicted_ms": 159.665,
+        "predicted_per_token_ms": 9.9790625,
+        "predicted_per_second": 100.20981429868789
+      },
+      "elapsed_ms": 214.4697,
+      "private_bytes": 4684693504,
+      "working_set_bytes": 634195968,
+      "content": "{\n  \"status\": \"ready\"\n}"
+    }
+  ],
+  "model": "Gemma 4 E2B IT QAT Q4_0",
+  "profile": "lazy off; full tensors GPU; loading none; cache RAM 0; KV GPU; context 4096",
+  "scope": "Hardware inference preflight only, not M3 semantic or complete OS RAM gate",
+  "m3_gate_closed": false,
+  "runtime": "llama.cpp b11539 CUDA 12.4"
+}

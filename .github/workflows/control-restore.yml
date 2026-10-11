@@ -1,0 +1,41 @@
+name: Control plane and restore checks
+on:
+  pull_request:
+    paths: ['poc/m1/**', 'poc/m2/**', 'poc/m3/**', 'poc/m4/**', '.github/workflows/control-restore.yml']
+  push:
+    paths: ['poc/m3/**', 'poc/m4/**', '.github/workflows/control-restore.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  rust:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned Rust
+        run: rustup toolchain install 1.96.1 --profile minimal --component rustfmt --component clippy
+      - name: Check formatting
+        shell: pwsh
+        run: |
+          cargo +1.96.1 fmt --manifest-path poc/m3/Cargo.toml --check
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          cargo +1.96.1 fmt --manifest-path poc/m4/Cargo.toml --check
+          exit $LASTEXITCODE
+      - name: Test router and restore boundaries
+        shell: pwsh
+        env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/poc/m2/target
+        run: |
+          cargo +1.96.1 test --manifest-path poc/m3/Cargo.toml --locked
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          cargo +1.96.1 test --manifest-path poc/m4/Cargo.toml --locked
+          exit $LASTEXITCODE
+      - name: Check all targets
+        shell: pwsh
+        env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/poc/m2/target
+        run: |
+          cargo +1.96.1 clippy --manifest-path poc/m3/Cargo.toml --locked --all-targets -- -D warnings
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          cargo +1.96.1 clippy --manifest-path poc/m4/Cargo.toml --locked --all-targets -- -D warnings
+          exit $LASTEXITCODE
