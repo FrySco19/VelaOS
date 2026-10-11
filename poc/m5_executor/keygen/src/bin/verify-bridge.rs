@@ -79,6 +79,10 @@ fn main() {
         "PCB reply request=6 status=6 value=0 attempts=2",
         "PCB reply request=7 status=5 value=0 attempts=2",
         "PCB reply request=8 status=0 value=7 attempts=3",
+        // R1: MAX_FUEL infinite loop returns status 6 over IPC; Executor keeps serving.
+        "PCB reply request=9 status=6 value=0 attempts=4",
+        "MAX_FUEL stack-safe status=6",
+        "PCB reply request=10 status=0 value=7 attempts=5",
         "fuel exhaustion and 64 KiB memory cap verified",
         "ALL CHECKS PASSED; authenticated Wasm returned 7 via IPC",
     ] {

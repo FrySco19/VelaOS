@@ -9,19 +9,12 @@ description = "Host-side (std test harness) model of the M5 Executor admission +
 
 [dependencies]
 # Same pins and feature set as poc/m5_executor/app (guest), so host tests run the same interpreter.
-wasmi = { version = "=2.0.0", default-features = false, features = ["stable", "validate", "prefer-btree-collections"] }
+wasmi = { version = "=2.0.0", default-features = false, features = ["stable", "validate", "prefer-btree-collections", "portable-dispatch"] }
 ed25519-compact = { version = "=2.6.0", default-features = false }
 
 [dev-dependencies]
 wat = "=1.261.0"
 
-# The guest is built `--release` (opt-level 3, no debug-assertions/overflow-checks). With the guest
-# feature set Wasmi 2.0.0 uses its tail-call dispatch backend, which runs in constant native stack
-# only when LLVM performs sibling-call optimisation. Observed on Windows x86_64: with the default
-# dev profile (opt 0), and even with opt-level 3 while debug-assertions stay on, a MAX_FUEL loop
-# overflows the native stack instead of returning FUEL_EXHAUSTED. Mirror the guest's release
-# settings for wasmi. See EXECUTOR_CONTRACT.md E8 / risk R1.
-[profile.dev.package.wasmi]
-opt-level = 3
-debug-assertions = false
-overflow-checks = false
+# No wasmi profile override: with portable-dispatch (R1 fix, EXECUTOR_CONTRACT E8) Wasmi's
+# dispatch loop is constant-native-stack at every opt-level, so the default dev profile
+# (opt 0, debug assertions) is the strictest configuration and is what tests/r1_max_fuel.rs runs in.

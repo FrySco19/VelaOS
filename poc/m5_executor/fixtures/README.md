@@ -10,3 +10,6 @@ They are **host-test inputs only**: the guest PCB sequence (`app/src/bin/pcb.rs`
   section named `pad`.
 - Regenerate: `cargo run --example gen_fixtures --manifest-path poc/m5_executor/executor-host/Cargo.toml`
 - The test `fixtures_match_sources` fails if a committed `.wasm` drifts from its source.
+- `max_fuel_loop`, `max_fuel_call_loop`, `max_fuel_recursion_churn`: hostile R1 inputs run at
+  `MAX_FUEL` by `executor-host/tests/r1_max_fuel.rs`; each must end in status 6 without a native
+  stack overflow. (The guest's QEMU MAX_FUEL case uses `bridge::LOOP_MODULE`.)

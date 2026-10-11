@@ -72,6 +72,8 @@ fn host_replays_guest_pcb_sequence() {
     let loop_task = bridge::signed_frame(sk, 6, bridge::LOOP_MODULE, 64);
     let wasi = bridge::signed_frame(sk, 7, bridge::WASI_IMPORT_MODULE, bridge::MAX_FUEL);
     let final_task = bridge::signed_frame(sk, 8, bridge::RETURN_7_MODULE, bridge::MAX_FUEL);
+    let max_fuel_loop = bridge::signed_frame(sk, 9, bridge::LOOP_MODULE, bridge::MAX_FUEL);
+    let after_max_fuel = bridge::signed_frame(sk, 10, bridge::RETURN_7_MODULE, bridge::MAX_FUEL);
 
     let host: Vec<(&[u8; bridge::PAGE_SIZE], Status, u64)> = vec![
         (&good, Status::Success, 1),
@@ -83,6 +85,8 @@ fn host_replays_guest_pcb_sequence() {
         (&loop_task, Status::Fuel, 2),
         (&wasi, Status::Wasm, 2),
         (&final_task, Status::Success, 3),
+        (&max_fuel_loop, Status::Fuel, 4),
+        (&after_max_fuel, Status::Success, 5),
     ];
     let guest = guest_sequence();
     assert_eq!(guest.len(), host.len(), "pcb.rs exchange sequence changed");
