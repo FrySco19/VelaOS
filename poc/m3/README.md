@@ -24,6 +24,8 @@ Twenty repetitions require 6000 schema-valid outputs, more than 95% composed rou
 
 ## Recorded qualification — 2026-10-11
 
+The readable result summaries link losslessly compressed `.json.gz` archives containing every case. SHA256 hashes refer to the complete uncompressed reports; archive round trips were checked before publication. The runners write full JSON when reproduced.
+
 The [20 all-cold rounds](gate-20-rounds.json) retain all 6000 live model outputs. Every output matches the constrained schema; composed routing scores are 295–296/300 per round (98.33–98.67%), while raw model scores are 277–278/300. Route-cache-miss p95 is 140.089 ms and maximum 246.959 ms. The full stress result fails consistency: input 213, an ambiguous request, produces different validated intents across rounds. This is retained as a failure, not hidden by a cache.
 
 The separate [integrated cache protocol](router-cache-results.json) makes 300 live model calls followed by 5700 actual proposal-cache hits with fresh capability checks. It scores 296/300 in all 20 rounds and retains identical hashes of the complete validated plans. Maximum cold latency is 171.351 ms; warm p95 is 0.185 ms and maximum 0.524 ms. That bounded cache protocol passes. It does not establish cold model determinism after cache expiry or epoch changes, and does not close the complete M3 integration gate.
