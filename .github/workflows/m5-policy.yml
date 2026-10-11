@@ -1,0 +1,29 @@
+name: M5 host policy and keygen
+on:
+  push:
+    paths:
+      - 'poc/m5_executor/policy/**'
+      - 'poc/m5_executor/keygen/**'
+      - '.github/workflows/m5-policy.yml'
+  pull_request:
+    paths:
+      - 'poc/m5_executor/policy/**'
+      - 'poc/m5_executor/keygen/**'
+      - '.github/workflows/m5-policy.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  host-policy:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned Rust
+        run: rustup toolchain install 1.96.1 --profile minimal
+      - name: Test host Biscuit PDP (policy)
+        run: cargo +1.96.1 test --locked --manifest-path poc/m5_executor/policy/Cargo.toml
+      - name: Test keygen
+        run: cargo +1.96.1 test --locked --manifest-path poc/m5_executor/keygen/Cargo.toml

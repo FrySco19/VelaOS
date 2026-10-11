@@ -30,7 +30,7 @@ Agenti: **UX**, **seL4** (boot/piattaforma), **PCB** (authority/policy), **Execu
 | G1-08 | LFS persiste risultato + receipt idempotente `(epoch, request_id)` | documented | `docs/CONTRACTS_v0.md` §C4 | Executor |
 | G1-09 | Output non autorizzato non viene persistito (test negativo) | unverified | — | QA |
 | G1-10 | UI mostra autorizzazione, risultato, provenienza, undo/compensazione | unverified | — | UX |
-| G1-11 | Test host: Biscuit fuori scope rifiutato senza esecuzione Wasm | implemented (host) | `poc/m5_executor/policy/tests/admit.rs` (deny = nessun frame firmato; il PDP non linka runtime Wasm) | PCB |
+| G1-11 | Test host: Biscuit fuori scope rifiutato senza esecuzione Wasm | implemented (host) | `poc/m5_executor/policy/tests/admit.rs` (deny = nessun frame firmato; il PDP non linka runtime Wasm); CI host: `.github/workflows/m5-policy.yml` | PCB |
 
 ## Gate 2 — Robustezza e sicurezza
 
