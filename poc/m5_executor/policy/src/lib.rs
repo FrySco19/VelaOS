@@ -30,6 +30,13 @@ pub mod bridge;
 /// M-G1b: read grants bound to an explicit user selection (Candidate != Authority).
 pub mod grant;
 
+/// Shared `no_std` LFS receipt wire + ledger (also compiled into the guest).
+#[path = "../../app/src/ledger_wire.rs"]
+pub mod ledger_wire;
+
+/// M-G1b end-to-end admission: UserSelection -> Biscuit grant -> signed frame.
+pub mod pipeline;
+
 /// Same bound as M1/M2 authority code.
 pub const MAX_TOKEN_BYTES: usize = 16 * 1024;
 /// Largest Wasm payload that fits in one 4 KiB v2 frame.

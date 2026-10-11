@@ -9,3 +9,8 @@ description = "Host-side (std) Biscuit policy decision point that admits Executo
 [dependencies]
 biscuit-auth = { version = "=6.0.0", default-features = false, features = ["datalog-macro"] }
 ed25519-compact = { version = "=2.6.0", default-features = false }
+blake3 = { version = "=1.8.2", default-features = false, features = ["pure"] }
+
+[dev-dependencies]
+# Real Wasmi execution of admitted frames in the M-G1b / receipt tests (host model of the guest).
+vela-executor-host = { path = "../executor-host" }

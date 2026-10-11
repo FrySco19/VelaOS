@@ -38,3 +38,8 @@ The present return-7 result reaches PCB registers only. It is not persisted into
 4. RAM accounting for every domain plus kernel/shared mappings, and end-to-end latency distributions on a specified target/workload: pending. QEMU's configured 2 GiB is capacity, not consumption. ELF W^X checks establish properties only of the examined load segments; runtime mappings need separate inspection.
 
 These gates must not be closed using host-only mocks, fuel counts as latency, or a signed fixture as proof of Biscuit policy enforcement.
+
+
+## M-G1b end-to-end admission: Candidate != Authority (host PDP, 2026-10-12)
+
+`policy/src/pipeline.rs` (`SelectionGatedPdp`) chains the M-G1b grant (`grant.rs`) to the M-G1a admission: the planner/LLM outputs only `Candidate` data; only a `UserSelection{handle, expected_version}` from the trusted channel mints an attenuated Biscuit `LFS_READ` grant (TTL <= 120 s), which is re-verified, hashed (BLAKE3-256 = C1 `authority_digest`) into a `vela.grant` custom section of the Wasm payload (so the unchanged v2 Ed25519 signature authenticates it), and only then is an execute token attenuated to (caller, `executor`, `execute`, payload bytes, fuel, grant `not_after`) and admitted by `PolicyDecisionPoint`. Without a selection: `POLICY_DENIED` (10), no grant, no frame, no Wasm. Tests: `policy/tests/m_g1b_pipeline.rs`. Details: `docs/M_G1B.md`.
