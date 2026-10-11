@@ -1,0 +1,11 @@
+[package]
+name = "vela-executor-policy"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.90"
+license = "GPL-3.0-only"
+description = "Host-side (std) Biscuit policy decision point that admits Executor v2 signed frames"
+
+[dependencies]
+biscuit-auth = { version = "=6.0.0", default-features = false, features = ["datalog-macro"] }
+ed25519-compact = { version = "=2.6.0", default-features = false }
