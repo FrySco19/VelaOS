@@ -29,3 +29,40 @@ LFS receipt. No QEMU `verify-bridge` rerun is implied by these tests.
 ```
 cargo test --locked --manifest-path poc/m5_executor/policy/Cargo.toml
 ```
+## M-G1b — Candidate != Authority (`src/grant.rs`)
+
+```
+recall -> [Candidate{handle, version, score}]        (data only, no token, no right)
+trusted UI -> UserSelection{handle, expected_version} (TrustedSelectionChannel, single-use id)
+GrantIssuer::issue_read_grant_at(GrantRequest{caller, requested, candidates, selection, ttl, planner_note})
+  -> GRANT: PDP-held delegation `right(caller,"lfs","read")` + ONE attenuation block:
+            operation("read"), caller, handle(bytes32), object_version, time <= not_after
+  -> DENY : nothing minted
+verify_read_grant_at(token, pinned root, caller, handle, version, now) -> Ok | C5 code
+```
+
+Decision order (deny codes = CONTRACTS_v0 C5 via `DenyCode::contract_code()`):
+
+| Condition | Code |
+| --- | --- |
+| no `UserSelection` (any planner/LLM text is ignored, never parsed) | `POLICY_DENIED` = 10 |
+| requested handle != selected handle, or selected handle not among candidates | `SCOPE` = 3 |
+| candidate version != `expected_version` | `VERSION_CONFLICT` = 12 |
+| ttl = 0 or ttl > 120 s; verifier: `time > not_after` | `EXPIRED` = 7 |
+| selection id already consumed | `REPLAY` = 4 |
+| verifier: wrong root | `AUTH` = 2; bare delegation / extra blocks -> `POLICY_DENIED` |
+
+Notes / limits:
+* `DenyCode` gained `Expired` and `VersionConflict` (additive). The M-G1a Executor
+  admission path is unchanged (its expired attenuation still reports `PolicyDenied`).
+* The verifier maps failed checks of block 1 by fixed check position, not by text.
+* The delegation token is PDP secret material: anyone holding it could attenuate it.
+  It is in-memory only; storage/rotation is open.
+* `UserSelection` has private fields and one constructor (`TrustedSelectionChannel`);
+  in one process this is a structural guard, not isolation. The real boundary is which
+  domain owns the channel (compositor/shell, never the planner).
+* TTL cap 120 s matches the concept and M1 handle lifetime (`1..=120`); CONTRACTS_v0 C1
+  `not_after` has no numeric cap yet -> needs an ADR (v0.x, additive).
+* Not wired to M1 `Lfs::open` (M1 authorizes `right(caller, kind, "read")` without
+  `handle`/`object_version` facts, so these grants would be denied there by design);
+  no QEMU, wire v2 or `app/` change; clock is host wall clock (no trusted clock yet).
