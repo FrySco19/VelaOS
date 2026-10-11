@@ -12,6 +12,17 @@ pub struct ProposalCache {
     ttl: Duration,
 }
 impl ProposalCache {
+    pub fn has_live_proposal(
+        &self,
+        request: &str,
+        caller: &str,
+        focus: bool,
+        policy_epoch: &str,
+    ) -> bool {
+        self.entries
+            .get(&Self::key(request, caller, focus, policy_epoch))
+            .is_some_and(|(created, _)| created.elapsed() < self.ttl)
+    }
     pub fn new(capacity: usize, ttl: Duration) -> Result<Self> {
         ensure!(
             (1..=4096).contains(&capacity) && !ttl.is_zero() && ttl <= Duration::from_secs(120),

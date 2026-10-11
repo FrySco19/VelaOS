@@ -22,6 +22,12 @@ Twenty repetitions require 6000 schema-valid outputs, more than 95% composed rou
 
 `cache_gate` measures 6000 real cache hits with fresh Biscuit checks. No model or object-byte transfer is involved. Build/test commands are development tooling, not user-facing LFS paths.
 
+## Recorded qualification — 2026-10-11
+
+The [20 all-cold rounds](gate-20-rounds.json) retain all 6000 live model outputs. Every output matches the constrained schema; composed routing scores are 295–296/300 per round (98.33–98.67%), while raw model scores are 277–278/300. Route-cache-miss p95 is 140.089 ms and maximum 246.959 ms. The full stress result fails consistency: input 213, an ambiguous request, produces different validated intents across rounds. This is retained as a failure, not hidden by a cache.
+
+The separate [integrated cache protocol](router-cache-results.json) makes 300 live model calls followed by 5700 actual proposal-cache hits with fresh capability checks. It scores 296/300 in all 20 rounds and retains identical hashes of the complete validated plans. Maximum cold latency is 171.351 ms; warm p95 is 0.185 ms and maximum 0.524 ms. That bounded cache protocol passes. It does not establish cold model determinism after cache expiry or epoch changes, and does not close the complete M3 integration gate.
+
 ## Architectural decision
 
 Finite manifest templates replace unconstrained model-generated DAGs in this prototype. The host controls the complete method graph and resource scope, while the model performs only semantic selection. Expanding domains requires versioned manifests and new tests. The admitted M1 schema remains only `vela.net.config.v1` with SSID and DNS; VPN and arbitrary files are not implemented.

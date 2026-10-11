@@ -10,7 +10,7 @@ Unkept changes roll back after timeout. On journal reopening, an unfinished appl
 
 Tests use real encrypted M1 storage, signed durable operation records, current Biscuit checks and real local iceoryx2 loans, with an in-memory NetConfig provider. They cover wrong caller, false ticket, repeated confirmation, changes between preparation and apply, keep without write permission, expired keep timer, restart rollback and finalized restart persistence.
 
-The malformed-output test is a parser regression test with repeated variants. It is **not** the specification's 100-case end-to-end prompt-injection gate. Timer tests advance the host test clock; they are not a production supervisor qualification.
+The malformed-output test covers distinct attempts to inject authority, caller, commands, steps, handles, risk and duplicate fields, plus a valid Restore proposal lacking write authority. It is **not** the specification's 100-case end-to-end prompt-injection gate. Timer tests advance the host test clock; they are not a production supervisor qualification. Recovery also rejects a tampered signed journal or a different signing key.
 
 ## Remaining before M4 closure
 
