@@ -14,6 +14,15 @@ path = "src/main.rs"
 name = "velaos-pcb"
 path = "src/bin/pcb.rs"
 
+[[bin]]
+name = "velaos-lfs"
+path = "src/bin/lfs.rs"
+required-features = ["e2e"]
+
+[features]
+# verify-bridge-e2e: PCB e2e sequence + simulated LFS writer domain (Makefile E2E=1).
+e2e = []
+
 [dependencies]
 sel4-microkit = { git = "https://github.com/seL4/rust-sel4", rev = "d441a880938209f661201704dfbee7b91c5aa905" }
 wasmi = { version = "=2.0.0", default-features = false, features = ["stable", "validate", "prefer-btree-collections", "portable-dispatch"] }

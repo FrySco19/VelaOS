@@ -3,6 +3,7 @@
 #![feature(asm_cfg)]
 
 mod bridge;
+mod ledger_wire;
 
 use core::sync::atomic::{Ordering, fence};
 use sel4_microkit::{
@@ -95,6 +96,18 @@ impl Handler for ExecutorHandler {
         );
         let payload = &snapshot[verified.descriptor.payload_offset
             ..verified.descriptor.payload_offset + verified.descriptor.payload_len];
+        // E2E: the authority digest is inside the authenticated payload, so it
+        // is echoed only after the Ed25519 admission check above succeeded.
+        if let Some(d) = ledger_wire::grant_digest_in(payload) {
+            debug_println!(
+                "VelaOS E2E: Executor authenticated grant-bound payload request={} authority={:02x}{:02x}{:02x}{:02x}",
+                verified.descriptor.request_id,
+                d[0],
+                d[1],
+                d[2],
+                d[3]
+            );
+        }
         let outcome =
             run_authenticated(payload, verified.fuel, verified.memory, &mut self.attempts);
         let (status, value) = match outcome {
