@@ -213,7 +213,7 @@ impl Retriever for Bm25 {
 }
 
 /// Fraction of query terms present in the title. Deterministic stand-in for the
-/// M0 dense lane until the Python embedding path is bridged (not verified here).
+/// M0 dense lane, used only when the real M0 lane is unavailable on the host.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct TitleOverlap;
 
@@ -242,8 +242,10 @@ impl Retriever for TitleOverlap {
 
 /// Connector for the M0 control-plane output (`poc/m0/bridge_recall.py`,
 /// `{"status":"RankedCandidates","auto_resolve":false,"candidates":[{"oid","score"}]}`).
-/// Holds a pre-computed ranking for ONE query; oids unknown to the corpus are dropped.
-/// (Spawning the Python process / JSON parsing is not wired yet.)
+/// Holds a pre-computed ranking for ONE query (e.g. a recorded bridge output);
+/// oids unknown to the corpus are dropped. The live process lane is
+/// `vela-m0-recall::M0Process` (poc/product/m0-recall), kept out of this crate
+/// so the engine itself stays free of process/env/fs access.
 #[derive(Clone, Debug, Default)]
 pub struct M0Ranking {
     pub query: String,
@@ -314,6 +316,10 @@ impl IntentEngine {
             retrievers: vec![Box::new(Bm25::default()), Box::new(TitleOverlap)],
             llm: None,
         }
+    }
+    /// BM25 only (no stand-in lane). Add the real M0 lane with [`Self::with_retriever`].
+    pub fn bm25_only(corpus: Corpus) -> Self {
+        Self { corpus, retrievers: vec![Box::new(Bm25::default())], llm: None }
     }
     pub fn with_retriever(mut self, r: Box<dyn Retriever>) -> Self {
         self.retrievers.push(r);
