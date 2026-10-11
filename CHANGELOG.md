@@ -7,6 +7,7 @@
 - Passato anche il test separato con vero E5 e LanceDB Vector + BM25 fino a CONFIRM, KEEP e riapertura durevole; aggiunto alla CI dopo bootstrap degli asset verificati. L'interfaccia umana resta aperta.
 - Misurato e scartato mmap/512: 3,94 GB di working set attivo. Il default streaming/512 riduce il campione a 589 MB, conservando i risultati di entrambi i profili; commit attivo 4,55 GB ancora non risolto.
 - Riallineati planner e cache al massimo richiesto di 250 ms, eliminando l'accettazione incoerente di 400 ms.
+- Prefisso del compiler reso invariabile ai cambi di focus; stato strutturato e controllo nativo restano separati dall'output modello. Test HTTP ostile verifica che SAVE senza focus non produca step eseguibili.
 - I gestori seL4 rifiutano frame malformati prima degli effetti e propagano risposte inattese come dinieghi. Il boot aggiunge 101 frame PCB errati e prove downstream, separati dal gate di prompt injection.
 - Pubblicati i prototipi seL4 dei gate B–G: domini separati, grant IPC, Wasm limitato e flusso fisso con risultato 42. Storage guest ancora volatile.
 - Aggiunta CI di build e avvio QEMU con scadenza e marker obbligatori, separata dalla qualificazione delle prestazioni.

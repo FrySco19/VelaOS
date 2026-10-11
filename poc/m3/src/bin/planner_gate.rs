@@ -98,7 +98,7 @@ fn main() -> Result<()> {
         && identical;
     let report = serde_json::json!({"corpus_blake3":blake3::hash(&bytes).to_hex().to_string(),"rounds":rounds,
         "kernel_prompt_blake3":blake3::hash(vela_control_plane_m3::PROMPT.as_bytes()).to_hex().to_string(),
-        "adapter_version":"trusted-context-message-v1-compact-gbnf",
+        "adapter_version":"typed-focus-json-v2-invariant-prefix-compact-gbnf",
         "round_correct":round_correct,"round_raw_correct":round_raw_correct,"accuracy_scope":"composed model plus deterministic Router; raw accuracy retained separately",
         "raw_valid":valid,"samples":times.len(),"p95_ms":p95,"max_ms":max,
         "identical_normalized_intents":identical,"planner_corpus_gate_passed":passed,"m3_gate_closed":false,"cases":rows,

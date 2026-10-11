@@ -5,7 +5,7 @@ Il runtime Rust M2–M4 è pubblicato nella PR di sviluppo. **M4 è condizionata
 | Verifica | Risultato misurato | Confine |
 | --- | --- | --- |
 | Wasm, capability e streaming | 12 test M2 superati | Componenti Wasm reali; peer nativi fidati sull'host di sviluppo |
-| Router e cache | 2 test M3 superati | Template finiti; capability ricontrollate a ogni cache hit |
+| Router, cache e adapter | 4 test M3 superati | Template finiti, permessi ricontrollati e modello ostile incapace di inventare focus attraverso l'adapter HTTP |
 | Restore e recovery | 11 test M4 standard + 1 test M0 reale superati | Provider persistente M1, journal firmato, watchdog e sessione nativa SAVE/RECALL/selezione/CONFIRM/KEEP; ingresso UI di produzione non collegato |
 | Tre benchmark dual-lane | >100.000 msg/s, p99 <100 µs, regressione <20% | 10 GB generati, non file LFS bulk durevoli |
 | Planner senza route cache, 20 ripetizioni | 6.000 output validi; router 98,33–98,67%; massimo 246,959 ms | Stabilità fallita su una richiesta ambigua; modello da solo 92,33–92,67% |
@@ -14,6 +14,13 @@ Il runtime Rust M2–M4 è pubblicato nella PR di sviluppo. **M4 è condizionata
 | Nuovo profilo SLM, un giro da 300 richieste a modello pronto | 300 output validi; Router 295/300; p95 155,918 ms, massimo 307,335 ms | Non chiude il gate: massimo oltre 250 ms, nessuna prova di consistenza su 20 giri; il risveglio a freddo non è incluso |
 
 I test e Clippy con warning negati passano localmente. I controlli CI non eseguono il modello GPU né qualificano le prestazioni del sistema completo.
+
+Il nuovo adapter mantiene invariabile il prefisso di sistema e trasporta il focus
+nel messaggio strutturato. Il Router continua a usare il booleano fidato nativo:
+il modello non può inventare una selezione. Il primo giro v2 ha ottenuto 296/300,
+p95 120,35 ms e massimo 129,40 ms. Il precedente giro v1 da 6.000 richieste aveva
+classificazioni identiche e 295/300 in ogni round, ma sette campioni oltre 250 ms
+(massimo 258,47 ms): il suo gate rimane fallito e i dati sono conservati.
 
 ## Condizioni pendenti per la chiusura completa di M4
 

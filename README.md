@@ -117,6 +117,10 @@ The measured 512-token streaming profile had 121.65 ms p95 and 245.77 ms maximum
 in one new round. The rejected mmap profile retained 3.94 GB resident host pages;
 streaming reduced that sample to 589 MB, while active private commit stayed
 approximately 4.55 GB. Full repeated and integrated qualification remains open.
+The invariant-prefix adapter subsequently scored 296/300 on one round with a
+129.40 ms maximum: host focus travels as structured context, and native policy
+still prevents the model from manufacturing a selection. Its repeated gate is
+recorded separately from these earlier trials.
 Idle measurements were process-level, not total-OS
 measurements, so the <1.5 GB target is also not yet certified. Detailed
 measurements and caveats are recorded in [RUNTIME_STATUS.md](docs/RUNTIME_STATUS.md).

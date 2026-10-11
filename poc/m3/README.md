@@ -30,6 +30,15 @@ The final runner records both raw model accuracy and composed Router accuracy. R
 
 Twenty repetitions require 6000 schema-valid outputs, more than 95% composed routing accuracy per round, identical normalized proposals and every ready-model route-cache-miss sample below 250 ms. Reports keep `m3_gate_closed=false`: production service wiring, warm-cache qualification and integrated memory measurements are separate requirements.
 
+The adapter now keeps a single invariant system prefix. Focus is carried in the
+structured request envelope and independently enforced by the native Router.
+A hostile-model HTTP test proves that a proposed SAVE cannot manufacture an
+absent host focus: the result is Clarify with no executable steps. Removing the
+varying second system message avoids the observed full-prefix recomputation
+at focus transitions. The first live v2 round scored 296/300 composed routes,
+p95 120.35 ms and maximum 129.40 ms. The prior v1 twenty-round report remains
+retained: seven samples exceeded 250 ms, with maximum 258.47 ms, so it failed.
+
 `cache_gate` measures 6000 real cache hits with fresh Biscuit checks. No model or object-byte transfer is involved. Build/test commands are development tooling, not user-facing LFS paths.
 
 ## Recorded qualification — 2026-10-11
