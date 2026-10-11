@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'">
+<title>Vela · Glass</title>
+<style>
+  :root { --bg1:#dfe9f3; --bg2:#f6efe6; --ink:#1d2433; --muted:#5b6578; --glass:rgba(255,255,255,.55); --edge:rgba(255,255,255,.75); --accent:#2f6df6; --warn:#b4471f; }
+  body.dawn { --bg1:#f7d9c4; --bg2:#e9d5f2; --ink:#2b1f2a; --muted:#6d5869; --glass:rgba(255,248,244,.55); --accent:#c2508a; }
+  body.deep { --bg1:#0b1324; --bg2:#1b1036; --ink:#e7ecf7; --muted:#9aa6bd; --glass:rgba(22,30,52,.55); --edge:rgba(255,255,255,.12); --accent:#7aa2ff; --warn:#ff9c7a; }
+  * { box-sizing:border-box }
+  body { margin:0; min-height:100vh; font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--ink);
+         background:radial-gradient(1200px 700px at 20% 10%,var(--bg2),transparent),linear-gradient(160deg,var(--bg1),var(--bg2)); display:flex; flex-direction:column; align-items:center; }
+  .glass { background:var(--glass); border:1px solid var(--edge); border-radius:22px; backdrop-filter:blur(22px) saturate(140%); -webkit-backdrop-filter:blur(22px) saturate(140%); box-shadow:0 18px 50px rgba(0,0,0,.12); }
+  header { width:min(860px,94vw); margin-top:6vh; padding:18px 22px; display:flex; gap:12px; align-items:center }
+  header b { font-size:18px; letter-spacing:.3px }
+  header input { flex:1; border:0; outline:0; background:transparent; color:var(--ink); font-size:17px }
+  button { border:0; border-radius:12px; padding:8px 14px; font:inherit; cursor:pointer; background:rgba(127,127,127,.15); color:var(--ink) }
+  button.primary { background:var(--accent); color:#fff }
+  button:disabled { opacity:.4; cursor:default }
+  main { width:min(860px,94vw); margin-top:18px; padding:18px 22px; display:none }
+  .row { display:flex; align-items:center; gap:10px; padding:10px 6px; border-bottom:1px solid var(--edge) }
+  .row:last-child { border-bottom:0 }
+  .row .t { flex:1 } .row small, .muted { color:var(--muted) }
+  .pill { font-size:11px; padding:2px 7px; border-radius:99px; background:rgba(127,127,127,.18); margin-left:4px }
+  .note { margin-top:12px; padding:10px 12px; border-radius:12px; background:rgba(180,71,31,.10); color:var(--warn); white-space:pre-wrap }
+  .ok { color:#1f8a4c } .bad { color:var(--warn) }
+  footer { width:min(860px,94vw); margin:18px 0 30px; padding:10px 16px; font-size:12.5px; color:var(--muted); display:flex; flex-wrap:wrap; gap:14px }
+  nav.dock { position:fixed; bottom:18px; padding:8px 10px; display:flex; gap:6px }
+  code { font-size:12px }
+</style>
+</head>
+<body>
+<header class="glass">
+  <b>Vela</b>
+  <input id="q" placeholder="Chiedi qualcosa… es. connessione protetta del portatile in caffetteria" autocomplete="off">
+  <button class="primary" id="go">Interpreta</button>
+</header>
+<main class="glass" id="panel"></main>
+<footer class="glass" id="foot"></footer>
+<nav class="dock glass">
+  <button data-theme="">Light</button><button data-theme="dawn">Dawn</button><button data-theme="deep">Deep</button>
+</nav>
+<script>
+"use strict";
+const TOKEN = "__VELA_TOKEN__";
+const $ = (id) => document.getElementById(id);
+function el(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) { if (k === "on") e.addEventListener("click", v); else e.setAttribute(k, v); }
+  for (const k of kids) e.append(k instanceof Node ? k : document.createTextNode(String(k)));
+  return e; // textContent only: untrusted text (AI rationale, titles) is never parsed as HTML
+}
+async function post(path, body) {
+  const r = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: TOKEN, ...body }) });
+  const j = await r.json();
+  if (j.error && !j.state) render(await (await fetch("/state")).json(), j.error);
+  else render(j.error ? j.state : j, j.error);
+}
+// The page can only send: utterance, or {action, candidate INDEX}. Never a handle/version.
+const click = (action, candidate) => post("/click", candidate === undefined ? { action } : { action, candidate });
+function render(v, err) {
+  const p = $("panel"), s = v.state; p.replaceChildren(); p.style.display = s.phase === "idle" ? "none" : "block";
+  if (s.phase === "glass") {
+    p.append(el("div", { class: "muted" }, "Piano proposto per “", s.utterance, "” — candidati, nessuna autorità. Scegli tu."));
+    for (const c of s.candidates) {
+      p.append(el("div", { class: "row" },
+        el("div", { class: "t" }, c.title, el("br"), el("small", {}, "v", c.version, " · rrf ", c.score.toFixed(4), " · ", ...c.sources.map((x) => el("span", { class: "pill" }, x)))),
+        el("button", { on: () => click("rivedi", c.index) }, "Rivedi piano"),
+        el("button", { class: "primary", on: () => click("avvia", c.index) }, "Avvia")));
+    }
+    if (s.rationale) p.append(el("div", { class: "note" }, "Nota IA (non verificata, nessun effetto): ", s.rationale));
+    p.append(el("div", { style: "margin-top:12px" }, el("button", { on: () => click("annulla") }, "Annulla")));
+  } else if (s.phase === "result") {
+    const o = s.outcome;
+    p.append(el("div", { class: "ok" }, o.kind === "executed" ? `Avviato: request ${o.request_id}, risultato ${o.value}` : `Piano autorizzato (non eseguito): request ${o.request_id}`));
+    p.append(el("div", { class: "muted" }, "UserSelection{handle ", el("code", {}, s.selection.handle.slice(0, 16), "…"), ", expected_version ", s.selection.expected_version, "} · grant valido fino a ", new Date(o.not_after_unix * 1000).toLocaleTimeString()));
+    p.append(el("div", { style: "margin-top:12px" }, el("button", { on: () => click("chiudi") }, "Chiudi")));
+  } else if (s.phase === "error") {
+    const e = s.error;
+    p.append(el("div", { class: "bad" }, e.kind === "denied" ? `${e.code} (${e.contract_code}) @ ${e.stage}: ${e.reason}` : e.kind === "nothing_found" ? "Nessun candidato locale." : `Executor status ${e.status}`));
+    p.append(el("div", { style: "margin-top:12px" }, el("button", { on: () => click("chiudi") }, "Chiudi")));
+  }
+  if (err) p.append(el("div", { class: "note" }, err));
+  const m0 = v.lanes.m0;
+  $("foot").replaceChildren(
+    el("span", {}, "Lane: ", v.lanes.label),
+    el("span", {}, "M0: ", m0.state, m0.millis !== undefined ? ` (${m0.millis} ms, ${m0.mapped}/${m0.ranked})` : "", m0.error ? ` — ${m0.error}` : ""),
+    el("span", {}, "UserSelection emesse: ", v.selections_emitted),
+    el("span", {}, "grant: ", v.grants_issued, " · frame firmati: ", v.frames_signed),
+    el("span", {}, "trace: ", v.trace.join(" → ")));
+  $("go").disabled = s.phase !== "idle";
+}
+$("go").addEventListener("click", () => { const u = $("q").value.trim(); if (u) { $("go").disabled = true; $("go").textContent = "…"; post("/submit", { utterance: u }).finally(() => ($("go").textContent = "Interpreta")); } });
+$("q").addEventListener("keydown", (e) => { if (e.key === "Enter") $("go").click(); });
+for (const b of document.querySelectorAll("[data-theme]")) b.addEventListener("click", () => (document.body.className = b.dataset.theme));
+fetch("/state").then((r) => r.json()).then((v) => render(v));
+</script>
+</body>
+</html>
