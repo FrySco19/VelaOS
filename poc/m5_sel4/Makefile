@@ -22,7 +22,7 @@ ADD_PAYLOAD_BIN := $(RUST_SEL4_CHECKOUT)/target/release/sel4-kernel-loader-add-p
 QEMU_DTB := $(BUILD)/qemu.dtb
 PCB_ROOT_IMAGE := $(BUILD)/pcb-root.img
 
-.PHONY: all build run gate-c run-gate-c clean
+.PHONY: all build run benchmark gate-c run-gate-c clean
 
 all: build
 
@@ -52,6 +52,9 @@ run: $(LOADER)
 		-serial mon:stdio \
 		-nographic \
 		-device loader,file=$(LOADER),addr=0x70000000,cpu-num=0
+
+benchmark: $(LOADER)
+	python3 gate_f_timing.py $(LOADER)
 
 gate-c:
 	cd pcb_root && SEL4_INCLUDE_DIRS="$(SEL4_INCLUDE_DIRS)" CARGO_TARGET_DIR="../$(BUILD)/pcb-root-target" cargo build --locked --release --target $(ROOT_TASK_TARGET) --bin velaos-pcb-recipient

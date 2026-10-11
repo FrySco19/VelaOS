@@ -72,6 +72,8 @@ Gate A/B's reproducible QEMU protection-domain scaffold and exact commands are i
 | M5 Gate C — PCB capability derivation | **IN PROGRESS** | A separately booted custom seL4 root task creates a live child with isolated CSpace/VSpace, mints a badged send capability into its CSpace, receives and verifies the child’s IPC badge, replies, then deletes the grant and suspends the child. Biscuit validation, policy profiles, timed leases, and deny/revocation tests remain. |
 | M5 Gate D — bounded Wasm executor | **IN PROGRESS** | The executor PD runs Wasmi 2.0.0 without `std` or WASI. QEMU verifies a 10M fuel budget, fuel-exhaustion trap, 64 KiB memory cap, and a 16 KiB Wasm stack bound; task IPC, epoch deadlines, concurrency, and cancellation remain. |
 | M5 Gate E — bus/LFS integration | **IN PROGRESS** | A fixed intent traverses Orchestrator → PCB → Bus → Executor → LFS using Microkit protected calls; the executor returns 42 and the LFS PD records it in volatile memory. Biscuit authorization, dynamic-grant wiring, durable LFS, and adversarial E2E cases remain. |
+| M5 Gate F — benchmark preparation | **IN PROGRESS** | QEMU boots and the serial-marker timing harness records host-observed intervals for the fixed flow. These are single-run diagnostic samples, not guest-only latency or qualification against the 250 ms target. |
+| M5 Gate G — security review | **IN PROGRESS** | A residual-risk and resource-accounting report is published; this is not an independent security audit or a security qualification. |
 
 “Closed” for M0–M3 refers to the stated component-gate scope; it does not mean
 those components have been integrated into a complete seL4 operating system.
@@ -85,6 +87,11 @@ Gate D's fixed Wasm probe runs in the five-domain Microkit image; it has no
 WASI or host imports and is not yet wired to bus/LFS task ingress.
 Gate E connects those domains for one deterministic demonstration flow, but
 its PCB uses a fixed label rule and its LFS write is volatile, not durable.
+Gate F's timing method observes serial-marker intervals on the QEMU host
+because the pinned kernel traps EL0 reads of `CNTVCT_EL0`; neither those
+host-observed values nor the artifact sizes are whole-system RAM/latency
+qualification. See [the Gate F/G report](GATE_F_G_REPORT.md) for the run data,
+resource estimates, and residual risks.
 
 ## Non-negotiable engineering targets
 
@@ -142,6 +149,7 @@ for toolchain details and scope.
 | [`poc/m3/`](poc/m3/README.md) | Local intent routing, deterministic policy, and evaluation corpus. |
 | [`poc/m4/`](poc/m4/README.md) | Recovery coordinator, persistent provider, and rollback supervisor. |
 | [`poc/m5_sel4/`](poc/m5_sel4/README.md) | Gate A boot and initial Gate B Microkit/Rust/QEMU protection-domain scaffold. |
+| [`GATE_F_G_REPORT.md`](GATE_F_G_REPORT.md) | Gate F timing observations and Gate G resource/residual-risk review. |
 | [`docs/M5_DESIGN.md`](docs/M5_DESIGN.md) | Proposed seL4 protection-domain architecture and M5 acceptance gates. |
 | [`docs/RUNTIME_STATUS.md`](docs/RUNTIME_STATUS.md) | Runtime evidence, measurements, and outstanding limitations. |
 | [`archive/`](archive/README.md) | Historical web-shell prototype. |

@@ -43,9 +43,11 @@ impl Handler for HandlerImpl {
     ) -> Result<MessageInfo, Self::Error> {
         assert_eq!(channel, Channel::new(0));
         assert_eq!(msg_info.label(), gate_e::EXECUTE_LABEL);
+        debug_println!("VelaOS Gate F: BEGIN wasm_invocation");
         let result = execute_bounded_module();
+        debug_println!("VelaOS Gate F: END wasm_invocation");
         assert_eq!(result, gate_e::WASM_RESULT as i32);
-        debug_println!("VelaOS Gate E: executor returned Wasm result 42");
+        debug_println!("VelaOS Gate E: executor returned Wasm result {}", result);
         Ok(MessageInfo::new(
             gate_e::WASM_RESULT_LABEL_BASE + result as gate_e::MessageLabel,
             0,

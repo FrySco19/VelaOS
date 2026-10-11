@@ -116,3 +116,21 @@ intent`, `VelaOS Gate E: executor returned Wasm result 42`,
 completed with result 42`. The labels and single-flow route are fixture-only;
 deny cases, untrusted input, durable object lookup, and restore/rollback are
 not covered.
+
+## Gate F timing preparation
+
+The fixed flow emits `BEGIN`/`END` serial markers around the protected calls
+and Wasm invocation. Run the host-side monotonic-clock observer with:
+
+```powershell
+docker build -f poc/m5_sel4/Dockerfile -t velaos-gate-f poc/m5_sel4
+docker run --rm --entrypoint make velaos-gate-f benchmark
+```
+
+The observer measures when marker lines arrive from QEMU's serial output. Its
+intervals include guest debug-print work, QEMU emulation, and host I/O/scheduling;
+they are not guest-only IPC timings or target-hardware measurements. The
+architectural counter registers are trapped at EL0 by the pinned kernel, so the
+guest does not read `CNTVCT_EL0`. One diagnostic run and its caveats are in the
+repository's [Gate F/G report](../../GATE_F_G_REPORT.md). Exit QEMU with
+`Ctrl+A`, then `X`.

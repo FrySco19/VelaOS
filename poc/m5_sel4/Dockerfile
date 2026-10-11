@@ -45,7 +45,7 @@ RUN set -eux; \
 
 WORKDIR /work
 
-COPY Makefile velaos.system ./
+COPY Makefile gate_f_timing.py velaos.system ./
 COPY app/ ./app/
 COPY pcb_root/ ./pcb_root/
 COPY patch-payload-helper.sh ./
