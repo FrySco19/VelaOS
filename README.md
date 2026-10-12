@@ -197,13 +197,13 @@ Closed on the verification path:
 - Production trust roots (demo seeds only); `result_handle` / `expected_version` on the write path (**M-LFS-5**) still open.
 - Real power-loss with disk cache: simulated via process abort, not bare metal.
 
-### Phase 3 — Next
+### Phase 3 — Packaging available · hardware qualification next
 
-1. **Idiot-proof QEMU packaging** — one command path from clone to a known-good VM, no folklore.
+1. **Reproducible QEMU packaging** — available through the Windows wrapper or `make e2e`; requires Rust and Docker/BuildKit and checks every required serial marker. See [packaging prerequisites and evidence](packaging/e2e/README.md).
 2. **Bare-metal Raspberry Pi 4** — authority + durable path on device; power-loss and clock behavior on metal.
 3. **Release hygiene** — changelog and tag **`v0.1.0`** when packaging is credible (not before).
 
-Until those land, treat the host Glass demo as the public face and the QEMU E2E as the proof.
+Hardware qualification and release tagging remain open. Treat the host Glass demo as the public face and the QEMU E2E as the bounded prototype proof.
 
 ---
 
@@ -218,6 +218,16 @@ Until those land, treat the host Glass demo as the public face and the QEMU E2E 
 ### Run Glass (host demo)
 
 From the repository root:
+
+On Windows, use the launcher with your prepared local M0 directory:
+
+```bat
+scripts\launch-glass.bat "C:\path\to\VelaOS-public\poc\m0"
+```
+
+Then open **http://127.0.0.1:7878/**. The launcher reports missing prerequisites rather than silently substituting a working semantic model. `scripts\launch-glass.bat --no-m0` explicitly selects the BM25-only demonstration.
+
+The underlying Cargo command remains available:
 
 ```bash
 cd poc/product/glass
@@ -245,6 +255,22 @@ If `cargo` cannot find the package, confirm you are inside `poc/product/glass` (
 4. An AI-only / planner-only attempt to act without a user selection is denied — by design.
 
 ---
+
+### Verify the packaged QEMU bridge
+
+On Windows:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\verify-bridge-e2e.ps1
+```
+
+On Linux with Rust and Docker in the same environment:
+
+```bash
+make e2e
+```
+
+The runner requires 37 markers, denies panic/FAULT and prohibited expired-grant writes, and accepts the idle timeout only after the required checks. Full serial output and the verdict are saved under `.local/e2e/`. This is a bounded QEMU proof, not a Raspberry Pi qualification.
 
 ## Component gates and seL4 port
 

@@ -7,3 +7,4 @@
 *.so binary
 *.pf2 binary
 *.mo binary
+*.bat text eol=crlf
