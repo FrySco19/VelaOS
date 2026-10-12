@@ -272,6 +272,14 @@ make e2e
 
 The runner requires 37 markers, denies panic/FAULT and prohibited expired-grant writes, and accepts the idle timeout only after the required checks. Full serial output and the verdict are saved under `.local/e2e/`. This is a bounded QEMU proof, not a Raspberry Pi qualification.
 
+### Native Glass preview in VirtualBox
+
+The [x86_64 preview](os/x86_64/README.md) boots directly into a photographic desktop with a familiar toolbar and small intent-focused Glass surfaces. Notes accept real keyboard input and can retain a draft for the current session; closing clears temporary UI buffers. The surface model is bounded Rust linked to the existing framebuffer renderer.
+
+![Native Glass note surface](os/x86_64/screenshots/glass-note.png)
+
+Run `os/x86_64/Start-VelaOS-VirtualBox.ps1` to boot `velaos-glass-x86_64.iso` in a BIOS VM with 512 MB RAM. Networking, audio playback, LLM inference and durable LFS are **not integrated into this native preview**; unavailable services are identified rather than simulated. It is separate from the AArch64 Microkit security proof and does not establish the whole-system RAM target.
+
 ## Component gates and seL4 port
 
 [![M1 Rust checks](https://github.com/FrySco19/VelaOS/actions/workflows/lfs-m1.yml/badge.svg)](https://github.com/FrySco19/VelaOS/actions/workflows/lfs-m1.yml)

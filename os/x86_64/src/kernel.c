@@ -8,7 +8,9 @@
 #include <stddef.h>
 #include "font.h"
 
-#define VELA_VERSION "0.2.0-dev"
+#define VELA_VERSION "0.3.0-glass-dev"
+#include "wallpaper_size.h"
+extern const uint16_t vela_wallpaper[];
 
 /* ---------------------------------------------------------------- libc bits */
 void *memset(void *d, int c, size_t n) { uint8_t *p = d; while (n--) *p++ = (uint8_t)c; return d; }
@@ -189,8 +191,8 @@ static unsigned rtc_secs_of_day(struct rtc *t) { return t->hour * 3600 + t->min 
 
 /* ================================================================ shell state */
 #define T(en, it) (lang ? (it) : (en))
-static int lang;                 /* 0 = English (default), 1 = Italiano */
-static int theme_id;             /* 0 Light, 1 Dawn, 2 Deep */
+static int lang = 1;                 /* 0 = English (default), 1 = Italiano */
+static int theme_id = 2;             /* 0 Light, 1 Dawn, 2 Deep */
 static int larger_text, reduce_motion;
 static int welcome_open = 1;
 static int cur_space;
@@ -422,41 +424,11 @@ static void shutdown(void) { outw(0x4004, 0x3400); outw(0x604, 0x2000); outw(0xB
 
 /* ---------------------------------------------------------------- wallpaper */
 static void make_wallpaper(void) {
-    int horizon = H * 62 / 100;
-    int dawn = theme_id == 1;
-    for (int y = 0; y < H; y++) {
-        uint32_t c;
-        if (y < horizon) {
-            int t = y * 255 / horizon;
-            if (dawn) c = blend(0x6C7FB0, 0xF4B886, (unsigned)t);
-            else c = blend(0x061024, 0x1D4466, (unsigned)t);
-        } else {
-            int t = (y - horizon) * 255 / (H - horizon);
-            if (dawn) c = blend(0x6C88A8, 0x2C3E5C, (unsigned)t);
-            else c = blend(0x0E2A44, 0x040A16, (unsigned)t);
-        }
-        for (int x = 0; x < W; x++) backbuf[y * W + x] = c;
+    for (int y = 0; y < H; y++) for (int x = 0; x < W; x++) {
+        uint16_t pixel = vela_wallpaper[(y * WALL_H / H) * WALL_W + x * WALL_W / W];
+        uint32_t color = (((pixel >> 11) * 255 / 31) << 16) | ((((pixel >> 5) & 63) * 255 / 63) << 8) | ((pixel & 31) * 255 / 31);
+        backbuf[y * W + x] = theme_id == 0 ? blend(color, 0xE1E9F1, 22) : theme_id == 1 ? blend(color, 0xEBB482, 20) : color;
     }
-    /* stars / sun */
-    if (!dawn) { uint32_t s = 12345; for (int i = 0; i < 220; i++) { s = s * 1103515245 + 12345; int x = (int)((s >> 8) % (unsigned)W); s = s * 1103515245 + 12345; int y = (int)((s >> 8) % (unsigned)(horizon - 40)); pset(x, y, 0xFFFFFF, 60 + (s >> 4) % 120); } }
-    else for (int r = 140; r > 0; r -= 6) fill_circle(W * 30 / 100, horizon - 30, r, 0xFFE2B0, r > 50 ? 10 : 60);
-    /* horizon glow */
-    for (int k = 0; k < 40; k++) fill_rect(0, horizon - 20 + k, W, 1, dawn ? 0xFFD3A0 : 0x5FA8D8, (unsigned)(40 - (k > 20 ? k - 20 : 20 - k) * 2 > 0 ? 40 - (k > 20 ? k - 20 : 20 - k) * 2 : 0));
-    /* sea shimmer */
-    uint32_t s = 999;
-    for (int i = 0; i < 500; i++) { s = s * 1103515245 + 12345; int x = (int)((s >> 8) % (unsigned)W); s = s * 1103515245 + 12345; int y = horizon + 4 + (int)((s >> 8) % (unsigned)(H - horizon - 4)); fill_rect(x, y, 6 + (int)(s % 30), 1, dawn ? 0xFFE6C8 : 0x8CC8F0, 35); }
-    /* glowing sail */
-    int cx = W * 66 / 100, base = horizon + 10, top = horizon - H * 30 / 100;
-    for (int r = 260; r > 0; r -= 10) fill_circle(cx + 30, base - (base - top) / 2, r, dawn ? 0xFFE0B8 : 0xFFE9C4, dawn ? 3 : 4);
-    for (int y = top; y < base; y++) {
-        int k = (y - top) * (H / 7) / (base - top);
-        fill_rect(cx + 4, y, k, 1, 0xFFF4E0, 200);
-        if (y > top + 30) { int j = (y - top - 30) * (H / 14) / (base - top); fill_rect(cx - 4 - j, y, j, 1, 0xFFEBD0, 170); }
-    }
-    fill_rect(cx, top - 10, 2, base - top + 14, 0xFFF4E0, 220);
-    for (int i = 0; i < 10; i++) fill_rect(cx - 70 + i * 2, base + 4 + i, 170 - i * 4, 1, 0x1A1A22, 220);
-    /* reflection */
-    for (int i = 0; i < 26; i++) fill_rect(cx - 30 + (i % 3) * 7, base + 16 + i * 5, 80 - i * 2, 2, 0xFFE9C4, 60 - i * 2);
     memcpy(wallpaper, backbuf, (size_t)W * H * 4);
     /* blurred copy for glass: 3 separable box passes */
     memcpy(blurred, wallpaper, (size_t)W * H * 4);
@@ -567,7 +539,7 @@ static void draw_bar(void) {
     draw_text(&font_bold, 38, 7, "VelaOS", 0xFFFFFF);
     int x = 116;
     const char *m_app[] = { NULL, T("File", "File"), T("Edit", "Modifica"), T("View", "Vista"), T("Window", "Finestra") };
-    const char *m_sys[] = { "Spaces", T("Files", "File"), T("Apps", "App"), T("Settings", "Impostazioni") };
+    const char *m_sys[] = { "Spaces", T("Find", "Cerca"), T("Appearance", "Aspetto"), T("Settings", "Impostazioni") };
     nmenu = 0;
     if (focused >= 0 && visible(focused)) {
         m_app[0] = app_name(focused);
@@ -825,6 +797,8 @@ static void draw_notes_overlay(void) {
     }
 }
 
+#include "glass_ui.inc"
+
 /* ---------------------------------------------------------------- welcome (first boot) */
 static struct hit w_theme[3], w_lang[2], w_larger, w_motion, w_cta;
 static void draw_welcome(void) {
@@ -891,8 +865,9 @@ static void draw_welcome(void) {
 }
 static void finish_welcome(void) {
     welcome_open = 0;
-    open_app(APP_SETTINGS); open_app(APP_VELA);
-    notify(APP_VELA, T("Welcome aboard", "Benvenuto a bordo"), T("Running natively in this VM. F11 = Focus.", "Nativo in questa VM. F11 = Focus."));
+    glass_kind = 0; focused = -1;
+    serial_puts("VelaOS Glass: idle desktop, no application windows resident\r\n");
+    notify(APP_VELA, T("Welcome aboard", "Benvenuto a bordo"), T("Notes: Ctrl+Enter confirms. Esc closes.", "Appunti: Ctrl+Invio conferma. Esc chiude."));
 }
 
 /* ---------------------------------------------------------------- render */
@@ -924,6 +899,7 @@ static void render(void) {
     for (int k = 0; k < NAPPS; k++) if (visible(zorder[k])) draw_window(zorder[k]);
     draw_bar();
     draw_dock();
+    draw_glass();
     draw_notes_overlay();
     draw_cursor();
     blit();
@@ -963,6 +939,10 @@ static void mouse_init(void) {
 
 static int dragging = -1, drag_dx, drag_dy, prev_btn;
 static void dock_click(int i) {
+    if (i == APP_VELA || i == APP_FIND) { glass_open(1); return; }
+    if (i == APP_NOTES) { glass_open(2); return; }
+    if (i == APP_MEDIA) { glass_open(3); return; }
+    glass_release();
     if (win[i].open && !win[i].min && win[i].space == cur_space && focused == i) { win[i].min = 1; refocus(); }
     else open_app(i);
 }
@@ -986,14 +966,19 @@ static void mouse_click(int x, int y) {
         int d = dock_hit(x, y);
         if (d >= 0) { dock_click(d); return; }
         if (y < BAR_H) {
+            char date[40]; fmt_date(date, 0);
+            int date_x = W - text_width(&font_bold, date) - 16;
+            if (x >= date_x - 94 && x < date_x - 64) { glass_open(4); return; }
+            if (x >= date_x - 124 && x < date_x - 94) { glass_open(1); return; }
             for (int sp = 0; sp < NSPACES; sp++) if (in_hit(&hit_spaces[sp], x, y)) { switch_space(sp - cur_space); return; }
             for (int i = 0; i < nmenu; i++) if (in_hit(&hit_menu[i], x, y)) {
                 if (focused >= 0 && visible(focused)) { if (i == 3) toggle_focus(); if (i == 4) win[focused].max ^= 1; }
-                else { if (i == 0) open_app(APP_SPACES); if (i == 1 || i == 2) open_app(APP_FIND); if (i == 3) open_app(APP_SETTINGS); }
+                else { if (i == 0) open_app(APP_SPACES); if (i == 1) glass_open(1); if (i == 2 || i == 3) { glass_release(); open_app(APP_SETTINGS); } }
             }
             return;
         }
     }
+    if (glass_click(x, y)) return;
     for (int k = NAPPS - 1; k >= 0; k--) {
         int id = zorder[k];
         if (!visible(id) || (focus_mode && id != focused)) continue;
@@ -1027,7 +1012,10 @@ static void mouse_click(int x, int y) {
 
 static void type_char(char c) {
     if (welcome_open) { if (c == '\n') finish_welcome(); return; }
-    if (focused < 0 || !visible(focused)) open_app(APP_VELA);
+    if (glass_kind == 2 && ctrl && c == '\n') { glass_click(glass_primary.x + 5, glass_primary.y + 5); return; }
+    if ((glass_kind == 4 || glass_kind == 5) && c == '\n') { glass_release(); return; }
+    if (glass_type(c)) return;
+    if (focused < 0 || !visible(focused)) { glass_open(1); glass_type(c); return; }
     if (focused == APP_NOTES) {
         if (c == '\b') { if (note_len) note_len--; }
         else if (note_len < (int)sizeof note_buf - 1) note_buf[note_len++] = c;
@@ -1091,7 +1079,7 @@ static int poll_input(void) {
         if (v == 0xB8) { alt = 0; continue; }
         if (v == 0x3A) { caps ^= 1; continue; }
         if (v == 0x57) { if (!welcome_open) toggle_focus(); dirty = 1; continue; }   /* F11 */
-        if (v == 0x01) { focus_mode = 0; dirty = 1; continue; }                      /* Esc */
+        if (v == 0x01) { if (glass_kind) glass_release(); focus_mode = 0; dirty = 1; continue; }                      /* Esc */
         if (v & 0x80) continue;
         char c = shift ? keymap_shift[v] : keymap[v];
         if (caps && c >= 'a' && c <= 'z' && !shift) c -= 32;

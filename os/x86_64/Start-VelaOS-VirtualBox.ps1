@@ -5,8 +5,8 @@
   powershell -ExecutionPolicy Bypass -File .\Start-VelaOS-VirtualBox.ps1
 #>
 param(
-    [string]$Iso = (Join-Path $PSScriptRoot "dist\velaos-x86_64.iso"),
-    [string]$Name = "VelaOS-x86_64",
+    [string]$Iso = (Join-Path $PSScriptRoot "dist\velaos-glass-x86_64.iso"),
+    [string]$Name = "VelaOS-Glass",
     [int]$MemoryMB = 512,
     [switch]$Headless
 )
