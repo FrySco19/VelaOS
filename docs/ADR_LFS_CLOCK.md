@@ -2,7 +2,7 @@
 
 Stato: **accettato per il path host** (branch `grok/lfs-clock`, base `f0942be`).
 Piano di riferimento: `docs/PLAN_LFS_DURABLE_AND_CLOCK.md` su `origin/grok/release-prep`.
-Copre M-LFS-1, M-LFS-2, M-LFS-3, M-CLK-1. **Non** copre M-LFS-4/5 né M-CLK-2/3 (vedi §5).
+Copre M-LFS-1, M-LFS-2, M-LFS-3, M-CLK-1 e **M-CLK-3 (clock fidato nel guest QEMU)**. **Non** copre M-LFS-4/5 né M-CLK-2 (vedi §5).
 
 ## 1. Scelta di archivio: Opzione A (append-only + fsync)
 
@@ -73,17 +73,38 @@ File epoch corrotto → rifiuto di avviare (fail-closed).
 - Semantica inclusiva come Biscuit (`$t <= exp`): a `not_after` ancora valido, a `not_after + ε` scaduto.
 - `run_task_at(.., now, ..)` resta per bundle riproducibili (nessuna deadline monotona).
 
+### 3.2 Clock fidato **nel guest** (M-CLK-3)
+
+`poc/m5_executor/app/src/guest_clock.rs` (`no_std`, condiviso col crate host via `#[path]`):
+
+- Fonte: contatore fisico Arm generic timer `CNTPCT_EL0` + `CNTFRQ_EL0`, leggibili
+  a EL0 perché il kernel seL4 dell'SDK Microkit 2.3.0 ha `CONFIG_EXPORT_PCNT_USER=1`
+  (verificato in `gen_config.h` dell'immagine). È tempo hardware dal reset: non è
+  il wall clock host, l'host non può modificarlo dopo il boot, non torna indietro.
+- L'admission porta un TTL **relativo** (`1..=120` s, coniato dal PDP host dopo
+  UserSelection). Il PCB guest lo ancora sul contatore quando pubblica il frame
+  (`Deadline::start`) e, **prima** del commit LFS, verifica `remaining_ms`;
+  scaduto → `EXPIRED` (7), nessuna chiamata al writer (`commit_if_alive`).
+- Fail-closed: frequenza 0, TTL fuori `1..=120`, overflow, contatore sotto
+  l'ancora o frequenza cambiata = scaduto.
+- Composizione: host rifiuta di firmare dopo `not_after` (wall), guest rifiuta
+  di persistere dopo `ttl` del proprio tempo monotono. Il tempo pre-boot non è
+  misurabile dal guest: la finestra guest parte dalla pubblicazione (documentato).
+- QEMU: seconda admission (request 13, TTL 1 s, nuova UserSelection) eseguita
+  (Wasm 21), poi attesa sul contatore oltre la deadline → `EXPIRED`, nessun
+  commit. Il runner verifica l'**assenza** di `LFS committed epoch=1 request=13`.
+
 ## 4. Evidenze (eseguito su Windows, toolchain 1.96.1, `--offline --locked`)
 
 | Suite | Esito |
 | --- | --- |
-| policy totale | 66/66 (41 storici + clock_ttl 11 + lfs_durable 11 + lfs_epoch 3) |
+| policy totale | 69/69 (41 storici + clock_ttl 11 + guest_clock 3 + lfs_durable 11 + lfs_epoch 3) |
 | lfs_receipt (regressione) | 9/9 |
 | keygen / executor-host (incl. R1 MAX_FUEL 7) | 2/2 · 27/27 |
 | intent / shell / glass / m0-recall / m1 | 12/12 · 13/13 · 10/10 (+1 live ignorato) · 6/6 (+2 live ignorati) · 6/6 |
 | clippy policy `--all-targets --features fault-fixtures -D warnings` | pulito |
 | `lfs-crash-gate 200` (abort reale del processo in 4 fasi) — `docs/reports/lfs-crash-gate-2026-10-12.json` | PASS: 0 receipt annunciate perse, 0 doppi effetti, 600/600 record, 3500 byte strappati troncati |
-| QEMU `verify-bridge-e2e` (WSL Docker, regressione: guest/wire invariati) | PASS 33 marker, nessun panic/FAULT, exit 124 — `docs/reports/m5-verify-bridge-e2e-lfs-clock-2026-10-12.log` |
+| QEMU `verify-bridge-e2e` (WSL Docker, con clock guest) | PASS **37** marker (33 storici incl. POLICY_DENIED e MAX_FUEL + 4 CLK), nessun panic/FAULT, exit 124, marker proibiti assenti — `docs/reports/m5-verify-bridge-e2e-lfs-clock-2026-10-12.log` |
 
 Comandi:
 
@@ -99,10 +120,13 @@ cargo run --release --locked --manifest-path poc/m5_executor/policy/Cargo.toml -
 
 - **Guest QEMU**: il dominio `velaos-lfs` usa ancora il ledger in memoria
   `Ledger<8>`; nessuna persistenza cross-reboot in guest (M-LFS-4 aperto).
-- **TTL nel guest**: il guest non ha clock fidato. Il TTL è applicato **solo
-  host-side** (PDP al conio + `GrantDeadline` monotono prima di esecuzione e
-  commit nel modello host). Per la preview QEMU vale l'etichetta
-  **"TTL host-only"**; vietato il claim "TTL enforced in-guest" finché M-CLK-3 non passa.
+- **TTL nel guest**: enforced dal PCB guest sul contatore hardware (M-CLK-3), ma
+  il writer LFS guest non ricontrolla la deadline (fida il PCB, stesso modello
+  del notary); il tempo trascorso **prima del boot** non è visibile al guest
+  (coperto solo dal controllo host al conio). Nessuna fonte RTC/TPM per tempo
+  assoluto cross-reboot.
+- `verify-bridge` classico non rieseguito separatamente: i suoi 14 marker sono
+  inclusi e verificati nel run E2E; il path non-e2e del PCB non compila `guest_clock`.
 - Power-loss reale con cache disco: simulato solo con abort di processo (i dati
   scritti ma non fsyncati sopravvivono nella cache OS); serve hardware/board.
 - Notary PCB ancora in memoria (risoluzione cross-boot via ledger durevole + firma).
