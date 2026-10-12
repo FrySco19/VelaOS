@@ -1,0 +1,12 @@
+[package]
+name = "vela-host-broker"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+vela-protocol = { path = "../protocol" }
+vela-selection-contract = { path = "../selection-contract" }
+ed25519-compact = { version = "=2.6.0", default-features = false }
+sha2 = "=0.10.9"
+getrandom = "=0.2.17"

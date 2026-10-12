@@ -1,0 +1,48 @@
+FROM velaos-executor-e2e:latest
+COPY poc/protocol/ /repo/poc/protocol/
+COPY poc/selection-contract/ /repo/poc/selection-contract/
+COPY poc/m5_executor/host-ingress/ /repo/poc/m5_executor/host-ingress/
+COPY poc/m5_executor/selection-probe/ /repo/poc/m5_executor/selection-probe/
+RUN cp -r /work/app/.cargo /work/app/targets /repo/poc/m5_executor/selection-probe/ \
+    && cp /work/app/rustc-wrapper.sh /work/app/rust-toolchain.toml /repo/poc/m5_executor/selection-probe/ \
+    && chmod +x /repo/poc/m5_executor/selection-probe/rustc-wrapper.sh /repo/poc/m5_executor/host-ingress/rustc-wrapper.sh
+WORKDIR /repo/poc/m5_executor/host-ingress
+RUN SEL4_INCLUDE_DIRS=/microkit/board/qemu_virt_aarch64/debug/include CARGO_TARGET_DIR=/work/build/cargo-target \
+    cargo build --locked --release --features qemu-port0
+WORKDIR /repo/poc/m5_executor/selection-probe
+RUN SEL4_INCLUDE_DIRS=/microkit/board/qemu_virt_aarch64/debug/include CARGO_TARGET_DIR=/work/build/cargo-target \
+    VELA_TRUSTED_INPUT_PUBLIC_RS=/repo/poc/m5_executor/selection-probe/generated/host_public.rs \
+    cargo build --locked --release --bin selection-pcb-framed --bin selection-sink
+RUN cp /work/build/cargo-target/aarch64-sel4-microkit/release/vela-host-ingress.elf /work/build/ \
+    && cp /work/build/cargo-target/aarch64-sel4-microkit/release/selection-pcb-framed.elf /work/build/ \
+    && cp /work/build/cargo-target/aarch64-sel4-microkit/release/selection-sink.elf /work/build/ \
+    && python3 /work/check-wx.py /work/build/vela-host-ingress.elf \
+    && python3 /work/check-wx.py /work/build/selection-pcb-framed.elf
+RUN python3 - <<'PY'
+import xml.etree.ElementTree as E
+tree = E.parse('/work/executor-e2e.system')
+root = tree.getroot()
+for name, size, physical in [('host_mailbox','0x1000',None),('selection_output','0x1000',None),('ingress_mmio','0x1000','0xa003000'),('ingress_dma','0x2000',None)]:
+    attrs={'name':name,'size':size}
+    if physical: attrs['phys_addr']=physical
+    E.SubElement(root,'memory_region',**attrs)
+for name,priority,image,maps in [
+    ('ingress','111','vela-host-ingress.elf',[('ingress_mmio','0x50000000','ingress_mmio_addr',False),('ingress_dma','0x50004000','ingress_dma_addr',False),('host_mailbox','0x40000000','ingress_pcb_addr',True)]),
+    ('selection_pcb','110','selection-pcb-framed.elf',[('host_mailbox','0x40000000','ingress_pcb_addr',True),('selection_output','0x40001000','selection_output_addr',True)]),
+    ('selection_sink','112','selection-sink.elf',[('selection_output','0x40000000','selection_output_addr',True)]),
+]:
+    pd=E.SubElement(root,'protection_domain',name=name,priority=priority,stack_size='0x10000')
+    E.SubElement(pd,'program_image',path=image)
+    for mr,address,symbol,cached in maps:
+        E.SubElement(pd,'map',mr=mr,vaddr=address,perms='rw',cached=str(cached).lower(),setvar_vaddr=symbol)
+    if name=='ingress':
+        E.SubElement(pd,'setvar',symbol='ingress_dma_phys',region_paddr='ingress_dma')
+        E.SubElement(pd,'irq',irq='79',id='0',trigger='edge')
+for a,ai,b,bi in [('ingress','1','selection_pcb','1'),('selection_sink','0','selection_pcb','2')]:
+    ch=E.SubElement(root,'channel')
+    E.SubElement(ch,'end',pd=a,id=ai)
+    E.SubElement(ch,'end',pd=b,id=bi)
+tree.write('/work/host-bridge.system',encoding='utf-8',xml_declaration=True)
+PY
+RUN /microkit/bin/microkit /work/host-bridge.system --search-path /work/build --board qemu_virt_aarch64 --config debug --output /work/build/host-bridge-loader.img
+WORKDIR /work

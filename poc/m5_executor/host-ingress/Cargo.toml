@@ -1,0 +1,13 @@
+[package]
+name = "vela-host-ingress"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[features]
+# One console at the DTB/qtree-verified QEMU virt slot 0xa003e00.
+qemu-port0 = []
+
+[dependencies]
+sel4-microkit = { git = "https://github.com/seL4/rust-sel4", rev = "d441a880938209f661201704dfbee7b91c5aa905" }
+vela-protocol = { path = "../../protocol" }

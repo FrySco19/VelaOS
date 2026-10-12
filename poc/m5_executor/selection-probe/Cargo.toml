@@ -9,6 +9,7 @@ sel4-microkit = { git = "https://github.com/seL4/rust-sel4", rev = "d441a8809382
 vela-selection-contract = { path = "../../selection-contract" }
 ed25519-compact = { version = "=2.6.0", default-features = false }
 sha2 = { version = "=0.10.9", default-features = false }
+vela-protocol = { path = "../../protocol" }
 
 [[bin]]
 name = "selection-input"
@@ -21,3 +22,7 @@ path = "src/pcb.rs"
 [[bin]]
 name = "selection-sink"
 path = "src/sink.rs"
+
+[[bin]]
+name = "selection-pcb-framed"
+path = "src/pcb_framed.rs"

@@ -1,0 +1,12 @@
+**
+!poc/
+!poc/protocol/
+!poc/protocol/**
+!poc/selection-contract/
+!poc/selection-contract/**
+!poc/m5_executor/
+!poc/m5_executor/host-ingress/
+!poc/m5_executor/host-ingress/**
+!poc/m5_executor/selection-probe/
+!poc/m5_executor/selection-probe/**
+**/target/

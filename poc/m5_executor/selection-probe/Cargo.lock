@@ -799,6 +799,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "vela-protocol"
+version = "0.1.0"
+
+[[package]]
 name = "vela-selection-contract"
 version = "0.1.0"
 dependencies = [
@@ -813,6 +817,7 @@ dependencies = [
  "ed25519-compact",
  "sel4-microkit",
  "sha2",
+ "vela-protocol",
  "vela-selection-contract",
 ]
 
