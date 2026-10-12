@@ -1,0 +1,45 @@
+# Test harness extends the fully built E2E image; production domains unchanged.
+FROM velaos-executor-e2e:latest
+COPY poc/selection-contract/ /repo/poc/selection-contract/
+COPY poc/m5_executor/selection-probe/ /repo/poc/m5_executor/selection-probe/
+RUN cp -r /work/app/.cargo /work/app/targets /repo/poc/m5_executor/selection-probe/ \
+    && cp /work/app/rustc-wrapper.sh /work/app/rust-toolchain.toml /repo/poc/m5_executor/selection-probe/ \
+    && chmod +x /repo/poc/m5_executor/selection-probe/rustc-wrapper.sh
+WORKDIR /repo/poc/m5_executor/selection-probe
+RUN --mount=type=secret,id=input_seed,required=true \
+    SEL4_INCLUDE_DIRS=/microkit/board/qemu_virt_aarch64/debug/include \
+    VELA_TRUSTED_INPUT_FIXTURE_SEED=/run/secrets/input_seed \
+    VELA_TRUSTED_INPUT_PUBLIC_RS=/repo/poc/m5_executor/selection-probe/generated/trusted_input_public.rs \
+    CARGO_TARGET_DIR=/work/build/cargo-target \
+    cargo build --locked --release --bins
+RUN cp /work/build/cargo-target/aarch64-sel4-microkit/release/selection-input.elf /work/build/ \
+    && cp /work/build/cargo-target/aarch64-sel4-microkit/release/selection-pcb.elf /work/build/ \
+    && cp /work/build/cargo-target/aarch64-sel4-microkit/release/selection-sink.elf /work/build/ \
+    && python3 /work/check-wx.py /work/build/selection-input.elf \
+    && python3 /work/check-wx.py /work/build/selection-pcb.elf \
+    && python3 /work/check-wx.py /work/build/selection-sink.elf
+RUN python3 - <<'PY'
+import xml.etree.ElementTree as ET
+tree = ET.parse('/work/executor-e2e.system')
+root = tree.getroot()
+for name in ('selection_input', 'selection_output'):
+    ET.SubElement(root, 'memory_region', name=name, size='0x1000')
+for name, priority, image, mappings in (
+    ('selection_input', '111', 'selection-input.elf', [('selection_input', 'selection_input_addr', '0x40000000')]),
+    ('selection_pcb', '110', 'selection-pcb.elf', [('selection_input', 'selection_input_addr', '0x40000000'), ('selection_output', 'selection_output_addr', '0x40001000')]),
+    ('selection_sink', '112', 'selection-sink.elf', [('selection_output', 'selection_output_addr', '0x40000000')]),
+):
+    pd = ET.SubElement(root, 'protection_domain', name=name, priority=priority, stack_size='0x10000')
+    ET.SubElement(pd, 'program_image', path=image)
+    for mr, symbol, address in mappings:
+        ET.SubElement(pd, 'map', mr=mr, vaddr=address, perms='rw', setvar_vaddr=symbol)
+for sender, receiver, receiver_channel in (('selection_input', 'selection_pcb', '1'), ('selection_sink', 'selection_pcb', '2')):
+    channel = ET.SubElement(root, 'channel')
+    ET.SubElement(channel, 'end', pd=sender, id='0')
+    ET.SubElement(channel, 'end', pd=receiver, id=receiver_channel)
+tree.write('/work/selection-probe.system', encoding='utf-8', xml_declaration=True)
+PY
+RUN /microkit/bin/microkit /work/selection-probe.system --search-path /work/build \
+    --board qemu_virt_aarch64 --config debug --output /work/build/selection-loader.img
+WORKDIR /work
+CMD ["qemu-system-aarch64", "-machine", "virt,virtualization=on", "-cpu", "cortex-a53", "-m", "2G", "-nic", "none", "-nographic", "-device", "loader,file=build/selection-loader.img,addr=0x70000000,cpu-num=0"]

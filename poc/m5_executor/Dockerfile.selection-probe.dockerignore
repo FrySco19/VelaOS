@@ -1,0 +1,8 @@
+**
+!poc/
+!poc/m5_executor/
+!poc/m5_executor/selection-probe/
+!poc/m5_executor/selection-probe/**
+!poc/selection-contract/
+!poc/selection-contract/**
+**/target/

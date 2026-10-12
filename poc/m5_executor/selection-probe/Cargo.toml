@@ -1,0 +1,23 @@
+[package]
+name = "vela-selection-probe"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+sel4-microkit = { git = "https://github.com/seL4/rust-sel4", rev = "d441a880938209f661201704dfbee7b91c5aa905" }
+vela-selection-contract = { path = "../../selection-contract" }
+ed25519-compact = { version = "=2.6.0", default-features = false }
+sha2 = { version = "=0.10.9", default-features = false }
+
+[[bin]]
+name = "selection-input"
+path = "src/input.rs"
+
+[[bin]]
+name = "selection-pcb"
+path = "src/pcb.rs"
+
+[[bin]]
+name = "selection-sink"
+path = "src/sink.rs"
