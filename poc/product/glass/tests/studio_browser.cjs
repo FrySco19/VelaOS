@@ -1,0 +1,20 @@
+const {chromium}=require(process.env.VELA_PLAYWRIGHT_MODULE || 'playwright');
+const fs=require('fs');
+(async()=>{
+ const browser=await chromium.launch({executablePath:process.env.VELA_BROWSER || undefined,headless:true});
+ const page=await browser.newPage({viewport:{width:1440,height:1000}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('http://127.0.0.1:7881/studio');await page.waitForFunction(()=>!document.querySelector('#summon').disabled);
+ await page.screenshot({path:'.local/studio-desktop.png'});
+ await page.keyboard.press('Control+k');await page.locator('#intent').fill('Appunta le idee per il bridge IPC');await page.locator('#intent').press('Enter');await page.locator('#draft').waitFor({state:'visible'});await page.locator('#draft').fill('Ownership della pagina, ack e revoca.\nUna richiesta, un risultato verificabile.');await page.waitForFunction(()=>!document.querySelector('#approve').disabled);
+ await page.locator('#review').click();await page.screenshot({path:'.local/studio-note.png'});await page.locator('#approve').click();await page.waitForFunction(()=>document.querySelector('#phase').textContent==='Denied');
+ if(!(await page.locator('#notice').innerText()).includes('Nessun token emesso'))throw Error('Missing denial');
+ await page.locator('#card [data-close]').first().click();await page.locator('#discardDraft').waitFor({state:'visible'});await page.locator('#discardDraft').click();await page.waitForFunction(()=>document.querySelector('#phase').textContent==='Idle');
+ await page.keyboard.press('Control+k');await page.locator('#intent').fill('Qualcosa di sconosciuto');await page.locator('#intent').press('Enter');await page.waitForFunction(()=>document.querySelector('#phase').textContent==='Clarifying');await page.keyboard.press('Escape');await page.waitForFunction(()=>document.querySelector('#phase').textContent==='Idle');
+ await page.getByRole('button',{name:'Audio',exact:true}).click();await page.locator('#intent').press('Enter');await page.locator('#mediaWidget').waitFor({state:'visible'});await page.keyboard.press('Escape');await page.waitForFunction(()=>document.querySelector('#phase').textContent==='Idle');
+ await page.setViewportSize({width:390,height:844});await page.emulateMedia({reducedMotion:'reduce'});await page.getByRole('button',{name:'Rete',exact:true}).click();await page.locator('#intent').press('Enter');await page.locator('#networkWidget').waitFor({state:'visible'});await page.screenshot({path:'.local/studio-mobile.png'});
+ if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('Mobile overflow');
+ const counters=await (await page.request.get('http://127.0.0.1:7881/state')).json();if(counters.selections_emitted||counters.grants_issued||counters.frames_signed)throw Error('Studio emitted authority');
+ if(errors.length)throw Error(errors.join('\n'));
+ fs.writeFileSync('.local/studio-browser-result.json',JSON.stringify({passed:true,flows:['summon','note','review','denied approval','discard','clarification','media preview','mobile network preview','reduced motion'],authorityCounters:[counters.selections_emitted,counters.grants_issued,counters.frames_signed],errors},null,2));
+ await browser.close();console.log('PASS: Glass Studio browser lifecycle; zero authority emitted; mobile and reduced motion.');
+})().catch(e=>{console.error(e);process.exit(1)});

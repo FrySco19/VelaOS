@@ -16,6 +16,28 @@ use vela_intent::{Corpus, IntentEngine, LlmOutput, LlmProposer, M0Ranking, Sourc
 const HOST: &str = "127.0.0.1:7878";
 const TOKEN: &str = "test-token";
 const QUERY: &str = "ZEPHYR-731 connessione protetta del portatile in caffetteria";
+
+#[test]
+fn studio_cannot_issue_authority_or_accept_stale_approval() {
+    let mut a = app();
+    let mut revision = 0;
+    for event in ["summon", "submit", "preview", "edit"] {
+        let r=a.handle(&Request::post("/studio/event",HOST,json!({"token":TOKEN,"event":event,"revision":revision})));
+        assert_eq!(r.status,200); revision+=1;
+    }
+    let stale=a.handle(&Request::post("/studio/event",HOST,json!({"token":TOKEN,"event":"approve","revision":3})));
+    assert_eq!(stale.status,409);
+    for event in ["approve","unavailable"] {
+        let r=a.handle(&Request::post("/studio/event",HOST,json!({"token":TOKEN,"event":event,"revision":revision})));
+        assert_eq!(r.status,200); assert_eq!(r.json_body()["authority_emitted"],false); revision+=1;
+    }
+    assert_eq!(counters(&a),(0,0,0));
+    assert_eq!(a.handle(&Request::get("/studio/state",HOST)).json_body()["phase"],"Denied");
+    let shortcut=a.handle(&Request::post("/studio/event",HOST,json!({"token":TOKEN,"event":"execute","revision":revision})));
+    assert_eq!(shortcut.status,400);
+    let injected=a.handle(&Request::post("/studio/event",HOST,json!({"token":TOKEN,"event":"edit","revision":revision,"handle":"invented"})));
+    assert_eq!(injected.status,400);
+}
 /// Verbatim stdout of the real M0 bridge for QUERY over `demo::corpus()` (see
 /// `tests/fixtures/m0_demo_output.json`, recorded offline on Francesco's host).
 const M0_RECORDED: &str = include_str!("fixtures/m0_demo_output.json");

@@ -53,3 +53,9 @@ corpus (reproduce with `cargo run --offline --example m0_request | python bridge
 * M0 bridge returns every card (limit 64, no score floor), so low-relevance rows appear.
 * Demo keys (fixed PCB seed, fresh Biscuit root per run) are NOT production key management.
 * No persistence: corpus is the five authored M0 fixture cards + two workspace items.
+## New Glass Studio scaffold
+
+The independent Phase 3 scaffold is served at `/studio`; see [STUDIO.md](STUDIO.md).
+It offers the command bar and authorization card with an allocation-free Rust
+lifecycle. Approval deliberately fails closed because the trusted input/PCB
+adapter is not connected. The original host PDP demo at `/` is unchanged.

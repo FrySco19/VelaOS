@@ -30,6 +30,8 @@ use vela_m0_recall::{M0Status, M0StatusHandle};
 use vela_shell::{Click, Outcome, ShellError, ShellRuntime, ShellState, UiReject};
 
 pub const PAGE: &str = include_str!("../assets/glass.html");
+pub const STUDIO_PAGE: &str = include_str!("../assets/studio.html");
+pub mod ui_state;
 pub const MAX_BODY: usize = 16 * 1024;
 pub const MAX_UTTERANCE: usize = 512;
 
@@ -95,6 +97,7 @@ pub struct GlassApp {
     token: String,
     hosts: Vec<String>,
     lanes: Lanes,
+    studio: ui_state::Session,
 }
 
 fn random_token() -> String {
@@ -116,7 +119,7 @@ impl GlassApp {
         Self::with_token(shell, lanes, port, random_token())
     }
     pub fn with_token(shell: ShellRuntime, lanes: Lanes, port: u16, token: String) -> Self {
-        Self { shell, token, hosts: vec![format!("127.0.0.1:{port}"), format!("localhost:{port}")], lanes, }
+        Self { shell, token, hosts: vec![format!("127.0.0.1:{port}"), format!("localhost:{port}")], lanes, studio: ui_state::Session::default() }
     }
     pub fn token(&self) -> &str {
         &self.token
@@ -137,7 +140,9 @@ impl GlassApp {
                 body: PAGE.replace("__VELA_TOKEN__", &self.token),
             },
             ("GET", "/state") => Response::json(200, self.view()),
-            ("POST", "/submit") | ("POST", "/click") => self.post(req),
+            ("GET", "/studio") => Response { status: 200, content_type: "text/html; charset=utf-8", body: STUDIO_PAGE.replace("__VELA_TOKEN__", &self.token) },
+            ("GET", "/studio/state") => Response::json(200, self.studio_view()),
+            ("POST", "/submit") | ("POST", "/click") | ("POST", "/studio/event") => self.post(req),
             (_, "/" | "/state" | "/submit" | "/click") => Response::err(405, "metodo non consentito"),
             _ => Response::err(404, "nessuna route"),
         }
@@ -160,6 +165,22 @@ impl GlassApp {
         };
         if body.get("token").and_then(Value::as_str) != Some(self.token.as_str()) {
             return Response::err(403, "token mancante o errato");
+        }
+        if req.path == "/studio/event" {
+            if body.keys().any(|k| !["token", "event", "revision"].contains(&k.as_str())) { return Response::err(400, "campo studio non ammesso"); }
+            let Some(revision) = body.get("revision").and_then(Value::as_u64) else { return Response::err(400, "revision richiesta"); };
+            use ui_state::Event as E;
+            let event = match body.get("event").and_then(Value::as_str) {
+                Some("summon") => E::Summon, Some("submit") => E::Submit,
+                Some("preview") => E::Preview, Some("clarify") => E::Clarify,
+                Some("edit") => E::Edit, Some("approve") => E::Approve,
+                Some("unavailable") => E::Unavailable, Some("cancel") => E::Cancel,
+                Some("reset") => E::Reset, _ => return Response::err(400, "evento studio sconosciuto"),
+            };
+            return match self.studio.apply(event, revision) {
+                Ok(()) => Response::json(200, self.studio_view()),
+                Err(e) => Response::json(409, json!({"error":format!("{e:?}"), "state":self.studio_view()})),
+            };
         }
         let allowed: &[&str] = if req.path == "/submit" { &["token", "utterance"] } else { &["token", "action", "candidate"] };
         if let Some(k) = body.keys().find(|k| !allowed.contains(&k.as_str())) {
@@ -205,6 +226,11 @@ impl GlassApp {
             Lanes::Bm25PlusStandIn(why) => json!({"label": "BM25 + title stand-in -> RRF k=60 (M0 dense non attivo)", "m0": {"state": "assente", "error": why}}),
             Lanes::Custom(l) => json!({"label": l, "m0": {"state": "n/a"}}),
         }
+    }
+
+    fn studio_view(&self) -> Value {
+        json!({"phase":format!("{:?}",self.studio.phase), "revision":self.studio.revision,
+            "backend":"unconnected scaffold", "authority_emitted":false})
     }
 
     /// View model. Exposes handles as hex for display/audit only; the page never sends them back.

@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "flows": [
+    "summon",
+    "note",
+    "review",
+    "denied approval",
+    "discard",
+    "clarification",
+    "media preview",
+    "mobile network preview",
+    "reduced motion"
+  ],
+  "authorityCounters": [
+    0,
+    0,
+    0
+  ],
+  "errors": []
+}
