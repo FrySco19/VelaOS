@@ -19,7 +19,17 @@
 //! Turning a candidate into a right requires the shell's trusted input path
 //! (`UserSelection` via `TrustedSelectionChannel`) and the host PDP
 //! (`vela-executor-policy::pipeline::SelectionGatedPdp`), both outside this crate.
+//!
+//! When lexical recall is empty, [`propose_from_context`] can still emit a
+//! proposal from observational envelopes ([`FALLBACK_MODE`]). That lane does
+//! not call [`LlmProposer`].
 #![forbid(unsafe_code)]
+
+mod context_lane;
+
+pub use context_lane::{
+    ContextCandidate, ContextProposal, FALLBACK_MODE, RecallMode, proposal_json, propose_from_context,
+};
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -44,6 +54,22 @@ pub enum Source {
     M0,
     /// Extra handle proposed by an LLM.
     Llm,
+    /// Observational lane. Display label is [`Source::as_str`] = `ContextSignal`.
+    /// Ranking and UX only.
+    ContextSignal,
+}
+
+impl Source {
+    /// Stable audit label. Not a right.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Source::Bm25 => "Bm25",
+            Source::Title => "Title",
+            Source::M0 => "M0",
+            Source::Llm => "Llm",
+            Source::ContextSignal => "ContextSignal",
+        }
+    }
 }
 
 /// One local object the engine may rank. Metadata only (no content handle rights).

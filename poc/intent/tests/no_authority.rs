@@ -42,6 +42,9 @@ fn source_has_no_authority_or_ambient_capability_surface() {
         .collect::<Vec<_>>()
         .join("\n")
         .to_lowercase();
+    // The observational lane name shares letters with the stem below.
+    // Strip that word first so a real use of the stem still fails closed.
+    let code = code.replace("signals", " ").replace("signal", " ");
     for banned in [
         "biscuit", "ed25519", "blake3", "sign", "grant", "admit", "execute", "authoriz",
         "receipt", "frame", "unsafe", "std::fs", "std::net", "std::process",

@@ -1,0 +1,48 @@
+{
+  "utterance": "ciao",
+  "mode": "FALLBACK CONTEXT-SIGNALS",
+  "llm_invoked": false,
+  "bm25_lexical_hits": 0,
+  "auto_resolve": false,
+  "surface_label": "«nessuna autorità»",
+  "authority_label": "no-authority",
+  "rationale": "FALLBACK CONTEXT-SIGNALS. BM25 lexical hits=0. LLM not invoked. Proposal only.",
+  "candidates": [
+    {
+      "handle": "pc:DESKTOP-G2CD2J5:user:tella",
+      "expected_version": "1",
+      "title": "service_up host_session",
+      "score": 0.90,
+      "source": "ContextSignal",
+      "signal_type": "service_up",
+      "kind": "host_session",
+      "observation_source": "os.host.session",
+      "ts": "2026-10-12T04:04:35.9887817+02:00",
+      "ttl_signal": 120
+    },
+    {
+      "handle": "pc:DESKTOP-G2CD2J5:userprofile:.cargo",
+      "expected_version": "2026-10-12T03:38:52+02:00",
+      "title": "file_changed local_path .cargo",
+      "score": 0.80,
+      "source": "ContextSignal",
+      "signal_type": "file_changed",
+      "kind": "local_path",
+      "observation_source": "os.fs.observe",
+      "ts": "2026-10-12T04:04:35.9887817+02:00",
+      "ttl_signal": 60
+    },
+    {
+      "handle": "pc:DESKTOP-G2CD2J5:local",
+      "expected_version": null,
+      "title": "clock_tick trusted_clock",
+      "score": 0.70,
+      "source": "ContextSignal",
+      "signal_type": "clock_tick",
+      "kind": "trusted_clock",
+      "observation_source": "os.clock.local",
+      "ts": "2026-10-12T04:04:35.9887817+02:00",
+      "ttl_signal": 30
+    }
+  ]
+}
