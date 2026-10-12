@@ -375,4 +375,4 @@ See [`LICENSE`](LICENSE) for the full text. Third-party components retain their 
 
 ## Document status
 
-Draft for maintainer review prior to publication. Architecture diagrams are normative intent for this revision; replace with exported figures if the repo adopts a single canonical diagram set. Phase labels follow verification evidence, not marketing.
+Published project overview. Architecture diagrams describe the stated host-demo and prototype boundaries; they do not imply a complete production OS. Phase labels follow verification evidence, not marketing.
