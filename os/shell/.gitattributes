@@ -1,0 +1,9 @@
+*.sh text eol=lf
+guest/init text eol=lf
+*.py text eol=lf
+*.c text eol=lf
+*.h text eol=lf
+Makefile text eol=lf
+*.otf binary
+*.ttf binary
+*.png binary
