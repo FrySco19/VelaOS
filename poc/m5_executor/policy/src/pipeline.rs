@@ -212,7 +212,7 @@ impl SelectionGatedPdp {
     }
 
     pub fn admit_task(&mut self, r: &TaskRequest) -> TaskOutcome {
-        self.admit_task_at(r, SystemTime::now())
+        self.admit_task_at(r, crate::clock::SystemClock::wall_now())
     }
 
     pub fn admit_task_at(&mut self, r: &TaskRequest, now: SystemTime) -> TaskOutcome {

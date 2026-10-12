@@ -160,7 +160,7 @@ impl GrantIssuer {
     }
 
     pub fn issue_read_grant(&mut self, r: &GrantRequest) -> GrantResult {
-        self.issue_read_grant_at(r, SystemTime::now())
+        self.issue_read_grant_at(r, crate::clock::SystemClock::wall_now())
     }
 
     pub fn issue_read_grant_at(&mut self, r: &GrantRequest, now: SystemTime) -> GrantResult {

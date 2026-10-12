@@ -14,3 +14,12 @@ blake3 = { version = "=1.8.2", default-features = false, features = ["pure"] }
 [dev-dependencies]
 # Real Wasmi execution of admitted frames in the M-G1b / receipt tests (host model of the guest).
 vela-executor-host = { path = "../executor-host" }
+
+[features]
+# Process-abort probes in the durable LFS ledger, used only by the crash gate.
+fault-fixtures = []
+
+[[bin]]
+name = "lfs-crash-gate"
+path = "src/bin/lfs-crash-gate.rs"
+required-features = ["fault-fixtures"]

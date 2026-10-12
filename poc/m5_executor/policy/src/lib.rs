@@ -37,8 +37,14 @@ pub mod ledger_wire;
 /// M-G1b end-to-end admission: UserSelection -> Biscuit grant -> signed frame.
 pub mod pipeline;
 
-/// M-G1c simulated LFS writer + PCB notary orchestration (State Ledger).
+/// M-G1c LFS writer + PCB notary orchestration (State Ledger).
 pub mod ledger;
+
+/// M-CLK-1: injectable trusted clock (wall for minting, monotonic for TTL).
+pub mod clock;
+
+/// M-LFS-1..3: durable append-only + fsync ledger store and persistent epoch.
+pub mod durable;
 
 /// Same bound as M1/M2 authority code.
 pub const MAX_TOKEN_BYTES: usize = 16 * 1024;
@@ -167,7 +173,7 @@ impl PolicyDecisionPoint {
     }
 
     pub fn admit(&mut self, request: &AdmitRequest) -> AdmitResult {
-        self.admit_at(request, SystemTime::now())
+        self.admit_at(request, clock::SystemClock::wall_now())
     }
 
     /// Deterministic-clock variant used by tests and replay tooling.
