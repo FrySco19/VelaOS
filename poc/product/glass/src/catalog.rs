@@ -104,10 +104,10 @@ const DENY: Verdict = Verdict::Deny;
 pub static COMPONENTS: &[Component] = &[
     Component {
         name: "Top system bar",
-        purpose: "Frosted top bar: sail, VelaOS wordmark, app menus, Spaces dots, search, network, volume, battery, date, and clock.",
+        purpose: "Frosted top bar: sail, VelaOS wordmark, app menus, Spaces dots, search, network, volume, battery, date, and clock. The search field is where the objective is composed.",
         when_allowed: "Never drawn by Glass. The §7 shell draws it on the base.",
-        must_not: "Must not replace, hide, or restyle this bar, and must not move the clock, Spaces, or status into a panel.",
-        shell_toolbar: "This is the familiar toolbar. Vela Shell owns it.",
+        must_not: "Must not replace, hide, cover, or restyle this bar, and must not move the clock, Spaces, search, or status into a panel.",
+        shell_toolbar: "This is the familiar toolbar. In normal mode it stays visible and clickable above Glass. Hits inside the bar belong to the Shell.",
         intent: "No role.",
         policy: "No role. The bar does not admit a task.",
         layer: BASE,
@@ -115,10 +115,10 @@ pub static COMPONENTS: &[Component] = &[
     },
     Component {
         name: "Dock",
-        purpose: "Floating bottom-centre dock. Six monochrome glyphs (Vela, Find, Spaces, Notes, Media, Settings) on frost. The active app is a frosted tile plus a teal underline (0x34919B).",
+        purpose: "Floating bottom-centre dock. Six monochrome glyphs at 28px (Vela, Find, Spaces, Notes, Media, Settings) on frost. The active app is a frosted tile plus a teal underline. Shell only.",
         when_allowed: "Never drawn by Glass.",
-        must_not: "Must not add a second dock, a theme dock, or a glyph launcher, and must not paint the teal underline.",
-        shell_toolbar: "Shell chrome beside the top bar. Not a Glass toolbar.",
+        must_not: "Must not add a second dock, a theme dock, or a glyph launcher, and must not paint the 28px glyphs or the teal underline.",
+        shell_toolbar: "Shell chrome beside the top bar. In normal mode it stays visible and clickable. Hits inside the dock belong to the Shell.",
         intent: "No role.",
         policy: "No role.",
         layer: BASE,
@@ -137,10 +137,10 @@ pub static COMPONENTS: &[Component] = &[
     },
     Component {
         name: "Focus mode",
-        purpose: "Hides the top bar and the dock (F11, View, or `focus`; Esc exits).",
+        purpose: "Hides the top bar and the dock (F11, View, or `focus`; Esc exits). The shell side-panel slot stays.",
         when_allowed: "Never toggled by Glass.",
-        must_not: "Must not enter or exit Focus, and must not treat a panel as the focused desktop.",
-        shell_toolbar: "Shell mode that hides the toolbar and the dock.",
+        must_not: "Must not enter or exit Focus, treat a panel as the focused desktop, fake a dock or toolbar, or reintroduce a second dock.",
+        shell_toolbar: "Shell mode that hides the toolbar and the dock. Ephemeral Glass may remain on content.",
         intent: "No role.",
         policy: "No role.",
         layer: BASE,
@@ -192,10 +192,10 @@ pub static COMPONENTS: &[Component] = &[
     },
     Component {
         name: "Frost material",
-        purpose: "Translucent blurred surface. §7 uses it for the bar, dock, and notification cards. An open panel uses the same material so it reads as glass above the desktop.",
+        purpose: "Ephemeral material from Art tokens ef8ec09: blur 20px, saturate 140%, opacity 0.88, theme frost-tint, hairline, sheen, and shadow. Type is Inter.",
         when_allowed: "On a temporary overlay only, while that panel is open.",
-        must_not: "Must not frost a fake toolbar, dock, window frame, or full-screen desktop.",
-        shell_toolbar: "Borrows the shell material. Does not become the toolbar.",
+        must_not: "Must not frost a fake toolbar, dock, side panel, or window frame. Must not paint Shell permanent frost (blur 24px, opacity 0.72). Must not fork the teal underline or the six 28px glyphs.",
+        shell_toolbar: "Shell chrome, including the side panel, keeps permanent frost. Glass does not become the toolbar.",
         intent: "No role.",
         policy: "No role. Frost carries no authority.",
         layer: OVER,
@@ -203,9 +203,9 @@ pub static COMPONENTS: &[Component] = &[
     },
     Component {
         name: "Theme materials",
-        purpose: "Light, Dawn, and Deep are the only palettes an overlay may follow. The names match the §7 theme records.",
+        purpose: "Light, Dawn, and Deep only, in the Art token colours. Deep is the night-sea home. The only Glass accent is teal #2EC4B6 on the primary gesture.",
         when_allowed: "When the shell has already selected one of the three, the open panel renders in that material.",
-        must_not: "Must not invent a fourth theme, and must not treat the host page's preview colours as the ISO palette.",
+        must_not: "Must not invent a fourth theme, a second accent, or a dock underline.",
         shell_toolbar: "The shell selects the theme. The panel does not own the control.",
         intent: "No role.",
         policy: "No role.",
@@ -214,21 +214,21 @@ pub static COMPONENTS: &[Component] = &[
     },
     Component {
         name: "Objective surface",
-        purpose: "One field for the current objective. Submit sends the utterance and nothing else.",
-        when_allowed: "While the shell is idle, as a temporary field above the base. It closes when the panel is dismissed.",
-        must_not: "Must not persist as a replacement toolbar, become a chat transcript, or attach candidates, handles, or grants to the submit body.",
-        shell_toolbar: "Sits above the toolbar. The toolbar stays the shell's. ShellRuntime::submit is the only sink.",
-        intent: "The utterance is input to Intent. Intent returns candidates and does not authorize.",
+        purpose: "Composition input is the Shell top-bar search, not a Glass field. The host #q and Interpreta are a loopback stand-in. The Proposal panel shows the utterance as its lead line.",
+        when_allowed: "Never as product Glass chrome. The host demo may keep the stand-in, which posts the utterance and nothing else.",
+        must_not: "Must not grow into a toolbar replacement, become a chat transcript, or attach candidates, handles, or grants to the submit body.",
+        shell_toolbar: "The familiar input is the Shell top-bar search. Glass must not replace that toolbar.",
+        intent: "The utterance reaches Intent from the shell field. Intent returns candidates and does not authorize.",
         policy: "Submit does not reach the PDP. No grant is issued.",
-        layer: OVER,
-        verdict: ALLOW,
+        layer: HOST,
+        verdict: DENY,
     },
     Component {
         name: "Proposal panel",
-        purpose: "The shell's glass phase: candidate index, title, version, score, sources, and auto_resolve (false). Handles may be shown in hex for audit.",
-        when_allowed: "Only while the shell is in the glass phase, for candidates the shell is showing.",
-        must_not: "Must not let the page post a handle or version back, style the list as a policy decision, or hide that the rows authorize nothing.",
-        shell_toolbar: "Rendered above the shell from shell state. Not an application dock.",
+        purpose: "The shell's glass phase, as data. The objective lead is the utterance in body type. Rows show index, title, version, score, sources, and a handle in hex for audit. auto_resolve stays false.",
+        when_allowed: "Only while the shell is in the glass phase and is showing the panel, for candidates the shell is showing.",
+        must_not: "Must not let the page post a handle or version back, collect the objective here, style the list as a policy decision, or hide that the rows authorize nothing.",
+        shell_toolbar: "Content above windows and desktop content. Not over the top bar or the dock, and not the side panel.",
         intent: "Rows are Intent candidates, data only.",
         policy: "Showing the panel issues no grant, frame, or selection.",
         layer: OVER,
@@ -236,9 +236,9 @@ pub static COMPONENTS: &[Component] = &[
     },
     Component {
         name: "Gesture row",
-        purpose: "Avvia and Rivedi piano on a shown index, Annulla (undo, nothing authorized), and Chiudi (dismiss a result or error).",
+        purpose: "Avvia is the one teal primary (#2EC4B6) on a shown index. Rivedi piano, Annulla, and Chiudi stay neutral. Annulla authorizes nothing. Chiudi dismisses a result or an error.",
         when_allowed: "Avvia and Rivedi piano only in the glass phase on a shown index. Annulla only from that phase. Chiudi only from result or error.",
-        must_not: "Must not add actions, click a row the panel is not showing, or skip ShellRuntime::click.",
+        must_not: "Must not add actions, paint a dock underline, click a row the panel is not showing, or skip ShellRuntime::click.",
         shell_toolbar: "Gestures are shell clicks. The toolbar does not gain these buttons.",
         intent: "The index picks a shown Intent row. Intent does not choose.",
         policy: "The shell re-derives UserSelection and asks the PDP. The gesture is not itself a grant. Annulla authorizes nothing.",
@@ -247,7 +247,7 @@ pub static COMPONENTS: &[Component] = &[
     },
     Component {
         name: "Rationale note",
-        purpose: "Planner or model text shown as an unverified note with no effect.",
+        purpose: "Planner or model text shown as an unverified caption with no effect. Not teal.",
         when_allowed: "Only as a label on the open proposal, when the shell supplies a rationale.",
         must_not: "Must not treat the note as a decision, parse it as commands, or let it select a row or call the PDP.",
         shell_toolbar: "Not chrome. The shell forwards it only as planner_note.",
@@ -258,7 +258,7 @@ pub static COMPONENTS: &[Component] = &[
     },
     Component {
         name: "Outcome panel",
-        purpose: "What the shell recorded after a gesture: executed, reviewed, denied with a stable code, nothing found, or an executor status.",
+        purpose: "What the shell recorded after a gesture, in body-strong type: executed, reviewed, denied with a stable code, nothing found, or an executor status. Not a second accent.",
         when_allowed: "After the shell enters result or error, until Chiudi.",
         must_not: "Must not mint a grant, extend a TTL, retry a denial, or present generated text as the original object.",
         shell_toolbar: "Displays shell state above the base. Does not replace the toolbar.",
@@ -269,7 +269,7 @@ pub static COMPONENTS: &[Component] = &[
     },
     Component {
         name: "Audit strip",
-        purpose: "Read-only honesty: recall lane, M0 status, selections emitted, grants issued, frames signed, and the phase trace.",
+        purpose: "Read-only caption: recall lane, M0 status, selections emitted, grants issued, frames signed, and the phase trace.",
         when_allowed: "Beside an open panel, as a display of shell counters.",
         must_not: "Must not be a control, and must not be a way to issue a grant or sign a frame.",
         shell_toolbar: "Reports shell counters. Not toolbar buttons.",
@@ -326,7 +326,7 @@ pub static ANTI_PATTERNS: &[AntiPattern] = &[
     AntiPattern {
         id: "second-desktop",
         name: "Glass is not a second desktop",
-        rule: "Glass is temporary panels above the §7 base, not a second desktop. It does not draw window controls, the dock, Spaces, Focus, Welcome, or notifications.",
+        rule: "Glass is temporary panels above the §7 base, not a second desktop. It does not draw window controls, the dock, the side panel, Spaces, Focus, Welcome, or notifications.",
     },
 ];
 
@@ -346,8 +346,8 @@ pub static INVENTORY: &[InventoryItem] = &[
         path: "src/lib.rs",
         symbol: "POST /submit",
         verdict: ALLOW,
-        component: "Objective surface",
-        note: "Utterance only. Does not authorize.",
+        component: "Loopback bridge",
+        note: "Host-demo transport of the utterance only. Product composition input is the Shell top-bar search. Does not authorize.",
     },
     InventoryItem {
         path: "src/lib.rs",
@@ -401,9 +401,9 @@ pub static INVENTORY: &[InventoryItem] = &[
     InventoryItem {
         path: "assets/glass.html",
         symbol: "#q / #go",
-        verdict: ALLOW,
+        verdict: DENY,
         component: "Objective surface",
-        note: "The field and Interpreta post /submit. Allowed as the objective gesture.",
+        note: "Host-demo stand-in of the Shell top-bar search. Not product Glass chrome. Do not grow it into a toolbar.",
     },
     InventoryItem {
         path: "assets/glass.html",
@@ -417,7 +417,7 @@ pub static INVENTORY: &[InventoryItem] = &[
         symbol: "main#panel candidates",
         verdict: ALLOW,
         component: "Proposal panel",
-        note: "Candidate rows while the shell is in the glass phase.",
+        note: "Candidate rows in the glass phase. Objective lead is the utterance. Handle hex is display only.",
     },
     InventoryItem {
         path: "assets/glass.html",
@@ -466,7 +466,7 @@ pub static INVENTORY: &[InventoryItem] = &[
         symbol: "backdrop-filter",
         verdict: ALLOW,
         component: "Frost material",
-        note: "Blur on the open panel. Frost for the overlay, not a redraw of bar or dock.",
+        note: "Ephemeral blur 20px and saturate 140% on the open panel. Not Shell permanent frost, and not a redraw of bar, dock, or side panel.",
     },
     InventoryItem {
         path: "assets/glass.html",
@@ -697,5 +697,27 @@ mod tests {
                 "{banned} is §7 chrome, not a Glass panel"
             );
         }
+    }
+
+    #[test]
+    fn proposal_handle_is_display_only_and_ephemeral_tokens_are_not_shell_chrome() {
+        let page = crate::PAGE;
+        assert!(page.contains("proposta · handle "));
+        assert!(page.contains("c.handle"));
+        assert!(page.contains("click(\"avvia\", c.index)"));
+        assert!(page.contains("click(\"rivedi\", c.index)"));
+        assert!(!page.contains("c.handle,"));
+        assert!(page.contains("--font-family: Inter,"));
+        assert!(page.contains("--accent-teal: #2EC4B6"));
+        assert!(page.contains("--glass-ephemeral-blur: 20px"));
+        assert!(page.contains("--glass-ephemeral-opacity: 0.88"));
+        assert!(page.contains("--glass-frost-blur: 24px"));
+        assert!(page.contains("--glass-frost-opacity: 0.72"));
+        assert!(
+            page.contains("blur(var(--glass-ephemeral-blur))"),
+            "open panels use ephemeral blur, not the shell permanent stack"
+        );
+        assert!(!page.contains("--dock-glyph-size"));
+        assert!(!page.contains("sidepanel"));
     }
 }

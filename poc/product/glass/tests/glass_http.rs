@@ -57,6 +57,7 @@ fn utterance_real_bm25_m0_rrf_then_avvia_click_is_admitted_and_executed() {
     assert_eq!(v["state"]["auto_resolve"], false);
     // exact identifier wins after fusion; both lanes contributed
     assert_eq!(cands[0]["title"], "Recorded configuration");
+    assert_eq!(cands[0]["handle"], "11".repeat(32), "shown handle is hex, display only");
     let src: Vec<&str> = cands[0]["sources"].as_array().unwrap().iter().map(|s| s.as_str().unwrap()).collect();
     assert!(src.contains(&"Bm25") && src.contains(&"M0"), "{src:?}");
     // the semantic-only match is surfaced by the real M0 lane

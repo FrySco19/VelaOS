@@ -41,10 +41,21 @@ demo as a stand-in; the stand-in is not permission to grow it.
 ## Hard bounds
 
 - Ephemeral surface, rendered from shell and intent context.
-- Frost materials. Palettes Light, Dawn, and Deep only.
-- Permitted components below, and no others.
+- Frost and type from Art tokens `ef8ec09` (`docs/art/TOKENS_v0.md` on `art/tokens-v0`). Palettes Light, Dawn, and Deep only.
+- Permitted components below, and no others. The side panel is Shell chrome and is not a component here.
 - Never `shell=browser`. Never authority. Never replace the familiar toolbar.
 - No chat-as-OS. No LLM-as-authority. No forging grants, selections, or authority.
+
+## Shell z-order and hit-testing
+
+Glass fills ephemeral content. It does not draw Shell chrome. The side panel is Shell chrome with three levels (full, reduced, hidden). Its frost is the permanent shell stack, blur 24px and opacity 0.72. Glass does not own that frost and does not draw the panel. Glass supplies Proposal, gesture, and outcome content only when the Shell is showing the panel.
+
+1. **Normal mode.** The top bar and the dock are permanent chrome above Glass. Both stay visible and clickable.
+2. **Hit-testing.** Any point in the top-bar bounds or the dock bounds goes to the Shell, not to Glass.
+3. **Content band.** Glass may sit above windows and desktop content. It must not cover the floating dock's interactive area or the top-bar band.
+4. **Focus (F11).** The shell hides the bar and the dock. Ephemeral Glass may remain on content. It must not fake a dock or a toolbar, and it must not reintroduce a second dock. Focus does not delete the shell side-panel slot.
+5. **Art tokens.** Ephemeral frost and type consume `ef8ec09`: Inter; ephemeral blur 20px; ephemeral opacity 0.88; accent `#2EC4B6` on the primary gesture only. Permanent frost (blur 24px, opacity 0.72) stays on Shell chrome. Glass does not fork the teal dock underline or the six 28px monochrome glyphs.
+6. **Dismissal.** A Glass panel leaves the bar and the dock hittable, or it is dismissible without a modal model. Annulla and Chiudi dismiss. There is no modal that traps hits over Shell chrome.
 
 Vela Shell owns the toolbar, the dock, and the trusted click. Intent proposes
 candidates and does not authorize. Policy admits or denies the selection the
@@ -64,7 +75,7 @@ shell derived. Glass shows the proposal and the outcome.
 | Theme choice | §7 base chrome | deny |
 | Frost material | ephemeral overlay | allow |
 | Theme materials | ephemeral overlay | allow |
-| Objective surface | ephemeral overlay | allow |
+| Objective surface | host-demo transport | deny |
 | Proposal panel | ephemeral overlay | allow |
 | Gesture row | ephemeral overlay | allow |
 | Rationale note | ephemeral overlay | allow |
@@ -83,10 +94,10 @@ stand-ins, classified deny in the inventory. They are not this chrome.
 
 - **Layer:** §7 base chrome
 - **Verdict:** deny
-- **Purpose:** Frosted top bar of the desktop: sail, VelaOS wordmark, app menus, Spaces dots, search, network, volume, battery, live date, and clock.
+- **Purpose:** Frosted top bar of the desktop: sail, VelaOS wordmark, app menus, Spaces dots, search, network, volume, battery, live date, and clock. The objective is composed in the Shell search field.
 - **When allowed:** Never as a Glass component. The §7 shell draws it.
-- **Must not:** Must not replace, hide, or restyle this bar. Must not move the clock, Spaces, or system status into a Glass panel.
-- **Shell / toolbar:** This is the familiar toolbar. Vela Shell owns it. Glass sits above it and leaves it in place.
+- **Must not:** Must not replace, hide, cover, or restyle this bar. Must not move the clock, Spaces, search, or system status into a Glass panel.
+- **Shell / toolbar:** This is the familiar toolbar. Vela Shell owns it. In normal mode it stays visible and clickable above Glass. Hits inside the bar belong to the Shell.
 - **Intent:** No role.
 - **Policy:** No role. The bar does not admit a task.
 
@@ -94,10 +105,10 @@ stand-ins, classified deny in the inventory. They are not this chrome.
 
 - **Layer:** §7 base chrome
 - **Verdict:** deny
-- **Purpose:** Floating bottom-centre dock. Six monochrome glyphs, in order: Vela, Find, Spaces, Notes, Media, Settings (Italian labels Trova, Note, Impostazioni where the shell translates them). Frosted glass. The active app is a frosted tile plus a teal underline (`TEAL_BRIGHT` `0x34919B` in `draw_dock`).
+- **Purpose:** Floating bottom-centre dock. Six monochrome glyphs at 28px, in order: Vela, Find, Spaces, Notes, Media, Settings (Italian labels Trova, Note, Impostazioni where the shell translates them). Frosted glass. The active app is a frosted tile plus a teal underline (`TEAL_BRIGHT` `0x34919B` in `draw_dock`; Art accent `#2EC4B6`). Shell only.
 - **When allowed:** Never as a Glass component.
-- **Must not:** Must not add a second dock, a theme dock, or a glyph launcher. Must not paint the teal underline. The host page's `nav.dock` is a deny stand-in, not this dock.
-- **Shell / toolbar:** Shell chrome next to the top bar. Not a Glass toolbar.
+- **Must not:** Must not add a second dock, a theme dock, or a glyph launcher. Must not paint the 28px glyphs or the teal underline. The host page's `nav.dock` is a deny stand-in, not this dock.
+- **Shell / toolbar:** Shell chrome next to the top bar. In normal mode it stays visible and clickable. Hits inside the dock belong to the Shell. Not a Glass toolbar.
 - **Intent:** No role.
 - **Policy:** No role. Launching an app from the dock is a shell gesture, not a PDP admission from Glass.
 
@@ -116,10 +127,10 @@ stand-ins, classified deny in the inventory. They are not this chrome.
 
 - **Layer:** §7 base chrome
 - **Verdict:** deny
-- **Purpose:** Hides the top bar and the dock. Entered with F11, the View menu, or `focus`. Esc exits.
+- **Purpose:** Hides the top bar and the dock. Entered with F11, the View menu, or `focus`. Esc exits. The shell side-panel slot stays.
 - **When allowed:** Never toggled by Glass.
-- **Must not:** Must not enter or exit Focus, and must not treat an open panel as the focused desktop.
-- **Shell / toolbar:** Shell mode that hides the toolbar and the dock. Glass does not become the thing left on screen.
+- **Must not:** Must not enter or exit Focus, treat an open panel as the focused desktop, fake a dock or toolbar, or reintroduce a second dock.
+- **Shell / toolbar:** Shell mode that hides the toolbar and the dock. Ephemeral Glass may remain on content. Glass does not become the thing left on screen.
 - **Intent:** No role.
 - **Policy:** No role.
 
@@ -170,18 +181,20 @@ stand-ins, classified deny in the inventory. They are not this chrome.
 ## Ephemeral overlays
 
 These are the panels Glass may draw. They open from context the shell already
-holds, they use frost, they follow Light / Dawn / Deep, and they go away.
-Dismiss (Annulla or Chiudi) returns to the base. Nothing in this list persists
-as chrome.
+holds, they use ephemeral frost, they follow Light / Dawn / Deep, and they go
+away. Dismiss (Annulla or Chiudi) returns to the base. Nothing in this list
+persists as chrome. Objective surface is the exception filed here: composition
+input belongs to the Shell top-bar search, and the host field is a denied
+stand-in. The Proposal panel shows the utterance.
 
 ### Frost material
 
 - **Layer:** ephemeral overlay
 - **Verdict:** allow
-- **Purpose:** Translucent blurred surface. The §7 shell uses `glass_rrect` (blurred wallpaper plus tint) for the bar, the dock, and notification cards. An open panel uses the same idea — frost — so it reads as glass above the desktop rather than as a new opaque shell.
+- **Purpose:** Ephemeral material from Art tokens `ef8ec09`. Blur 20px, saturate 140%, opacity 0.88, the theme frost-tint, a hairline, a top sheen, and the shared shadow. Type on the overlay is Inter.
 - **When allowed:** On a temporary overlay only, for as long as that panel is open.
-- **Must not:** Must not frost a fake toolbar, a fake dock, a window frame, or a full-screen desktop. Frost is a material, not a license to redraw §7 chrome.
-- **Shell / toolbar:** Borrows the shell's material. Does not become the toolbar.
+- **Must not:** Must not frost a fake toolbar, a fake dock, a side panel, a window frame, or a full-screen desktop. Must not paint Shell permanent frost (blur 24px, opacity 0.72). Must not fork the teal underline or the six 28px glyphs.
+- **Shell / toolbar:** The bar, the dock, and the side panel keep permanent Shell frost. Glass does not become the toolbar.
 - **Intent:** No role.
 - **Policy:** No role. Frost carries no authority.
 
@@ -189,32 +202,32 @@ as chrome.
 
 - **Layer:** ephemeral overlay
 - **Verdict:** allow
-- **Purpose:** Light, Dawn, and Deep are the only palettes an overlay may follow. The names are the §7 `theme_t` records (Light, Dawn, Deep).
+- **Purpose:** Light, Dawn, and Deep are the only palettes an overlay may follow. The names are the §7 `theme_t` records. Colours are the Art token set. Deep is the night-sea home. The only Glass accent is teal `#2EC4B6`, and only on the primary gesture.
 - **When allowed:** When the shell has already selected one of the three, the open panel renders in that material.
-- **Must not:** Must not invent a fourth theme. Must not treat the host page's preview hex values (`#2f6df6`, `#c2508a`, `#7aa2ff`) as the ISO palette. Those classes are named slots only.
+- **Must not:** Must not invent a fourth theme, a second accent, or a dock underline. Theme classes are named slots. They are not a palette editor.
 - **Shell / toolbar:** The shell selects the theme. The panel does not own a switcher and does not put one on the toolbar.
 - **Intent:** No role.
 - **Policy:** No role.
 
 ### Objective surface
 
-- **Layer:** ephemeral overlay
-- **Verdict:** allow
-- **Purpose:** One field for the current objective. The host control is the input plus Interpreta. The shell's idle text is "Chiedi qualcosa...". Submit sends `{ token, utterance }` and nothing else.
-- **When allowed:** While the shell is idle, as a temporary field above the base. It is not a resident bar. It closes when the panel is dismissed.
-- **Must not:** Must not persist as a replacement toolbar. Must not grow into a chat transcript. Must not attach candidates, handles, versions, or grants to the submit body.
-- **Shell / toolbar:** Sits above the toolbar. The toolbar stays the shell's. `ShellRuntime::submit` is the only sink.
-- **Intent:** The utterance is input to Intent. Intent returns ranked candidates and does not authorize.
+- **Layer:** host-demo transport
+- **Verdict:** deny
+- **Purpose:** Composition input is the Shell top-bar search, not a Glass field. The host control `#q` plus Interpreta is a loopback stand-in. The Proposal panel shows the utterance as its lead line, in body type. Submit from the stand-in sends `{ token, utterance }` and nothing else.
+- **When allowed:** Never as product Glass chrome. The host demo may keep the stand-in. It is not a resident bar.
+- **Must not:** Must not grow a Glass objective field into a toolbar replacement. Must not become a chat transcript. Must not attach candidates, handles, versions, or grants to the submit body.
+- **Shell / toolbar:** The familiar input is the Shell top-bar search. Glass must not replace that toolbar. `ShellRuntime::submit` is the sink for the utterance the shell already composed.
+- **Intent:** The utterance reaches Intent from the shell field. Intent returns ranked candidates and does not authorize.
 - **Policy:** Submit does not reach the PDP. No grant is issued for typing or for interpreting.
 
 ### Proposal panel
 
 - **Layer:** ephemeral overlay
 - **Verdict:** allow
-- **Purpose:** The shell's glass phase, shown as data: candidate index, title, version, score, sources, and `auto_resolve` (it stays false). A handle may be shown in hex so a person can audit the row. The page never sends that handle back.
-- **When allowed:** Only while the shell is in the glass phase, and only for candidates the shell is actually showing.
-- **Must not:** Must not let the page post a handle or version. Must not style the list as a policy decision. Must not hide that showing the rows authorizes nothing. Counters stay at zero until a gesture.
-- **Shell / toolbar:** Rendered above the shell from shell state. Not an application dock and not a menu on the toolbar.
+- **Purpose:** The shell's glass phase, shown as data. The objective lead is the utterance, body type, theme text colour, not teal and not muted. Rows show candidate index, title, version, score, sources, and the handle in hex so a person can audit the row. `auto_resolve` stays false. The page never sends that handle back.
+- **When allowed:** Only while the shell is in the glass phase and is showing the panel, and only for candidates the shell is actually showing.
+- **Must not:** Must not let the page post a handle or version. Must not collect the objective in this panel. Must not style the list as a policy decision. Must not hide that showing the rows authorizes nothing. Counters stay at zero until a gesture.
+- **Shell / toolbar:** Content above windows and desktop content, never over the top-bar band or the dock hit area. Not an application dock, not the side panel, and not a menu on the toolbar.
 - **Intent:** Rows are Intent candidates (BM25, M0, RRF). Data only. The model does not pick the row.
 - **Policy:** Showing the panel issues no grant, no frame, and no `UserSelection`. Admission happens only after a gesture, inside the shell.
 
@@ -222,7 +235,7 @@ as chrome.
 
 - **Layer:** ephemeral overlay
 - **Verdict:** allow
-- **Purpose:** The only actions. Avvia and Rivedi piano take the index of a shown candidate. Annulla returns to idle and authorizes nothing. Chiudi dismisses a result or an error. Wire names: `avvia`, `rivedi`, `annulla`, `chiudi`.
+- **Purpose:** The only actions. Avvia is the one teal primary (`#2EC4B6`) and takes the index of a shown candidate. Rivedi piano, Annulla, and Chiudi stay neutral. Annulla returns to idle and authorizes nothing. Chiudi dismisses a result or an error. Wire names: `avvia`, `rivedi`, `annulla`, `chiudi`. The click body is `{ action, candidate index }` and never a handle.
 - **When allowed:** Avvia and Rivedi piano only in the glass phase, and only on an index the panel is showing. Annulla only from that phase. Chiudi only from result or error. Any other action is rejected.
 - **Must not:** Must not add actions (`approve_all`, grant, select, admit). Must not click a row that is not shown. Must not skip `ShellRuntime::click`. Must not send a handle with the click.
 - **Shell / toolbar:** These are shell clicks. The toolbar does not gain Avvia or Rivedi piano. The shell re-derives `UserSelection { handle, expected_version }` from the displayed row.
@@ -233,7 +246,7 @@ as chrome.
 
 - **Layer:** ephemeral overlay
 - **Verdict:** allow
-- **Purpose:** Planner or model text, shown as an unverified note with no effect. The host page labels it as a note that does not execute. Untrusted text is inserted with `textContent`, never parsed as HTML.
+- **Purpose:** Planner or model text, shown as an unverified caption with no effect and no teal. The host page labels it as a note that does not execute. Untrusted text is inserted with `textContent`, never parsed as HTML.
 - **When allowed:** Only as a label on the open proposal, and only when the shell supplies a rationale.
 - **Must not:** Must not treat the note as a decision. Must not parse it as commands. Must not let it set `auto_resolve`, select a row, or call the PDP. A note that says the user already approved is still just a note.
 - **Shell / toolbar:** Not chrome. The shell forwards the text only as `planner_note`.
@@ -244,7 +257,7 @@ as chrome.
 
 - **Layer:** ephemeral overlay
 - **Verdict:** allow
-- **Purpose:** What the shell recorded after a gesture. Executed, reviewed, denied (stable code, stage, reason), nothing found, or an executor status. The selection the shell emitted may be shown for audit, including when the grant is valid until.
+- **Purpose:** What the shell recorded after a gesture, in body-strong type. Executed, reviewed, denied (stable code, stage, reason), nothing found, or an executor status. The selection the shell emitted may be shown for audit, including when the grant is valid until. Outcome text is not a second accent.
 - **When allowed:** After the shell enters result or error, until Chiudi.
 - **Must not:** Must not mint a grant, extend a TTL, or retry a denial. Must not restyle a denial as a model success. Must not present generated text as the original object. Must not offer a generic confirm that commits a further effect.
 - **Shell / toolbar:** Displays shell state above the base. Does not replace the toolbar.
@@ -255,7 +268,7 @@ as chrome.
 
 - **Layer:** ephemeral overlay
 - **Verdict:** allow
-- **Purpose:** Read-only honesty next to the panel: recall-lane label, M0 status, how many selections were emitted, how many grants were issued, how many frames were signed, and the phase trace.
+- **Purpose:** Read-only caption next to the panel: recall-lane label, M0 status, how many selections were emitted, how many grants were issued, how many frames were signed, and the phase trace. Muted metadata only.
 - **When allowed:** Beside an open panel, or on the host preview, strictly as a display of counters the shell already holds.
 - **Must not:** Must not be buttons. Must not be a way to issue a grant or sign a frame. A rising counter is a report, not a control.
 - **Shell / toolbar:** Reports shell counters. Not toolbar buttons and not dock glyphs.
@@ -283,12 +296,12 @@ the §7 ISO does not serve it.
 
 What the crate contains today, classified. Allow rows are the overlay and the
 transport. Deny rows are either banned paths or host-demo stand-ins that must
-not grow. This pass does not restyle `assets/glass.html`.
+not grow. Ephemeral panels in `assets/glass.html` consume the Art tokens (Inter, ephemeral frost, teal on Avvia only).
 
 | Path | Symbol | Verdict | Component | Note |
 | --- | --- | --- | --- | --- |
 | `src/lib.rs` | `GlassApp::view` | allow | Proposal panel | View model of shell state. Handles are hex for display only. |
-| `src/lib.rs` | `POST /submit` | allow | Objective surface | Utterance only. Does not authorize. |
+| `src/lib.rs` | `POST /submit` | allow | Loopback bridge | Host-demo transport of the utterance only. Product composition input is the Shell top-bar search. Does not authorize. |
 | `src/lib.rs` | `POST /click` | allow | Gesture row | `avvia`, `rivedi`, `annulla`, `chiudi`. Index of a shown row, or no index. |
 | `src/lib.rs` | `other routes` | deny | Loopback bridge | Anything other than `/`, `/state`, `/submit`, `/click` is 404, including admit, grant, select, and execute. |
 | `src/lib.rs` | `serve` | allow | Loopback bridge | Loopback HTTP for the host demo. Not a shell and not a browser. |
@@ -296,16 +309,16 @@ not grow. This pass does not restyle `assets/glass.html`.
 | `src/lib.rs` | `demo` | deny | Loopback bridge | Demo keys, corpus, and PCB seed. A host fixture, not a surface and not production authority. |
 | `src/main.rs` | `main` | allow | Loopback bridge | Binds `127.0.0.1` only. |
 | `src/catalog.rs` | `COMPONENTS` | allow | — | These rules. Not a surface. |
-| `assets/glass.html` | `#q / #go` | allow | Objective surface | The field and Interpreta post `/submit`. |
+| `assets/glass.html` | `#q / #go` | deny | Objective surface | Host-demo stand-in of the Shell top-bar search. Not product Glass chrome. Do not grow it into a toolbar. |
 | `assets/glass.html` | `header.glass` | deny | Top system bar | Persistent branded header. Stand-in of a toolbar. Do not grow it into the §7 bar. |
-| `assets/glass.html` | `main#panel candidates` | allow | Proposal panel | Candidate rows while the shell is in the glass phase. |
+| `assets/glass.html` | `main#panel candidates` | allow | Proposal panel | Candidate rows in the glass phase. Objective lead is the utterance. Handle hex is display only. |
 | `assets/glass.html` | `gesture buttons` | allow | Gesture row | Avvia, Rivedi piano, Annulla, Chiudi. |
 | `assets/glass.html` | `.note` | allow | Rationale note | Unverified model text. `textContent` only. No effect. |
 | `assets/glass.html` | `result/error` | allow | Outcome panel | Renders the shell result or error. Does not mint the grant it displays. |
 | `assets/glass.html` | `footer#foot` | allow | Audit strip | Lanes, M0, selection count, grant count, frame count, trace. Display only. |
 | `assets/glass.html` | `nav.dock` | deny | Dock | A row of theme buttons. Not the six-glyph dock and not the teal underline. |
 | `assets/glass.html` | `[data-theme]` | deny | Theme choice | Sets a body class for the preview. The product switcher is Welcome and Settings. |
-| `assets/glass.html` | `backdrop-filter` | allow | Frost material | Blur on the open panel. Not a redraw of the bar or the dock. |
+| `assets/glass.html` | `backdrop-filter` | allow | Frost material | Ephemeral blur 20px and saturate 140% on the open panel. Not Shell permanent frost, and not a redraw of bar, dock, or side panel. |
 | `assets/glass.html` | `body theme classes` | allow | Theme materials | Named slots Light, Dawn, Deep. Preview colours are not the ISO palette. |
 | `examples/m0_request.rs` | `m0_request` | deny | — | Dev fixture that prints an M0 request. Not a Glass surface. |
 
@@ -363,5 +376,5 @@ outside Glass even if the pixels look frosted.
 
 **Glass is not a second desktop.**
 
-- **Rule:** Glass is temporary panels above the §7 base, not a second desktop. It does not draw window controls, the dock, Spaces, Focus, Welcome, or notifications.
+- **Rule:** Glass is temporary panels above the §7 base, not a second desktop. It does not draw window controls, the dock, the side panel, Spaces, Focus, Welcome, or notifications.
 - **Why:** Those pieces are the operating system the user already has. A frosted copy of them is a second desktop with none of the shell's authority boundaries, which is worse than no glass at all.

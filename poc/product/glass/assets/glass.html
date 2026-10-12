@@ -6,29 +6,80 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'">
 <title>Vela · Glass</title>
 <style>
-  :root { --bg1:#dfe9f3; --bg2:#f6efe6; --ink:#1d2433; --muted:#5b6578; --glass:rgba(255,255,255,.55); --edge:rgba(255,255,255,.75); --accent:#2f6df6; --warn:#b4471f; }
-  body.dawn { --bg1:#f7d9c4; --bg2:#e9d5f2; --ink:#2b1f2a; --muted:#6d5869; --glass:rgba(255,248,244,.55); --accent:#c2508a; }
-  body.deep { --bg1:#0b1324; --bg2:#1b1036; --ink:#e7ecf7; --muted:#9aa6bd; --glass:rgba(22,30,52,.55); --edge:rgba(255,255,255,.12); --accent:#7aa2ff; --warn:#ff9c7a; }
+  /* Art tokens: docs/art/TOKENS_v0.md @ ef8ec09 (art/tokens-v0).
+     Permanent frost (24px / 0.72) is Shell chrome, including the side panel.
+     This page paints ephemeral Glass only. It does not draw dock glyphs or a teal underline. */
+  :root {
+    --font-family: Inter, "Segoe UI", system-ui, sans-serif;
+    --type-display-size: 28px; --type-display-weight: 600; --type-display-line: 1.2; --type-display-tracking: -0.02em;
+    --type-title-size: 20px; --type-title-weight: 600; --type-title-line: 1.25; --type-title-tracking: -0.01em;
+    --type-body-size: 15px; --type-body-weight: 400; --type-body-line: 1.45; --type-body-tracking: 0;
+    --type-body-strong-size: 15px; --type-body-strong-weight: 600; --type-body-strong-line: 1.45; --type-body-strong-tracking: 0;
+    --type-label-size: 13px; --type-label-weight: 500; --type-label-line: 1.35; --type-label-tracking: 0.01em;
+    --type-caption-size: 12px; --type-caption-weight: 400; --type-caption-line: 1.35; --type-caption-tracking: 0.02em;
+    --type-micro-size: 11px; --type-micro-weight: 500; --type-micro-line: 1.3; --type-micro-tracking: 0.04em;
+    --accent-teal: #2EC4B6;
+    --glass-frost-blur: 24px;
+    --glass-frost-saturate: 140%;
+    --glass-frost-opacity: 0.72;
+    --glass-ephemeral-blur: 20px;
+    --glass-ephemeral-opacity: 0.88;
+    --glass-frost-border: rgba(255,255,255,0.18);
+    --glass-frost-highlight: rgba(255,255,255,0.28);
+    --glass-frost-shadow: 0 8px 28px rgba(0,0,0,0.28);
+    --theme-bg: #F4F7F8;
+    --theme-surface: #FFFFFF;
+    --theme-text: #1A2332;
+    --theme-text-muted: #5B6B7C;
+    --theme-frost-tint: rgba(255,255,255,0.78);
+    --theme-border: rgba(26,35,50,0.12);
+    --theme-ephemeral-fill: rgba(255,255,255,0.88);
+  }
+  body.dawn {
+    --theme-bg: #1C2430; --theme-surface: #2A3444; --theme-text: #F2EDE4; --theme-text-muted: #B7B0A4;
+    --theme-frost-tint: rgba(42,52,68,0.72); --theme-border: rgba(242,237,228,0.14);
+    --theme-ephemeral-fill: rgba(42,52,68,0.88);
+  }
+  body.deep {
+    --theme-bg: #0B1220; --theme-surface: #141C2C; --theme-text: #E8EEF5; --theme-text-muted: #8B97A8;
+    --theme-frost-tint: rgba(20,28,44,0.70); --theme-border: rgba(232,238,245,0.12);
+    --theme-ephemeral-fill: rgba(20,28,44,0.88);
+  }
   * { box-sizing:border-box }
-  body { margin:0; min-height:100vh; font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--ink);
-         background:radial-gradient(1200px 700px at 20% 10%,var(--bg2),transparent),linear-gradient(160deg,var(--bg1),var(--bg2)); display:flex; flex-direction:column; align-items:center; }
-  .glass { background:var(--glass); border:1px solid var(--edge); border-radius:22px; backdrop-filter:blur(22px) saturate(140%); -webkit-backdrop-filter:blur(22px) saturate(140%); box-shadow:0 18px 50px rgba(0,0,0,.12); }
+  body { margin:0; min-height:100vh; display:flex; flex-direction:column; align-items:center;
+         font-family:var(--font-family); font-size:var(--type-body-size); font-weight:var(--type-body-weight);
+         line-height:var(--type-body-line); letter-spacing:var(--type-body-tracking);
+         color:var(--theme-text); background:var(--theme-bg); }
+  .glass { border:1px solid var(--theme-border); border-radius:22px; background:var(--theme-surface); }
+  main.glass, footer.glass {
+    background:linear-gradient(180deg, var(--glass-frost-highlight), transparent 42%), var(--theme-ephemeral-fill);
+    border-color:var(--glass-frost-border);
+    box-shadow:var(--glass-frost-shadow);
+    backdrop-filter:blur(var(--glass-ephemeral-blur)) saturate(var(--glass-frost-saturate));
+    -webkit-backdrop-filter:blur(var(--glass-ephemeral-blur)) saturate(var(--glass-frost-saturate));
+  }
   header { width:min(860px,94vw); margin-top:6vh; padding:18px 22px; display:flex; gap:12px; align-items:center }
-  header b { font-size:18px; letter-spacing:.3px }
-  header input { flex:1; border:0; outline:0; background:transparent; color:var(--ink); font-size:17px }
-  button { border:0; border-radius:12px; padding:8px 14px; font:inherit; cursor:pointer; background:rgba(127,127,127,.15); color:var(--ink) }
-  button.primary { background:var(--accent); color:#fff }
+  header b { font-size:var(--type-title-size); font-weight:var(--type-title-weight); letter-spacing:var(--type-title-tracking); line-height:var(--type-title-line) }
+  header input { flex:1; border:0; outline:0; background:transparent; color:var(--theme-text); font:inherit }
+  button { border:0; border-radius:12px; padding:8px 14px; font:inherit; font-weight:var(--type-body-weight); white-space:nowrap; cursor:pointer; background:transparent; color:var(--theme-text) }
+  button.ghost { min-width:112px }
+  button.primary { background:var(--accent-teal); color:#1A2332; font-weight:var(--type-body-strong-weight); min-width:88px }
   button:disabled { opacity:.4; cursor:default }
   main { width:min(860px,94vw); margin-top:18px; padding:18px 22px; display:none }
-  .row { display:flex; align-items:center; gap:10px; padding:10px 6px; border-bottom:1px solid var(--edge) }
+  .objective { color:var(--theme-text); margin-bottom:8px }
+  .row { display:flex; align-items:center; gap:10px; padding:10px 6px; border-bottom:1px solid var(--glass-frost-border) }
   .row:last-child { border-bottom:0 }
-  .row .t { flex:1 } .row small, .muted { color:var(--muted) }
-  .pill { font-size:11px; padding:2px 7px; border-radius:99px; background:rgba(127,127,127,.18); margin-left:4px }
-  .note { margin-top:12px; padding:10px 12px; border-radius:12px; background:rgba(180,71,31,.10); color:var(--warn); white-space:pre-wrap }
-  .ok { color:#1f8a4c } .bad { color:var(--warn) }
-  footer { width:min(860px,94vw); margin:18px 0 30px; padding:10px 16px; font-size:12.5px; color:var(--muted); display:flex; flex-wrap:wrap; gap:14px }
+  .row .t { flex:1 }
+  .cand-title { font-weight:var(--type-body-strong-weight); color:var(--theme-text) }
+  .row small, .muted, .handle { color:var(--theme-text-muted) }
+  .handle { display:block; margin-top:2px; font-size:var(--type-caption-size); font-weight:var(--type-caption-weight); line-height:var(--type-caption-line); letter-spacing:var(--type-caption-tracking); word-break:break-all }
+  .pill { font-size:var(--type-micro-size); font-weight:var(--type-micro-weight); letter-spacing:var(--type-micro-tracking); padding:2px 7px; border-radius:99px; background:rgba(127,127,127,.18); margin-left:4px }
+  .note { margin-top:12px; padding:10px 12px; border-radius:12px; color:var(--theme-text-muted); font-size:var(--type-caption-size); font-weight:var(--type-caption-weight); line-height:var(--type-caption-line); letter-spacing:var(--type-caption-tracking); white-space:pre-wrap }
+  .ok, .bad { font-size:var(--type-body-strong-size); font-weight:var(--type-body-strong-weight); line-height:var(--type-body-strong-line); color:var(--theme-text) }
+  footer { width:min(860px,94vw); margin:18px 0 30px; padding:10px 16px; display:flex; flex-wrap:wrap; gap:14px;
+           font-size:var(--type-caption-size); font-weight:var(--type-caption-weight); line-height:var(--type-caption-line); letter-spacing:var(--type-caption-tracking); color:var(--theme-text-muted) }
   nav.dock { position:fixed; bottom:18px; padding:8px 10px; display:flex; gap:6px }
-  code { font-size:12px }
+  code { font-size:var(--type-caption-size) }
 </style>
 </head>
 <body>
@@ -63,11 +114,16 @@ const click = (action, candidate) => post("/click", candidate === undefined ? { 
 function render(v, err) {
   const p = $("panel"), s = v.state; p.replaceChildren(); p.style.display = s.phase === "idle" ? "none" : "block";
   if (s.phase === "glass") {
-    p.append(el("div", { class: "muted" }, "Piano proposto per “", s.utterance, "” — candidati, nessuna autorità. Scegli tu."));
+    p.append(el("div", { class: "objective" }, s.utterance));
+    p.append(el("div", { class: "muted" }, "Proposta — dati, nessuna autorità. Scegli tu."));
     for (const c of s.candidates) {
       p.append(el("div", { class: "row" },
-        el("div", { class: "t" }, c.title, el("br"), el("small", {}, "v", c.version, " · rrf ", c.score.toFixed(4), " · ", ...c.sources.map((x) => el("span", { class: "pill" }, x)))),
-        el("button", { on: () => click("rivedi", c.index) }, "Rivedi piano"),
+        el("div", { class: "t" },
+          el("span", { class: "cand-title" }, c.title),
+          el("br"),
+          el("small", {}, "v", c.version, " · rrf ", c.score.toFixed(4), " · ", ...c.sources.map((x) => el("span", { class: "pill" }, x))),
+          el("small", { class: "handle" }, "proposta · handle ", c.handle)),
+        el("button", { class: "ghost", on: () => click("rivedi", c.index) }, "Rivedi piano"),
         el("button", { class: "primary", on: () => click("avvia", c.index) }, "Avvia")));
     }
     if (s.rationale) p.append(el("div", { class: "note" }, "Nota IA (non verificata, nessun effetto): ", s.rationale));

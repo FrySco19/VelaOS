@@ -22,9 +22,11 @@ Allowed components, the chrome Glass must not own, and the anti-patterns are in
 [docs/ALLOWED_COMPONENTS.md](docs/ALLOWED_COMPONENTS.md). The same lists are
 [`src/catalog.rs`](src/catalog.rs).
 
-The host page still paints a header and a theme row. Those are stand-ins. The
-catalog denies them as product chrome. This crate does not grow them into a toolbar
-or a dock.
+The product composition field is the Shell top-bar search. This page's input is
+a host-demo stand-in; the catalog denies it as product chrome. After submit,
+Glass shows the utterance as the Proposal lead line, then the gesture and the
+outcome. The header and the theme row are stand-ins too. This crate does not
+grow them into a toolbar, a dock, or a side panel.
 
 ## Open it
 
