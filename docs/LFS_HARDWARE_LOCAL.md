@@ -1,7 +1,8 @@
 # Local Microkit block-persistence integration
 
 Baseline: main `88798c92d5d684fce0966619874940b57592ed42`.
-This development change remains local; main and GitHub are not modified.
+Initially developed and verified locally; now integrated into the public
+v0.1.0 native persistence milestone. The filename is retained for existing links.
 
 ## Implementation
 
@@ -46,8 +47,8 @@ Windows entry point:
 powershell -ExecutionPolicy Bypass -File scripts\verify-bridge-e2e.ps1 -Hardware
 ```
 
-Requires the existing local `velaos-executor-e2e` build image, Docker in WSL
-Debian, and host Rust. The wrapper creates local test keys and restores the
+Requires Docker in WSL Debian and host Rust. The wrapper builds the Microkit
+foundation image automatically when missing, creates local test keys and restores the
 original public anchor in `finally`. The verifier refuses to overwrite an
 existing test image. Seeds, disk image and image binaries remain under `.local`
 or local Docker storage, not tracked Git files. Public serial evidence is in
