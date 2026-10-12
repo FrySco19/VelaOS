@@ -1,0 +1,62 @@
+VelaOS E2E: LFS writer ready (simulated in-memory ledger, capacity=8)
+VelaOS Gate D: no-WASI Wasmi executor initialized
+VelaOS Gate D: imported WASI host call rejected
+VelaOS Gate D: fuel exhaustion and 64 KiB memory cap verified
+VelaOS Phase 2: Executor Ed25519 verified request=1
+VelaOS Phase 3: Executor executed authenticated payload result=7
+VelaOS Phase 2/3: PCB reply request=1 status=0 value=7 attempts=1
+VelaOS Phase 2: Executor denied frame status=2
+VelaOS Phase 2/3: PCB reply request=2 status=2 value=0 attempts=1
+VelaOS Phase 2: tampered return-8 payload rejected before execution
+VelaOS Phase 2: Executor denied frame status=2
+VelaOS Phase 2/3: PCB reply request=3 status=2 value=0 attempts=1
+VelaOS Phase 2: Executor denied frame status=1
+VelaOS Phase 2/3: PCB reply request=4 status=1 value=0 attempts=1
+VelaOS Phase 2: Executor denied frame status=3
+VelaOS Phase 2/3: PCB reply request=5 status=3 value=0 attempts=1
+VelaOS Phase 2: Executor denied frame status=4
+VelaOS Phase 2/3: PCB reply request=1 status=4 value=0 attempts=1
+VelaOS Phase 2: Executor Ed25519 verified request=6
+VelaOS Phase 2/3: PCB reply request=6 status=6 value=0 attempts=2
+VelaOS Phase 3: signed infinite loop stopped by fuel
+VelaOS Phase 2: Executor Ed25519 verified request=7
+VelaOS Phase 2/3: PCB reply request=7 status=5 value=0 attempts=2
+VelaOS Phase 3: signed WASI import rejected
+VelaOS Phase 2: Executor Ed25519 verified request=8
+VelaOS Phase 3: Executor executed authenticated payload result=7
+VelaOS Phase 2/3: PCB reply request=8 status=0 value=7 attempts=3
+VelaOS Phase 2: Executor Ed25519 verified request=9
+VelaOS Phase 2/3: PCB reply request=9 status=6 value=0 attempts=4
+VelaOS Phase 3: MAX_FUEL stack-safe status=6
+VelaOS Phase 2: Executor Ed25519 verified request=10
+VelaOS Phase 3: Executor executed authenticated payload result=7
+VelaOS Phase 2/3: PCB reply request=10 status=0 value=7 attempts=5
+VelaOS Phase 2/3: ALL CHECKS PASSED; authenticated Wasm returned 7 via IPC
+VelaOS E2E [1]: mock AI intent -> 2 candidates (data only, no authority)
+VelaOS E2E [2]: AI-only request=11 POLICY_DENIED code=10 frames_signed=0, nothing published
+VelaOS E2E [3]: UserSelection id=1 version=3 -> PDP Biscuit LFS_READ grant bytes=472 ttl=120s authority=6916628a
+VelaOS E2E [4]: admitted frame request=12 published on 4 KiB RO page
+VelaOS E2E CLK: guest monotonic CNTPCT_EL0 freq=62500000 Hz (in-guest source, not host wall clock)
+VelaOS Phase 2: Executor Ed25519 verified request=12
+VelaOS E2E: Executor authenticated grant-bound payload request=12 authority=6916628a
+VelaOS Phase 3: Executor executed authenticated payload result=21
+VelaOS E2E [5]: PCB reply request=12 status=0 value=21 attempts=6 (fuel-safe Wasm)
+VelaOS E2E: LFS committed epoch=1 request=12 seq=1 persisted=1
+VelaOS E2E CLK [1]: request=12 grant ttl=120s alive in-guest remaining_ms=119992 -> commit allowed
+VelaOS E2E [6]: LFS receipt epoch=1 request=12 seq=1 replayed=0
+VelaOS E2E [7]: PCB notary verified+stored receipt request=12 value=21 seq=1
+VelaOS E2E: LFS replayed epoch=1 request=12 seq=1 persisted=1
+VelaOS E2E N1: commit retry same epoch/request -> same receipt seq=1 replayed=1
+VelaOS E2E: LFS refused request=12 status=13 persisted=1
+VelaOS E2E N2: same key different result -> status=13 not persisted
+VelaOS E2E: LFS refused request=11 status=10 persisted=1
+VelaOS E2E N3: output for AI-only request=11 -> status=10 not persisted
+VelaOS E2E N4: forged receipt rejected by PCB notary
+VelaOS Phase 2: Executor denied frame status=4
+VelaOS E2E N5: replayed admission request=12 status=4 attempts=6 (no Wasm, no commit)
+VelaOS Phase 2: Executor Ed25519 verified request=13
+VelaOS E2E: Executor authenticated grant-bound payload request=13 authority=549a10a7
+VelaOS Phase 3: Executor executed authenticated payload result=21
+VelaOS E2E CLK [2]: request=13 grant ttl=1s expired in-guest after 1000ms -> EXPIRED code=7, result discarded, no LFS commit
+VelaOS E2E: ALL E2E CHECKS PASSED; intent -> selection -> grant -> Wasm 21 -> receipt notarized
+PASS (e2e): 37 markers, no panic/FAULT, clean idle timeout, 199s incl. build.

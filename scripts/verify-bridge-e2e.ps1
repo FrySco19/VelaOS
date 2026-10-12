@@ -60,6 +60,7 @@ try {
   & cargo.exe @CargoX run --locked -q --manifest-path "$Exec/keygen/Cargo.toml" --bin verify-bridge-e2e '--' @runArgs 2>&1 |
     ForEach-Object { "$_" } | Tee-Object -FilePath $Summary
   $rc = $LASTEXITCODE
+  (Get-Content $Summary) | Set-Content -Encoding UTF8 $Summary  # PS 5.1 Tee writes UTF-16
   $ErrorActionPreference = $prev
 } finally {
   if ($Backup -and (Test-Path $Backup)) { Copy-Item $Backup $Anchor -Force; Remove-Item $Backup; Write-Host "(restored committed trust anchor $Anchor)" }
