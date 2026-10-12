@@ -1,0 +1,43 @@
+{
+  "utterance": "ciao",
+  "mode": "FALLBACK CONTEXT-SIGNALS",
+  "llm": null,
+  "authority": false,
+  "rationale": "Utterance «ciao»: nessun LLM disponibile; FALLBACK CONTEXT-SIGNALS. Candidati derivati da segnali Context osservati (score = ttl_signal normalizzato). finestra UX: clock_tick 2026-10-12T04:04:35.9887817+02:00 (ttl_signal 30s, os.clock.local) Envelope scartati: 0. Nessuna autorità: solo click utente → UserSelection → Policy.",
+  "ux_window": [
+    "finestra UX: clock_tick 2026-10-12T04:04:35.9887817+02:00 (ttl_signal 30s, os.clock.local)"
+  ],
+  "dropped": 0,
+  "candidates": [
+    {
+      "title": "Host session DESKTOP-G2CD2J5 / tella",
+      "kind": "service_up",
+      "source": "ContextSignal",
+      "signal_source": "os.host.session",
+      "ttl_signal": 120,
+      "score": 1.0,
+      "handle": "77854fc1ae0e695aba3597d600b8181b",
+      "handle_display_only": true,
+      "version": 1,
+      "observed_ts": "2026-10-12T04:04:35.9887817+02:00",
+      "mode": "FALLBACK CONTEXT-SIGNALS",
+      "authority": false,
+      "index": 0
+    },
+    {
+      "title": "%USERPROFILE%\\.cargo  (modificato 2026-10-12T03:38:52+02:00)",
+      "kind": "file_changed",
+      "source": "ContextSignal",
+      "signal_source": "os.fs.observe",
+      "ttl_signal": 60,
+      "score": 0.5,
+      "handle": "39838ca5026d0f8582460d39aa1d9caf",
+      "handle_display_only": true,
+      "version": 1,
+      "observed_ts": "2026-10-12T04:04:35.9887817+02:00",
+      "mode": "FALLBACK CONTEXT-SIGNALS",
+      "authority": false,
+      "index": 1
+    }
+  ]
+}
