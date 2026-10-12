@@ -18,6 +18,16 @@ a tested Microkit VirtIO adapter with signed recovery across two QEMU boots.
 The live native Glass/LFS flow remains open. **v0.1.0** releases this bounded
 Zero-Trust persistence milestone, with host-issued authorization fixtures.
 
+**Native approval verification — tested:** the shared allocation-free Rust
+`no_std` UserSelection verifier now runs in a Microkit PCB test domain using
+`ed25519-dalek`. A six-domain AArch64 QEMU image verifies real shared-buffer
+notification transport, accepts one signed selection and rejects corrupted
+signatures and altered hashes: **37 baseline + 9 selection markers**, no
+panic/fault. See the [QEMU evidence](docs/SELECTION_IPC_QEMU_REPORT.md).
+The sender and emitted authorization are test fixtures; production human-input
+attestation, Biscuit issuance and the live Glass-to-guest transport remain open.
+The [implementation proposal](docs/HOST_GUEST_BRIDGE.md) defines that next bridge.
+
 ---
 
 ## Vision
