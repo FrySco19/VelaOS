@@ -15,8 +15,8 @@ The QEMU captures in screenshots/glass-desktop.png, glass-note.png and glass-net
 
 ## Packaged artifacts
 
-- dist/velaos-glass-x86_64.iso — SHA-256 8d158ab03f27583a66d111217cd5a6829a728f5f5b1156cfd1019c49865b2827.
-- dist/velaos-glass-x86_64.vdi — SHA-256 729a8f9c20707cb02a3104fcec019f0ca5ecc2d92aae7f8b583cafc4c56ef36b.
+- dist/velaos-glass-x86_64.iso — SHA-256 f1a73f86df04811994615b551b855db9ebf1c3c64ce8a2f5687efa78d1e3023a.
+- dist/velaos-glass-x86_64.vdi — SHA-256 839157f7c8751a9fb3a8a0d0c260a925dad48ef734f680c196b1ca092617419e.
 
 The VDI is a conversion of the verified hybrid ISO. A separate VDI boot was not performed in this session. A clean Linux build is covered by the Native x86 Glass workflow; tool/font versions can produce different binary hashes, so source-build reproducibility does not imply bit-identical artifacts.
 

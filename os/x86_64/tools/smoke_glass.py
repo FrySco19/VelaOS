@@ -29,18 +29,26 @@ with tempfile.TemporaryDirectory(prefix="vela-glass-") as tmp:
         raise RuntimeError("Missing serial marker: " + marker)
     def command(text):
         with socket.socket(socket.AF_UNIX) as connection:
-            connection.settimeout(3)
+            connection.settimeout(10)
             connection.connect(str(monitor))
-            connection.recv(4096)
+            def prompt():
+                received = b""
+                while b"(qemu) " not in received:
+                    chunk = connection.recv(4096)
+                    if not chunk:
+                        raise RuntimeError("QEMU monitor disconnected before acknowledging command")
+                    received += chunk
+                return received
+            prompt()
             connection.sendall((text + "\n").encode())
-            connection.recv(4096)
+            prompt()
         time.sleep(0.15)
     def type_text(text):
         for char in text:
             command("sendkey " + ("spc" if char == " " else char) + " 50")
     try:
-        await_marker("welcome screen")
-        time.sleep(1)
+        await_marker("interactive input ready")
+        command("screendump " + str(output / "welcome.ppm"))
         command("sendkey ret")
         await_marker("idle desktop, no application windows resident")
         command("screendump " + str(output / "desktop.ppm"))
@@ -59,6 +67,11 @@ with tempfile.TemporaryDirectory(prefix="vela-glass-") as tmp:
         print("PASS: native boot, note entry, RAM retention, automatic close, network surface, cancellation.")
         print(serial.read_text())
     finally:
+        if process.poll() is None:
+            try:
+                command("screendump " + str(output / "final.ppm"))
+            except (OSError, RuntimeError):
+                pass
         process.terminate()
         try:
             process.wait(timeout=5)

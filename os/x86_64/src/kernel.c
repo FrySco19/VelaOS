@@ -1188,6 +1188,7 @@ void kmain(uint32_t magic, uint64_t info) {
     serial_puts("VelaOS: welcome screen\r\n");
 
     render();
+    serial_puts("VelaOS: interactive input ready\r\n");
     uint64_t blink = rdtsc();
     for (;;) {
         int dirty = poll_input();
