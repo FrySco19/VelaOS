@@ -1,55 +1,276 @@
 # VelaOS
 
-<p align="center"><img src="docs/images/banner.svg" alt="VelaOS: un sistema operativo personale AI-native e local-first" width="100%"></p>
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0--only-blue.svg)](LICENSE)
+[![Rust](https://img.shields.io/badge/Rust-1.90%2B-orange.svg)](https://www.rust-lang.org/)
+[![Status](https://img.shields.io/badge/status-Phase%202%20Done-brightgreen.svg)](#status-and-roadmap)
+[![Demo](https://img.shields.io/badge/demo-Glass%20%3A7878-informational.svg)](#getting-started)
 
-**Stiamo costruendo da zero una nuova architettura per un sistema operativo personale AI-native, local-first e verificabile**, non aggiornando la vecchia distro Debian/KDE. Il richiamo semantico propone candidati; capability e servizi Rust decidono l'autorità; LFS conserva oggetti immutabili; Neural Bus trasporta i byte su corsie tipizzate. M0–M2 sono le fondamenta in sviluppo: non esiste ancora un OS integrato o installabile.
+> **One-line:** State a goal. Review a proposal. Select an object. Let policy admit or deny. Persist only what a trusted clock and a durable ledger will stand behind.
 
-**English:** We are building a new AI-native personal OS architecture from the ground up, not continuing the old Debian/KDE desktop distribution. M0–M2 develop semantic retrieval, capability-secured immutable storage, typed IPC, and isolated Wasm tasks. The project is not yet an integrated or installable OS.
+VelaOS is an operating-system research stack whose center of gravity is **authority**, not chat. The model helps you think. It never holds the keys. What you can run today is a host demonstration of that contract — Glass over a loopback bridge, a real Wasm executor path, a selection-gated PDP, a trusted clock for grant TTL, and an append-only LFS with `fsync` before any receipt is returned.
 
-[![M1 Rust checks](https://github.com/FrySco19/VelaOS/actions/workflows/lfs-m1.yml/badge.svg)](https://github.com/FrySco19/VelaOS/actions/workflows/lfs-m1.yml)
-[![M2 Rust checks](https://github.com/FrySco19/VelaOS/actions/workflows/neural-bus-m2.yml/badge.svg)](https://github.com/FrySco19/VelaOS/actions/workflows/neural-bus-m2.yml)
+This is not a daily-driver desktop yet. It is a systems artifact: contracts, deny codes, crash gates, and a UI that refuses to look like an LLM speaking for you.
 
-## Stato dei gate
+---
 
-| Fase | Stato | Evidenza e limiti |
+## Vision
+
+Personal computing should feel like working with a competent colleague who **shows their work** — and who cannot sign for you.
+
+Most “AI OS” pitches collapse into a chat surface that silently mutates the world. VelaOS inverts the stack:
+
+1. You state an **objective**.
+2. Retrieval proposes **candidates** (data only — handles, versions, scores, sources).
+3. You make an explicit **selection** (gesture → `UserSelection`).
+4. A **policy decision point** admits or denies the exact envelope.
+5. An executor runs under **fuel / quota**, against a **trusted clock**.
+6. Effects that matter land in a **durable ledger** only after `fsync`.
+7. You get a **result**, a **receipt**, and an audit trail — or a clear statement of what did *not* happen.
+
+Local by default. Network and remote effects are plan steps you can see and revoke, never background surprises. The interpreter that drafts a plan is not the authority that commits it.
+
+The destination is a machine where **goals replace app grids**, **proposals are first-class**, **failure is honest**, and **provenance beats polish**.
+
+---
+
+## Principles
+
+These are load-bearing. A change that violates one is not a polish PR — it is a security regression.
+
+| # | Principle | Implication |
 | --- | --- | --- |
-| M0 — richiamo ibrido | Gate superato sul fixture sintetico | 186/200 parafrasi (93% recall@1), p95 25,67 ms. Non misura qualità su dati personali reali. [Risultati e limiti](poc/m0/GATE.md) |
-| M1 — storage LFS | Gate crash superato | Kernel Rust con oggetti cifrati, commit firmati e capability Biscuit; gate registrato su 10.000 terminazioni di processo. Non è ancora un servizio di storage distribuito. [Implementazione e validazione](poc/m1/README.md) |
-| M2 — isolamento e throughput | In corso | Bridge Rust con IPC iceoryx2 tra processi reali: 62.222 messaggi/s e p99 round-trip 17 µs nel test sequenziale da 4 KiB. Il boundary Wasmtime compila e passa i test base in GitHub Actions; isolamento avversariale, target >100.000 msg/s e streaming concorrente non sono dimostrati. [Stato M2](poc/m2/README.md) |
-| M5 — Executor seL4 (fase engine) | Build e boot verificati | Proof of concept autonomo con Wasmi `no_std`: build AArch64, controllo W^X ELF e boot QEMU verificati; la fixture conferma rifiuto di un import WASI non risolto, esaurimento fuel e limite memoria. Non è collegato al PCB né prova gli altri gate M5. [Stato e limiti](poc/m5_executor/README.md) |
+| 1 | **AI interprets; it does not authorize.** | The model may rank and annotate. It cannot grant, sign, widen scope, or “confirm on your behalf.” Prompt text that claims authority is ignored. |
+| 2 | **The user selects; policy decides.** | A trusted shell records `UserSelection { handle, expected_version }` from a real gesture. The PDP admits or denies that envelope. User confirmation ≠ policy decision. |
+| 3 | **Everything is a proposal until admitted.** | UI rule: AI output is labeled **Proposal**. Outcomes are labeled **Policy decision** with a stable code. A proposal never wears a decision’s colors. |
+| 4 | **Permissions are narrow, timed, revocable.** | Each grant is *operation · object · duration*. Defaults are short-lived. Scope attenuates; it never expands past the token. |
+| 5 | **Fail closed; recover visibly.** | Missing trusted time, poisoned store, expired/revoked grant, or an ambiguous post-crash outcome → no silent retry that repeats effects. |
+| 6 | **Provenance over polish.** | Results carry input versions, digests, and receipts. Generated text is marked **generated** and is never presented as the original object. |
+| 7 | **Keyboard-first, accessible, offline-capable.** | Primary actions without a mouse. Contrast, reduced motion, and screen-reader labels are part of the contract. No local interpreter → manual / template mode. |
+| 8 | **The page is not trusted.** | Glass may send an utterance or a click on a *shown* candidate — never a forged handle or version. Authority lives in the shell and PDP, not in HTML. |
 
-I numeri descrivono test specifici, non garanzie di prodotto. Il test M2 è ping/ack sequenziale, non throughput pipelined; il trasferimento dallo storage al loan IPC effettua una copia. Il target di sistema è meno di 1,5 GB di RAM a riposo, ancora da misurare. Il progetto non è pronto per dati sensibili o uso come sistema principale.
+---
 
-## Architettura in breve
+## Architecture
+
+### Control flow
 
 ```mermaid
-flowchart LR
-  Query[Richiesta] --> M0[M0: recall ibrido]
-  M0 -->|candidati, mai autorità| Policy[Selezione esplicita e Biscuit]
-  Policy -->|handle esatto| M1[M1: LFS Rust]
-  M1 --> M2[M2: Neural Bus iceoryx2]
-  Wasm[Componente Wasm tipizzato] -. boundary in sviluppo .-> M2
+flowchart TB
+  subgraph Client["Untrusted client"]
+    U[User]
+    G["Glass<br/>loopback HTML + HTTP"]
+  end
+
+  subgraph Host["Trusted host"]
+    I["Intent engine<br/>BM25 + RRF · data-only candidates"]
+    S["ShellRuntime<br/>UserSelection channel"]
+    P["SelectionGated PDP<br/>Biscuit / capabilities"]
+    E["Executor<br/>Wasm · fuel / quota"]
+    C["Trusted clock<br/>wall HWM · monotonic TTL"]
+    L["Durable LFS<br/>append-only · fsync · Ed25519 receipts"]
+  end
+
+  U -->|objective| G
+  G -->|utterance| I
+  I -->|candidates| G
+  G -->|click on shown candidate| S
+  S -->|UserSelection| P
+  P -->|admit| E
+  P -->|deny + C5 code| G
+  E --> C
+  C -->|TTL alive| L
+  C -->|EXPIRED| G
+  L -->|receipt C4| G
+  L -->|audit / undo| H[History]
 ```
 
-Il modello non concede permessi e non risolve direttamente gli oggetti. Il codice di policy valida le capability e l'handle prima di ogni accesso. Il componente Wasm usa un contratto WIT tipizzato e un linker senza WASI; l'integrazione end-to-end è ancora aperta. Il piano M2 prevede una corsia rapida sotto 4 KiB e streaming bulk a blocchi da 256 KiB con 8 crediti in volo, senza bloccare la corsia rapida. [Architettura e confini](docs/ARCHITECTURE.md) · [Roadmap dei gate](docs/ROADMAP.md) · [Limiti noti](docs/KNOWN_ISSUES.md).
+### Sequence: admit → execute → persist
 
-## Codice e riproduzione
+```mermaid
+sequenceDiagram
+  actor User
+  participant Glass
+  participant Intent
+  participant Shell
+  participant PDP
+  participant Clock
+  participant LFS
 
-| Percorso | Contenuto |
+  User->>Glass: objective
+  Glass->>Intent: utterance
+  Intent-->>Glass: ranked candidates (no authority)
+  User->>Glass: select candidate i
+  Glass->>Shell: on_user_action(Start, i)
+  Shell->>PDP: UserSelection{handle, expected_version}
+  alt admitted
+    PDP->>Clock: mint grant / check TTL
+    Clock-->>PDP: alive
+    PDP->>LFS: execute under Wasm fuel
+    LFS->>LFS: write_all → sync_data (fsync)
+    LFS-->>Glass: receipt (epoch, request_id, digests)
+  else denied / expired / poisoned
+    PDP-->>Glass: POLICY_DENIED | EXPIRED | …
+    Note over Glass: show what did NOT happen
+  end
+```
+
+### Trust boundary
+
+| Trusts | Does not trust |
 | --- | --- |
-| [`poc/m0/`](poc/m0/README.md) | Esperimento di semantic hybrid recall; Python è confinato a questo spike. |
-| [`poc/m1/`](poc/m1/README.md) | Kernel storage Rust: canonicalizzazione, cifratura, commit firmati e handle capability-bound. |
-| [`poc/m2/`](poc/m2/README.md) | Bridge Neural Bus Rust/iceoryx2 e boundary Wasmtime in sviluppo. |
-| [`poc/m5_executor/`](poc/m5_executor/README.md) | Proof of concept standalone del dominio Executor AArch64/seL4 con Wasmi senza WASI/JIT. |
-| [`archive/`](archive/README.md) | Prototipo storico della shell web. |
-| `components/`, `build/` | Sorgenti e pipeline della precedente preview Debian/KDE; non implementano l'architettura M0-M2. |
+| Shell gesture → `UserSelection` | Glass HTML / JS |
+| PDP admission frame | Model output / “rationale” text |
+| Monotonic clock for grant TTL | Wall-clock jumps that would extend a grant |
+| LFS signature under pinned key | Unsynced buffers; torn tails are truncated, not invented |
+| Deny codes (C5) as the user-visible truth | Silent retries after `AMBIGUOUS` |
 
-Rust 1.90 o successivo. Per riprodurre i controlli si usano i manifest dei singoli crate; i comandi e i prerequisiti sono nei rispettivi README. Il build Wasmtime non è stato ancora verificato in locale al 2026-10-10. La guida [BUILD.md](docs/BUILD.md) riguarda la vecchia preview desktop e lo dichiara esplicitamente.
+### Layers
 
-## Contribuire
+| Layer | Responsibility | Non-goals |
+| --- | --- | --- |
+| **Glass** | Local translucent UI; proposal / decision labeling; loopback-only bridge | Authority, network bind, forged handles |
+| **Intent** | Utterance → ranked candidates; retrieval + fusion | Any authority type (compile-fail boundaries) |
+| **Shell** | Owns the trusted selection channel; routes gesture → PDP | Signing, token minting, bypassing denials |
+| **PDP / policy** | Admit/deny, grants, fuel, deny codes | Treating AI text as a decision |
+| **Trusted clock** | Wall high-water mark; grant TTL on monotonic time | Extending grants across clock regression |
+| **Durable LFS** | Authenticated append-only receipts; `fsync` before return; fail-closed poison | Pretending an unsynced write committed |
 
-Issue, review di sicurezza, test riproducibili e documentazione dei limiti sono particolarmente utili. Vedi [CONTRIBUTING.md](CONTRIBUTING.md), [Security](SECURITY.md) e [Code of Conduct](CODE_OF_CONDUCT.md). Le licenze del codice e degli artefatti storici sono descritte in [LICENSE](LICENSE), [LICENSES](LICENSES/README.md) e [THIRD_PARTY.md](THIRD_PARTY.md).
+Wire contracts (envelopes, receipts, deny codes) are versioned independently of the UI. Guest and host share the same semantic vocabulary so a denial on metal means the same thing as a denial in the host demo.
 
-## Progetto precedente
+---
 
-La preview Debian 13/KDE Plasma, con assistente desktop locale, resta nel repository come linea storica e non è il sistema costruito dai gate M0-M2. Le relative schermate, note e procedure non costituiscono prove dell'architettura AI-native. Consulta [le note storiche della release](RELEASE_NOTES.md) e la [documentazione desktop](docs/BUILD.md).
+## UX: Glass
+
+Glass is the current face of the zero-app model: one objective field, not an endless thread.
+
+**What you see**
+
+- Candidates ranked with provenance pills (source, version, score) — labeled **Proposal**.
+- Plan steps you can review; sensitive writes demand an explicit confirmation that restates the effect.
+- Policy outcomes as **Policy decision** with a stable code — never styled like a model success.
+- Themes: Light · Dawn · Deep.
+- Permanent honesty about locality: this demo is loopback-only.
+
+**What the longer contract specifies** (documented; not all shipped)
+
+Ephemeral workspace panels: Objective · Plan · Objects & provenance · Authorization · Result · History — plus global audit (`Ctrl+H`) and a permissions panel with revoke. Keyboard map, accessibility, and offline/manual fallback are part of that spec.
+
+**Anti-patterns (forbidden)**
+
+Chat-only UI · silent actions · LLM-as-authority · generic “OK” on destructive steps · perpetual global permissions · hiding a policy denial behind an automatic retry · presenting generated text as original content.
+
+---
+
+## Status and roadmap
+
+Evidence below is from the host / QEMU verification path as of October 2026. “Done” means **demonstrated and gated**, not “shipped product.”
+
+### Phase 1 — Done
+
+Foundation of the authority story on the host:
+
+- End-to-end QEMU bridge verification (historical marker set included in the Phase 2 E2E run).
+- Real Wasm executor with fuel / quota enforcement.
+- **M-G1b**: selection-gated PDP — planner output cannot become a `UserSelection`; AI-only paths → `POLICY_DENIED`.
+- Intent engine with compile-time boundary tests (no authority types leak into retrieval).
+- Glass host demo: loopback HTML + HTTP, proposal → click → shell → PDP.
+- UX zero-app contracts and reproducible flows (read / write / deny).
+
+### Phase 2 — Done · Trusted Guest Clock + durable LFS (`fsync`)
+
+Closed on the verification path:
+
+| Gate | Result |
+| --- | --- |
+| Policy suite | **69 / 69** |
+| QEMU `verify-bridge-e2e` | **PASS · 37 markers** (no panic / FAULT; prohibited markers absent) |
+| Crash gate (process abort, 200 runs) | **0** lost announced receipts · **0** double effects · torn tails truncated |
+| Grant TTL | Wall cannot walk backward to extend a grant; monotonic check before execute **and** before LFS commit |
+| Durable LFS (host) | Append-only ledger; authenticated receipts; `write_all` → `sync_data` → *then* return receipt; poison fails closed |
+| Epoch | Persistent across boots; unclean prior session stays **AMBIGUOUS** until reconciled |
+
+**Still open inside Phase 2’s shadow (honest):**
+
+- Guest LFS ledger is still in-memory (**M-LFS-4**) — no cross-reboot persistence inside the guest domain yet.
+- No RTC / TPM root for absolute time across reboot.
+- Guest writer trusts the PCB’s deadline check (same model as the notary); pre-boot time is not visible to the guest.
+- Production trust roots (demo seeds only); `result_handle` / `expected_version` on the write path (**M-LFS-5**) still open.
+- Real power-loss with disk cache: simulated via process abort, not bare metal.
+
+### Phase 3 — Next
+
+1. **Idiot-proof QEMU packaging** — one command path from clone to a known-good VM, no folklore.
+2. **Bare-metal Raspberry Pi 4** — authority + durable path on device; power-loss and clock behavior on metal.
+3. **Release hygiene** — changelog and tag **`v0.1.0`** when packaging is credible (not before).
+
+Until those land, treat the host Glass demo as the public face and the QEMU E2E as the proof.
+
+---
+
+## Getting started
+
+### Prerequisites
+
+- Rust toolchain ≥ the workspace `rust-version` (Glass crate: **1.90+**), with `cargo`.
+- A checkout that contains `poc/product/glass` and its path dependencies (`vela-intent`, `vela-shell`, `vela-m0-recall`, executor policy / host).
+- Optional but recommended for full recall lanes: a local M0 directory with `bridge_recall.py`, `.venv`, and `.model-cache`.
+
+### Run Glass (host demo)
+
+From the repository root:
+
+```bash
+cd poc/product/glass
+
+# Full recall lanes (point --m0 at your VelaOS-public poc/m0 tree)
+cargo run --offline --release -- --m0 /path/to/VelaOS-public/poc/m0
+
+# Or without M0 — fixture / stub retrieval still exercises the authority path
+# cargo run --offline --release --
+```
+
+The binary binds **loopback only** and prints the URL. Default port:
+
+**http://127.0.0.1:7878/**
+
+Override with `--port <n>` if needed. Open that URL in a browser on the same machine. Try an objective, review the **Proposal**, select a candidate, and watch admission or a deny code. There is no remote authority path in this demo.
+
+If `cargo` cannot find the package, confirm you are inside `poc/product/glass` (package name `vela-glass`). Startup logs include the bound port and which recall lanes are active.
+
+### What “good” looks like
+
+1. Glass loads; theme dock works (Light / Dawn / Deep).
+2. An utterance yields candidates — each clickable, none executable without selection.
+3. Selecting a candidate either runs under a grant (receipt / request id) or surfaces a **Policy decision** with a C5 code.
+4. An AI-only / planner-only attempt to act without a user selection is denied — by design.
+
+---
+
+## Contributing
+
+VelaOS is careful systems work. Reviewers will reject “helpful” shortcuts that skip selection or policy.
+
+1. **Read the principles** before changing UX or the admit path.
+2. **Keep authority out of the model and out of the page.** If AI text can be mistaken for a decision, the change is wrong.
+3. **Touch boundaries with tests.** Intent must not gain authority types. Glass must not accept forged handles. PDP deny codes stay stable or get an explicit migration note.
+4. **Document failure modes.** New deny / error paths need user-visible copy that states what did *not* happen.
+5. **Small, reviewable diffs.** Prefer one invariant per PR.
+6. **No push to `main`, no force-push, no release tag** without an explicit go-ahead from the maintainer. Feature work lands on an agreed branch; packaging and tags are coordinated.
+
+Issues and design discussion: use the repository issue tracker once the public tree is the source of truth. Until a `v0.1.0` tag exists, treat host demo + QEMU E2E logs as the ground truth.
+
+---
+
+## License
+
+Copyright (c) VelaOS contributors.
+
+Licensed under the **GNU General Public License v3.0 only** (`GPL-3.0-only`), except where individual files state otherwise.
+
+See [`LICENSE`](LICENSE) for the full text. Third-party components retain their own licenses; see `THIRD_PARTY.md` when present in the tree.
+
+---
+
+## Document status
+
+Draft for maintainer review prior to publication. Architecture diagrams are normative intent for this revision; replace with exported figures if the repo adopts a single canonical diagram set. Phase labels follow verification evidence, not marketing.
