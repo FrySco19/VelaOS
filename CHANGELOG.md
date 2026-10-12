@@ -1,5 +1,12 @@
 # Changelog
 
+## Convergenza nativa e substrato storage — 2026-10-12
+
+- Audit della separazione fra preview x86 Glass, guest seL4/Microkit e runtime host; roadmap nativa senza Linux nel prodotto.
+- Aggiunto motore storage Rust `no_std`, senza heap né dipendenze, con due snapshot bounded, flush ordinati e riconciliazione dopo errori I/O.
+- Verificati 2.565 tagli di scrittura, perdita della cache non sincronizzata e riapertura di un file reale da un secondo processo; compilazione freestanding x86_64/AArch64 e Clippy superati.
+- Il componente non è ancora collegato a un driver guest, agli oggetti immutabili LFS o a Glass. Nessuna ricevuta crittografica o chiusura del gate consumer dichiarata.
+
 ## Runtime persistente e port seL4 — 2026-10-11
 
 - Collegata una sessione Rust autenticata a SAVE, card autorizzate, selezione esatta, CONFIRM e KEEP, con ticket privati monouso.
