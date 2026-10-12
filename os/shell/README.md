@@ -55,7 +55,11 @@ make test       # behavioural self-test at 1920x1080 and 1280x800
 make preview    # writes build/preview/*.png (same renderer the guest uses)
 ```
 
-Committed frames: `docs/preview/os0-deep-desktop.png`, `os0-deep-empty.png`,
+QEMU guest screendumps (real boot, `tools/qemu-shots.py`, 1920x1080, std VGA,
+Debian 6.12 kernel, bochs DRM fbdev): `docs/screendumps/qemu-01-boot-desktop.png`
+… `qemu-07-theme-deep.png`, plus the serial excerpt with the guest memory figure.
+
+Committed preview frames: `docs/preview/os0-deep-desktop.png`, `os0-deep-empty.png`,
 `os0-light-settings.png`, `os0-dawn-home.png`, `os0-deep-focus-mode.png`,
 `os0-deep-space2.png`.
 
@@ -78,7 +82,7 @@ be dropped into that image once OS-0 is accepted.
 
 | ID | Status | Notes |
 |----|--------|-------|
-| A1 no browser/URL/:7878 | pass (by construction) | Native framebuffer compositor; no HTTP anywhere |
+| A1 no browser/URL/:7878 | pass | QEMU screendump: first VelaOS pixels come from velashell on /dev/fb0; no HTTP anywhere |
 | A2 Welcome card EN/IT, no account | deferred (OS-6) | |
 | A3 full-bleed wallpaper | pass | Procedural night sea + glowing sail default |
 | A4 top bar + live clock | partial | Bar, status glyphs, minute clock; menus are static labels |
@@ -89,7 +93,7 @@ be dropped into that image once OS-0 is accepted.
 | A9 top-right notification, persists, × | pass | |
 | A10 permission sheet | deferred (OS-7) | |
 | A11 runtime Light/Dawn/Deep, Larger text, Reduce motion | partial | Themes + larger text live; no animations exist yet, so Reduce motion is only a stored flag |
-| A12 idle RAM < 1.5 GB | pending measurement | Guest logs memory in use on the first frame |
+| A12 idle RAM < 1.5 GB | pass (first measurement) | Guest reports ~150 MB in use after the first frame (MemTotal − MemAvailable, 1 GB VM) |
 | A13 no telemetry, EN default | pass | |
 
 ## Next packages (not in OS-0)
@@ -106,3 +110,6 @@ OS-9 Vela / Tasks / Activity · OS-10 RAM budget + A1–A13 evidence pack.
 - Software rendering, full redraw per event; fine for a VM, not tuned.
 - PS/2 relative mouse or absolute tablets via evdev; no touch, no multi-monitor.
 - Theme/Space state is not persisted yet (no storage layer in the guest).
+- Guest clock runs in UTC (no timezone data in the initramfs yet).
+- KVM is opt-in (`VELA_KVM=1`); nested KVM hung on the build box, TCG boots to the first frame in ~13 s.
+- In the scripted QEMU run, Ctrl+Alt+→ (Space switch) sent via the monitor was not observed; Spaces are covered by the self-test and `os0-deep-space2.png`. To check by hand in a QEMU window.
