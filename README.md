@@ -11,6 +11,12 @@ VelaOS is an operating-system research stack whose center of gravity is **author
 
 This is not a daily-driver desktop yet. It is a systems artifact: contracts, deny codes, crash gates, and a UI that refuses to look like an LLM speaking for you.
 
+The [native convergence audit](docs/NATIVE_CONVERGENCE.md) separates the x86 Glass
+preview, Microkit guest and host runtime, and defines the delivery gates toward
+a native workstation. The new [Rust storage core](poc/storage-core/README.md)
+has bounded crash-recovery tests and no host-runtime dependency; it is not yet
+connected to a guest block driver or the live Glass/LFS flow.
+
 ---
 
 ## Vision

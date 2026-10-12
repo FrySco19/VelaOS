@@ -1,5 +1,10 @@
 # Stato di implementazione — 11 ottobre 2026
 
+Aggiornamento nativo 12 ottobre: vedere [audit di convergenza](NATIVE_CONVERGENCE.md).
+La preview Glass x86, il guest Microkit e il runtime host rimangono separati.
+Il nuovo `poc/storage-core` è un componente Rust `no_std` verificato, non ancora
+un driver guest o LFS persistente integrato. Nessun gate consumer viene chiuso.
+
 Il runtime Rust M2–M4 è pubblicato nella PR di sviluppo. **M4 è condizionatamente chiuso come milestone d'implementazione; M5 ha un prototipo parziale, non una release consumer.** La chiusura non certifica le soglie globali o un sistema completo/installabile. Richiamo ibrido reale e persistenza sono provati nella sessione nativa; UI protetta, servizi persistenti, qualificazione completa e RAM dell'intero OS restano aperti. Il profilo mmap è stato misurato e scartato per la residenza RAM; il default usa caricamento streaming con contesto 512 e KV offload. Il checkout storico e la VM precedente non sono stati usati come prova della nuova architettura.
 
 | Verifica | Risultato misurato | Confine |
