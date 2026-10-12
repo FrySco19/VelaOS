@@ -1,0 +1,21 @@
+#!/bin/busybox sh
+# VelaOS OS-0 guest init: mount pseudo filesystems, load display + input
+# drivers, then hand the screen to the native shell. No browser, no HTTP.
+/bin/busybox --install -s /bin
+mount -t proc proc /proc
+mount -t sysfs sys /sys
+mount -t devtmpfs dev /dev
+mkdir -p /dev/pts /tmp && mount -t devpts devpts /dev/pts
+echo "VelaOS: OS-0 boot to pixels"
+for m in $(cat /lib/vela-modules.list); do insmod "/lib/vela-modules/$m" 2>/dev/null; done
+# wait for a framebuffer (bochs / virtio / vmwgfx via fbdev emulation, or vesafb)
+i=0; while [ ! -e /dev/fb0 ] && [ $i -lt 50 ]; do sleep 0.1; i=$((i+1)); done
+[ -e /sys/class/graphics/fbcon/cursor_blink ] && echo 0 > /sys/class/graphics/fbcon/cursor_blink
+export TZ=UTC
+for arg in $(cat /proc/cmdline); do
+  case "$arg" in vela.theme=*) export VELA_THEME="${arg#vela.theme=}";; vela.demo=*) export VELA_DEMO="${arg#vela.demo=}";; esac
+done
+while true; do
+  /usr/bin/velashell --fonts /usr/share/vela/fonts
+  echo "velashell exited ($?); restarting in 1s"; sleep 1
+done
