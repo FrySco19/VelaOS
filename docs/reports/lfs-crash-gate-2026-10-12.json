@@ -1,0 +1,12 @@
+{
+  "iterations": 200,
+  "aborted_children": 200,
+  "announced_receipts_verified": 196,
+  "retry_replayed": 100,
+  "retry_recommitted": 100,
+  "torn_bytes_truncated": 3500,
+  "final_records": 600,
+  "expected_records": 600,
+  "lost_announced_receipts": 0,
+  "double_effects": 0
+}
