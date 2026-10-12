@@ -66,3 +66,7 @@ Notes / limits:
 * Not wired to M1 `Lfs::open` (M1 authorizes `right(caller, kind, "read")` without
   `handle`/`object_version` facts, so these grants would be denied there by design);
   no QEMU, wire v2 or `app/` change; clock is host wall clock (no trusted clock yet).
+
+### Signals (v0)
+
+Context may emit observational signals that Intent and Glass may display and that the PDP may use only to deny or to constrain scope. A signal never grants, signs, or stands in for `UserSelection`. The normative list and the always-out set are in [`docs/policy/SIGNALS_CONTRACT_v0.md`](../../../docs/policy/SIGNALS_CONTRACT_v0.md). This note extends M-G1b; it does not change `DenyCode`, `GrantIssuer` decision order, or Executor wire v2.
