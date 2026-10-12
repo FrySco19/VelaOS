@@ -1,0 +1,38 @@
+name: Native x86 Glass
+on:
+  push:
+    paths: ['os/x86_64/**', '.github/workflows/x86-glass.yml']
+  pull_request:
+    paths: ['os/x86_64/**', '.github/workflows/x86-glass.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  glass:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare pinned Rust and image tools
+        run: |
+          rustup toolchain install 1.96.1 --profile minimal
+          rustup default 1.96.1
+          rustup target add x86_64-unknown-none
+          sudo apt-get update
+          sudo apt-get install -y gcc nasm grub-pc-bin grub-common xorriso mtools python3-pil qemu-system-x86 fonts-dejavu-core fonts-jetbrains-mono
+      - name: Test deterministic Rust surfaces
+        run: |
+          rustc --edition=2024 --test os/x86_64/src/glass.rs -o /tmp/vela-glass-tests
+          /tmp/vela-glass-tests
+      - name: Build and boot the real native ISO
+        run: |
+          make -C os/x86_64
+          python3 poc/m5_executor/check-wx.py os/x86_64/build/vela.elf
+          python3 os/x86_64/tools/smoke_glass.py os/x86_64/build/velaos-x86_64.iso os/x86_64/build/verification
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vela-native-glass
+          path: |
+            os/x86_64/build/velaos-x86_64.iso
+            os/x86_64/build/verification/

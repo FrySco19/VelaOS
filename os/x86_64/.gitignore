@@ -1,0 +1,3 @@
+build/
+!dist/*.iso
+!dist/*.vdi

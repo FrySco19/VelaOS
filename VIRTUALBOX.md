@@ -1,5 +1,7 @@
 # Provare VelaOS in VirtualBox
 
+> **Nuovo (sistema nativo x86_64):** ISO e VDI che si avviano in VirtualBox con desktop VelaOS disegnato dal kernel stesso, senza browser. Guida passo-passo: [os/x86_64/README.md](os/x86_64/README.md).
+
 > **Guida storica della preview desktop Debian/KDE 2.x.** Le immagini ISO menzionate qui non contengono l'architettura M0–M2 corrente. Per lo stato del progetto vedere [README](README.md).
 
 Usare una VM dedicata e un disco virtuale vuoto. La preview si può provare in modalità live senza installarla sul disco. Il percorso completo dell'installer non è ancora collaudato.
