@@ -18,6 +18,10 @@
 //! Host demo hardening (not an isolation boundary): loopback bind, `Host` header
 //! pinned to the bound port, per-run random token, JSON content-type required,
 //! foreign `Origin` refused, bounded request size, single-threaded.
+//!
+//! Allowed surfaces and bans: [`catalog`] and `docs/ALLOWED_COMPONENTS.md`.
+//! Glass draws ephemeral panels above the ISO §7 desktop. It does not own that
+//! chrome, and it is not an authority.
 #![forbid(unsafe_code)]
 
 use serde_json::{Value, json};
@@ -28,6 +32,8 @@ use std::net::{TcpListener, TcpStream};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use vela_m0_recall::{M0Status, M0StatusHandle};
 use vela_shell::{Click, Outcome, ShellError, ShellRuntime, ShellState, UiReject};
+
+pub mod catalog;
 
 pub const PAGE: &str = include_str!("../assets/glass.html");
 pub const MAX_BODY: usize = 16 * 1024;
@@ -161,7 +167,7 @@ impl GlassApp {
         if body.get("token").and_then(Value::as_str) != Some(self.token.as_str()) {
             return Response::err(403, "token mancante o errato");
         }
-        let allowed: &[&str] = if req.path == "/submit" { &["token", "utterance"] } else { &["token", "action", "candidate"] };
+        let allowed: &[&str] = if req.path == "/submit" { catalog::SUBMIT_FIELDS } else { catalog::CLICK_FIELDS };
         if let Some(k) = body.keys().find(|k| !allowed.contains(&k.as_str())) {
             return Response::err(400, &format!("campo non ammesso: {k}"));
         }
@@ -176,11 +182,13 @@ impl GlassApp {
             self.shell.submit(u).map(|_| ())
         } else {
             let idx = body.get("candidate").and_then(Value::as_u64).map(|n| n as usize);
-            let click = match (body.get("action").and_then(Value::as_str), idx) {
-                (Some("avvia"), Some(candidate)) => Click::Avvia { candidate },
-                (Some("rivedi"), Some(candidate)) => Click::RivediPiano { candidate },
-                (Some("annulla"), None) => Click::Annulla,
-                (Some("chiudi"), None) => Click::Chiudi,
+            let action = body.get("action").and_then(Value::as_str);
+            let known = action.is_some_and(|a| catalog::ALLOWED_CLICK_ACTIONS.contains(&a));
+            let click = match (action, idx) {
+                (Some("avvia"), Some(candidate)) if known => Click::Avvia { candidate },
+                (Some("rivedi"), Some(candidate)) if known => Click::RivediPiano { candidate },
+                (Some("annulla"), None) if known => Click::Annulla,
+                (Some("chiudi"), None) if known => Click::Chiudi,
                 _ => return Response::err(400, "action/candidate non validi"),
             };
             self.shell.click(click).map(|_| ())

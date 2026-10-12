@@ -13,6 +13,19 @@ click Avvia / Rivedi piano --POST /click {action, candidate INDEX}-->
    -> TrustedSelectionChannel -> SelectionGatedPdp::admit_task_at -> (Avvia) HostExecutor
 ```
 
+## Surfaces
+
+Glass is a temporary panel above the ISO §7 desktop (frost, teal-underline dock,
+window controls, top-right notifications, Welcome in English or Italian, themes
+Light / Dawn / Deep). It is not a second shell and it is not an authority.
+Allowed components, the chrome Glass must not own, and the anti-patterns are in
+[docs/ALLOWED_COMPONENTS.md](docs/ALLOWED_COMPONENTS.md). The same lists are
+[`src/catalog.rs`](src/catalog.rs).
+
+The host page still paints a header and a theme row. Those are stand-ins. The
+catalog denies them as product chrome. This crate does not grow them into a toolbar
+or a dock.
+
 ## Open it
 
 ```powershell

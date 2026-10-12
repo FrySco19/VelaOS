@@ -97,7 +97,7 @@ fn annulla_authorizes_nothing() {
 fn body_cannot_smuggle_handle_version_or_selection() {
     let mut a = app();
     submit(&mut a, QUERY);
-    for extra in ["handle", "expected_version", "selection", "version", "frame", "grant", "ttl"] {
+    for extra in vela_glass::catalog::FORBIDDEN_FIELDS {
         let mut b = json!({"action": "avvia", "candidate": 0});
         b[extra] = json!("c3c3c3c3");
         let r = click(&mut a, b);
@@ -112,7 +112,7 @@ fn body_cannot_smuggle_handle_version_or_selection() {
 fn there_is_no_route_that_reaches_the_pdp_without_a_click() {
     let mut a = app();
     submit(&mut a, QUERY);
-    for path in ["/admit", "/grant", "/select", "/selection", "/execute", "/api/admit", "/click/0"] {
+    for path in vela_glass::catalog::FORBIDDEN_ROUTES {
         let r = a.handle(&Request::post(path, HOST, json!({"token": TOKEN, "action": "avvia", "candidate": 0})));
         assert_eq!(r.status, 404, "{path}");
     }
