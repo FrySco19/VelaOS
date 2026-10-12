@@ -1,0 +1,250 @@
+{
+  "architecture": "SLM selects finite manifest templates; Rust expands typed DAG and checks Biscuit",
+  "cases": [
+    {
+      "actual": "save",
+      "correct": true,
+      "elapsed_ms": 266.32280000000003,
+      "expected": "save",
+      "raw": "{\n  \"intent\": \"save\"\n}",
+      "request": "Salva la configurazione di rete corrente",
+      "risk": "Auto",
+      "steps": [
+        {
+          "input_step": null,
+          "method": "Snapshot",
+          "schema": "vela.net.config.v1"
+        },
+        {
+          "input_step": 0,
+          "method": "Put",
+          "schema": "vela.net.config.v1"
+        }
+      ],
+      "timings": {
+        "cache_n": 125,
+        "predicted_ms": 213.582,
+        "predicted_n": 17,
+        "predicted_per_second": 74.91267990748284,
+        "predicted_per_token_ms": 13.348875,
+        "prompt_ms": 47.62,
+        "prompt_n": 28,
+        "prompt_per_second": 587.9882402351952,
+        "prompt_per_token_ms": 1.7007142857142856
+      },
+      "valid": true
+    },
+    {
+      "actual": "recall",
+      "correct": true,
+      "elapsed_ms": 305.0005,
+      "expected": "recall",
+      "raw": "{\n  \"intent\": \"recall\"\n}",
+      "request": "Trova la configurazione salvata con SSID CafeGuest-5G",
+      "risk": "Auto",
+      "steps": [
+        {
+          "input_step": null,
+          "method": "Recall",
+          "schema": "vela.net.config.v1"
+        }
+      ],
+      "timings": {
+        "cache_n": 125,
+        "predicted_ms": 252.803,
+        "predicted_n": 17,
+        "predicted_per_second": 63.290388167861934,
+        "predicted_per_token_ms": 15.8001875,
+        "prompt_ms": 47.255,
+        "prompt_n": 34,
+        "prompt_per_second": 719.5005819490001,
+        "prompt_per_token_ms": 1.3898529411764706
+      },
+      "valid": true
+    },
+    {
+      "actual": "restore",
+      "correct": true,
+      "elapsed_ms": 253.1722,
+      "expected": "restore",
+      "raw": "{\n  \"intent\": \"restore\"\n}",
+      "request": "Ripristina la configurazione salvata della rete",
+      "risk": "Confirm",
+      "steps": [
+        {
+          "input_step": null,
+          "method": "Recall",
+          "schema": "vela.net.config.v1"
+        },
+        {
+          "input_step": 0,
+          "method": "Prepare",
+          "schema": "vela.net.config.v1"
+        },
+        {
+          "input_step": 1,
+          "method": "Apply",
+          "schema": "vela.net.config.v1"
+        }
+      ],
+      "timings": {
+        "cache_n": 125,
+        "predicted_ms": 202.625,
+        "predicted_n": 17,
+        "predicted_per_second": 78.96360271437385,
+        "predicted_per_token_ms": 12.6640625,
+        "prompt_ms": 45.56,
+        "prompt_n": 30,
+        "prompt_per_second": 658.4723441615452,
+        "prompt_per_token_ms": 1.5186666666666668
+      },
+      "valid": true
+    },
+    {
+      "actual": "save",
+      "correct": true,
+      "elapsed_ms": 253.11090000000002,
+      "expected": "save",
+      "raw": "{\n  \"intent\": \"save\"\n}",
+      "request": "Save the current network configuration",
+      "risk": "Auto",
+      "steps": [
+        {
+          "input_step": null,
+          "method": "Snapshot",
+          "schema": "vela.net.config.v1"
+        },
+        {
+          "input_step": 0,
+          "method": "Put",
+          "schema": "vela.net.config.v1"
+        }
+      ],
+      "timings": {
+        "cache_n": 125,
+        "predicted_ms": 203.434,
+        "predicted_n": 17,
+        "predicted_per_second": 78.64958659811045,
+        "predicted_per_token_ms": 12.714625,
+        "prompt_ms": 44.545,
+        "prompt_n": 25,
+        "prompt_per_second": 561.2302166348636,
+        "prompt_per_token_ms": 1.7818
+      },
+      "valid": true
+    },
+    {
+      "actual": "recall",
+      "correct": true,
+      "elapsed_ms": 253.39430000000002,
+      "expected": "recall",
+      "raw": "{\n  \"intent\": \"recall\"\n}",
+      "request": "Find the saved network configuration",
+      "risk": "Auto",
+      "steps": [
+        {
+          "input_step": null,
+          "method": "Recall",
+          "schema": "vela.net.config.v1"
+        }
+      ],
+      "timings": {
+        "cache_n": 125,
+        "predicted_ms": 202.842,
+        "predicted_n": 17,
+        "predicted_per_second": 78.87912759684878,
+        "predicted_per_token_ms": 12.677625,
+        "prompt_ms": 45.319,
+        "prompt_n": 25,
+        "prompt_per_second": 551.6450054061211,
+        "prompt_per_token_ms": 1.81276
+      },
+      "valid": true
+    },
+    {
+      "actual": "restore",
+      "correct": true,
+      "elapsed_ms": 252.9397,
+      "expected": "restore",
+      "raw": "{\n  \"intent\": \"restore\"\n}",
+      "request": "Restore the saved network configuration",
+      "risk": "Confirm",
+      "steps": [
+        {
+          "input_step": null,
+          "method": "Recall",
+          "schema": "vela.net.config.v1"
+        },
+        {
+          "input_step": 0,
+          "method": "Prepare",
+          "schema": "vela.net.config.v1"
+        },
+        {
+          "input_step": 1,
+          "method": "Apply",
+          "schema": "vela.net.config.v1"
+        }
+      ],
+      "timings": {
+        "cache_n": 125,
+        "predicted_ms": 202.603,
+        "predicted_n": 17,
+        "predicted_per_second": 78.97217711485023,
+        "predicted_per_token_ms": 12.6626875,
+        "prompt_ms": 45.067,
+        "prompt_n": 25,
+        "prompt_per_second": 554.7296247808819,
+        "prompt_per_token_ms": 1.80268
+      },
+      "valid": true
+    },
+    {
+      "actual": "unsupported",
+      "correct": true,
+      "elapsed_ms": 316.3141,
+      "expected": "unsupported",
+      "raw": "{\n  \"intent\": \"unsupported\"\n}",
+      "request": "Installa un programma scaricato da Internet",
+      "risk": "Auto",
+      "steps": [],
+      "timings": {
+        "cache_n": 125,
+        "predicted_ms": 211.159,
+        "predicted_n": 18,
+        "predicted_per_second": 80.50805317320123,
+        "predicted_per_token_ms": 12.421117647058823,
+        "prompt_ms": 100.285,
+        "prompt_n": 28,
+        "prompt_per_second": 279.2042678366655,
+        "prompt_per_token_ms": 3.5816071428571425
+      },
+      "valid": true
+    },
+    {
+      "actual": "clarify",
+      "correct": true,
+      "elapsed_ms": 255.3508,
+      "expected": "clarify",
+      "raw": "{\n  \"intent\": \"save\"\n}",
+      "request": "Salva questa configurazione",
+      "risk": "Auto",
+      "steps": [],
+      "timings": {
+        "cache_n": 125,
+        "predicted_ms": 205.708,
+        "predicted_n": 17,
+        "predicted_per_second": 77.78015439360647,
+        "predicted_per_token_ms": 12.85675,
+        "prompt_ms": 44.556,
+        "prompt_n": 25,
+        "prompt_per_second": 561.0916599335668,
+        "prompt_per_token_ms": 1.7822399999999998
+      },
+      "valid": true
+    }
+  ],
+  "kind": "eight-intent live SLM integration probe",
+  "limit": "not the frozen 300-intent gate; no operations executed",
+  "m3_gate_closed": false
+}

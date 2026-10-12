@@ -3,7 +3,7 @@
 Status: **EXEC-v2.1 = what the M5 Executor guest implements today** (wire frame v2, `VBRG`/`VEX2`, unchanged).
 v2.1 (2026-10-12) = v2.0 + R1 closed: Wasmi built with `portable-dispatch`, `MAX_FUEL` survival
 asserted on host and in QEMU (PCB requests 9-10). Wire bytes, status codes and limits are identical to v2.0.
-Base: `1281f5a` (`grok/qa-policy-ci`). Scope: `poc/m5_executor/app/src/main.rs` (Executor domain) and
+Base: `1281f5a` (`vela/qa-policy-ci`). Scope: `poc/m5_executor/app/src/main.rs` (Executor domain) and
 `app/src/bridge.rs` (wire + admission verification). Related: [BRIDGE_CONTRACT.md](BRIDGE_CONTRACT.md)
 (ownership/ack, remaining gates), `docs/CONTRACTS_v0.md` (C1 envelope, C2 ownership, C3 authority
 levels, C5 error codes).
@@ -122,7 +122,7 @@ cancellation. Fuel counts must never be reported as latency.
   `r1_max_fuel::*` (MAX_FUEL -> status 6 on a bounded native stack, R1).
 - QEMU-verified 2026-10-12: `LOOP_MODULE` at fuel 64 (request 6) and at `MAX_FUEL` (request 9), both status 6.
 
-**Risk R1 - CLOSED 2026-10-12 (branch `grok/r1-wasm-fuel`).**
+**Risk R1 - CLOSED 2026-10-12 (branch `vela/r1-wasm-fuel`).**
 *Cause.* The guest enabled `wasmi` 2.0.0 with `default-features = false` and features
 `stable, validate, prefer-btree-collections`, i.e. **neither** `auto-dispatch` **nor**
 `portable-dispatch`. In that configuration Wasmi always selects its tail-call dispatch backend

@@ -1,12 +1,12 @@
 # M-G1b / M-G1c / verify-bridge-e2e — Candidate ≠ Authority, State Ledger, QEMU E2E
 
-Branch `grok/velaos-final-e2e` · 2026-10-12 · stato: **PoC, gate verificato in QEMU virt AArch64** (non hardware).
+Branch `vela/velaos-final-e2e` · 2026-10-12 · stato: **PoC, gate verificato in QEMU virt AArch64** (non hardware).
 
 Questo documento descrive cosa è implementato, cosa è simulato e come riprodurlo. Contratti di riferimento: `docs/CONTRACTS_v0.md` (C1 `authority_digest`, C3 livelli di autorità, C4 receipt, C5 codici), `poc/m5_executor/BRIDGE_CONTRACT.md`, `poc/m5_executor/EXECUTOR_CONTRACT.md`.
 
 ## 1. M-G1b — Candidate ≠ Authority (host PDP, std)
 
-Codice: `poc/m5_executor/policy/src/grant.rs` (merge di `grok/m-g1b-candidate-grant` @ `2fc093c`) + `policy/src/pipeline.rs` (nuovo).
+Codice: `poc/m5_executor/policy/src/grant.rs` (merge di `vela/m-g1b-candidate-grant` @ `2fc093c`) + `policy/src/pipeline.rs` (nuovo).
 
 ```text
 mock AI intent -> MockPlanner::propose -> [Candidate]            (solo dati: nessun token, nessun diritto)

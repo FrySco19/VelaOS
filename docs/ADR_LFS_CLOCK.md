@@ -1,7 +1,7 @@
 # ADR-LFS-1 / ADR-CLK-1 — LFS durevole e clock fidato per il TTL dei grant
 
-Stato: **accettato per il path host** (branch `grok/lfs-clock`, base `f0942be`).
-Piano di riferimento: `docs/PLAN_LFS_DURABLE_AND_CLOCK.md` su `origin/grok/release-prep`.
+Stato: **accettato per il path host** (branch `vela/lfs-clock`, base `f0942be`).
+Piano di riferimento: `docs/PLAN_LFS_DURABLE_AND_CLOCK.md` su `origin/vela/release-prep`.
 Copre M-LFS-1, M-LFS-2, M-LFS-3, M-CLK-1 e **M-CLK-3 (clock fidato nel guest QEMU)**. **Non** copre M-LFS-4/5 né M-CLK-2 (vedi §5).
 
 ## 1. Scelta di archivio: Opzione A (append-only + fsync)

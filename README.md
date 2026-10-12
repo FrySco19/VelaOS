@@ -246,6 +246,108 @@ If `cargo` cannot find the package, confirm you are inside `poc/product/glass` (
 
 ---
 
+## Component gates and seL4 port
+
+[![M1 Rust checks](https://github.com/FrySco19/VelaOS/actions/workflows/lfs-m1.yml/badge.svg)](https://github.com/FrySco19/VelaOS/actions/workflows/lfs-m1.yml)
+[![M2 Rust checks](https://github.com/FrySco19/VelaOS/actions/workflows/neural-bus-m2.yml/badge.svg)](https://github.com/FrySco19/VelaOS/actions/workflows/neural-bus-m2.yml)
+
+The sections below track the component gates (M0–M5) and the seL4 protection-domain port that run alongside the Phase 1–2 authority path described above.
+
+### Component gate status
+
+| Gate | Status | Scope and evidence |
+| --- | --- | --- |
+| M0 — semantic recall | **CLOSED** | Hybrid-recall gate passed on a synthetic fixture: 186/200 paraphrases (93% recall@1), p95 25.67 ms. This does not establish quality on personal data. |
+| M1 — LFS authority | **CLOSED** | Rust storage prototype with encrypted objects, signed commits, and Biscuit-bound capabilities; crash gate recorded over 10,000 process terminations. Not a distributed or production storage service. |
+| M2 — IPC and WASM | **CLOSED** | Dual-lane IPC and WASM prototype tests cover typed transport, authorized reads, and adversarial traps. Current host-native peer isolation and durable bulk-file integration are not complete. |
+| M3 — intent routing | **CLOSED** | Constrained local intent router, finite templates, deterministic Rust policy, and capability revalidation at cache hits. It remains a prototype and does not authorize operations by model output. |
+| M4 — recovery and SLM footprint | **CONDITIONALLY CLOSED** | Persistent provider, confirmation, rollback and live hybrid-recall integration tests pass. Streaming CUDA loading replaces rejected mmap; measured worker peak working set 589 MB, active private commit 4.55 GB. Full-system qualification remains pending. |
+| M5 Gate A — reproducible seL4 boot | **CLOSED** | The pinned Microkit 2.3.0 image built and booted the AArch64 seL4 guest in QEMU. |
+| M5 Gate B — domain isolation | **IN PROGRESS** | Five statically declared protection domains with separate ELFs, CSpaces, and VSpaces now build and boot. Capability manifests, restricted authority, negative reachability tests, and crash/restart tests remain. |
+| M5 Gate C — PCB capability derivation | **IN PROGRESS** | A separately booted custom seL4 root task creates a live child with isolated CSpace/VSpace, mints a badged send capability into its CSpace, receives and verifies the child’s IPC badge, replies, then deletes the grant and suspends the child. Biscuit validation, policy profiles, timed leases, and deny/revocation tests remain. |
+| M5 Gate D — bounded Wasm executor | **IN PROGRESS** | The executor PD runs Wasmi 2.0.0 without `std` or WASI. QEMU verifies a 10M fuel budget, fuel-exhaustion trap, 64 KiB memory cap, and a 16 KiB Wasm stack bound; task IPC, epoch deadlines, concurrency, and cancellation remain. |
+| M5 Gate E — bus/LFS integration | **IN PROGRESS** | A fixed intent traverses Orchestrator → PCB → Bus → Executor → LFS using Microkit protected calls; the executor returns 42 and the LFS PD records it in volatile memory. Biscuit authorization, dynamic-grant wiring, durable LFS, and adversarial E2E cases remain. |
+| M5 Gate F — benchmark preparation | **IN PROGRESS** | QEMU boots and the serial-marker timing harness records host-observed intervals for the fixed flow. These are single-run diagnostic samples, not guest-only latency or qualification against the 250 ms target. |
+| M5 Gate G — security review | **IN PROGRESS** | A residual-risk and resource-accounting report is published; this is not an independent security audit or a security qualification. |
+
+“Closed” for M0–M3 refers to the stated component-gate scope; it does not mean
+those components have been integrated into a complete seL4 operating system.
+Gate B currently proves the static five-domain boot structure only. M4 remains
+conditional until its outstanding system and hardware measurements are
+completed. See [runtime status and limitations](docs/RUNTIME_STATUS.md).
+Gate C's root-task proof boots as a separate seL4 image; it is not part of the
+five-domain Microkit image. It demonstrates live capability derivation and an
+IPC round-trip, but not Biscuit validation or the complete policy broker.
+Gate D's fixed Wasm probe runs in the five-domain Microkit image with no
+WASI or host imports; Gate E connects it to a fixed bus/LFS task flow.
+Gate E connects those domains for one deterministic demonstration flow, but
+its PCB uses a fixed label rule and its LFS write is volatile, not durable.
+Gate F's timing method observes serial-marker intervals on the QEMU host
+because the pinned kernel traps EL0 reads of `CNTVCT_EL0`; neither those
+host-observed values nor the artifact sizes are whole-system RAM/latency
+qualification. See [the Gate F/G report](GATE_F_G_REPORT.md) for the run data,
+resource estimates, and residual risks.
+
+### Gate A: reproduce the QEMU boot
+
+From the repository root, with Docker available:
+
+```powershell
+docker build -f poc/m5_sel4/Dockerfile -t velaos-gate-a poc/m5_sel4
+docker run --rm -it velaos-gate-a
+```
+
+The image pins seL4 Microkit 2.3.0, `rust-sel4` v5.0.0, and its matching Rust
+nightly. The guest prints Wasm verification and the completed fixed intent to QEMU's serial output.
+Use `Ctrl+A`, then `X` to exit QEMU. This smoke test does not validate Gate B
+isolation or physical hardware behavior. See the [Gate A README](poc/m5_sel4/README.md)
+for toolchain details and scope.
+
+### Boot the published QEMU preview image
+
+Download `velaos-qemu-loader.img` and `velaos-qemu-loader.img.sha256` from the
+[VelaOS 2.2 runtime/QEMU preview release](https://github.com/FrySco19/VelaOS/releases/tag/v2.2-runtime-preview)
+into the same directory. On WSL/Linux, install QEMU if needed and verify the
+image checksum before boot:
+
+```bash
+sudo apt install qemu-system-arm
+sha256sum -c velaos-qemu-loader.img.sha256
+qemu-system-aarch64 \
+  -machine virt,virtualization=on \
+  -cpu cortex-a53 \
+  -m 2G \
+  -nic none \
+  -serial mon:stdio \
+  -nographic \
+  -device loader,file=velaos-qemu-loader.img,addr=0x70000000,cpu-num=0
+```
+
+The QEMU release image is not `pcb-root.img`: that filename belongs to the
+separate Gate C root-task proof. Exit QEMU with `Ctrl+A`, then `X`. The preview
+guest is a development demonstration with volatile LFS state, not an installable
+or security-qualified OS.
+
+### Repository map
+
+| Path | Contents |
+| --- | --- |
+| [`poc/m0/`](poc/m0/GATE.md) | Semantic recall experiment and fixture results. |
+| [`poc/m1/`](poc/m1/README.md) | Rust LFS storage and capability-bound operations. |
+| [`poc/m2/`](poc/m2/README.md) | Neural Bus, typed IPC, and WASM boundary prototypes. |
+| [`poc/m3/`](poc/m3/README.md) | Local intent routing, deterministic policy, and evaluation corpus. |
+| [`poc/m4/`](poc/m4/README.md) | Recovery coordinator, persistent provider, and rollback supervisor. |
+| [`poc/m5_sel4/`](poc/m5_sel4/README.md) | Microkit/Rust/QEMU domain, capability, bounded Wasm and fixed-flow proofs. |
+| [`GATE_F_G_REPORT.md`](GATE_F_G_REPORT.md) | Gate F timing observations and Gate G resource/residual-risk review. |
+| [`docs/M5_DESIGN.md`](docs/M5_DESIGN.md) | Proposed seL4 protection-domain architecture and M5 acceptance gates. |
+| [`docs/RUNTIME_STATUS.md`](docs/RUNTIME_STATUS.md) | Runtime evidence, measurements, and outstanding limitations. |
+| [`archive/`](archive/README.md) | Historical web-shell prototype. |
+
+`components/` and `build/` contain the previous Debian/KDE preview and do not
+implement the new AI-native architecture.
+
+---
+
 ## Contributing
 
 VelaOS is careful systems work. Reviewers will reject “helpful” shortcuts that skip selection or policy.
@@ -273,4 +375,4 @@ See [`LICENSE`](LICENSE) for the full text. Third-party components retain their 
 
 ## Document status
 
-Draft for maintainer review prior to publication. Architecture diagrams are normative intent for this revision; replace with exported figures if the repo adopts a single canonical diagram set. Phase labels follow verification evidence, not marketing.
+Published project overview. Architecture diagrams describe the stated host-demo and prototype boundaries; they do not imply a complete production OS. Phase labels follow verification evidence, not marketing.

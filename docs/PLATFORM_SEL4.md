@@ -1,6 +1,6 @@
 # Piattaforma seL4 / boot — stato as-built (M5)
 
-Branch: `grok/sel4-platform` · Base: `1281f5a` (`grok/qa-policy-ci`, sopra M-G1a `031208e` e `47bb466`) · Data: 2026-10-12 · Owner: agente seL4/piattaforma.
+Branch: `vela/sel4-platform` · Base: `1281f5a` (`vela/qa-policy-ci`, sopra M-G1a `031208e` e `47bb466`) · Data: 2026-10-12 · Owner: agente seL4/piattaforma.
 
 Legenda: **eseguito oggi** = rieseguito su questo checkout il 2026-10-12; **documentato** = presente solo in report/README del repo; **non verificato** = né codice né prova.
 

@@ -1,6 +1,6 @@
 # Slice piattaforma Gate 1 — seL4 (non bloccante per M-G1a)
 
-Branch: `grok/sel4-platform` · Base `1281f5a` · Data: 2026-10-12.
+Branch: `vela/sel4-platform` · Base `1281f5a` · Data: 2026-10-12.
 
 Obiettivo: la più piccola slice di piattaforma che **non** tocca `app/`, il wire v2, i marker di `verify-bridge` né il PDP host M-G1a (`poc/m5_executor/policy`), ma riduce il rischio di regressione e fissa le regole che il supervisore dovrà rispettare.
 

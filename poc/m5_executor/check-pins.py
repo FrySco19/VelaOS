@@ -49,14 +49,20 @@ def docker_arg(src, name):
     return m.group(1) if m else None
 
 
+def wx_checked(src, target):
+    """Require the check in this ELF's recipe, not an unrelated rule."""
+    rule = re.search(rf"^{re.escape(target)}:[^\n]*\n((?:\t[^\n]*(?:\n|$))*)", src, re.M)
+    return rule is not None and "python3 check-wx.py $@" in rule.group(1)
+
+
 def main():
     mk = text(HERE / "Makefile")
     check(make_var(mk, "BOARD") == EXPECTED["board"], f"Makefile BOARD == {EXPECTED['board']}")
     check(make_var(mk, "CONFIG") == EXPECTED["config"], f"Makefile CONFIG == {EXPECTED['config']}")
     check(f"TARGET_TRIPLE := {EXPECTED['target_triple']}" in mk, "Makefile TARGET_TRIPLE pinned")
     check("--locked" in mk, "Makefile cargo builds use --locked")
-    check(mk.count("python3 check-wx.py $@") == 2,
-          "Makefile runs W^X check on both ELFs")
+    for target in ("$(EXECUTOR_ELF)", "$(PCB_ELF)", "$(BUILD)/lfs.elf"):
+        check(wx_checked(mk, target), f"Makefile runs W^X check on {target}")
     run = mk.split("run:", 1)[1] if "run:" in mk else ""
     check("-nic none" in run, "QEMU run has no network (-nic none)")
     check("-machine virt,virtualization=on" in run and "-cpu cortex-a53" in run,

@@ -1,6 +1,7 @@
 # License map
 
 - `LICENSE`: GPL-3.0-or-later for original VelaOS 2 code and documentation without a more specific existing license.
+- Native Rust crates declaring `GPL-3.0-only` retain that explicit package license. seL4/Microkit, Rust/seL4 and other dependencies retain upstream SPDX headers and license texts; corresponding pinned source archives accompany the QEMU preview.
 - `archive/legacy-web-shell/LICENSE`: original MIT license for the historical prototype; its archived presentation also retains its own MIT LICENSE.
 - Vela wallpapers: CC-BY-SA-4.0, as declared in their metadata; attribution: Vela contributors.
 - Plasma desktop themes: LGPL-2.1-or-later as declared in metadata.

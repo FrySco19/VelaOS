@@ -1,0 +1,15 @@
+[package]
+name = "velaos-pcb-root"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.92"
+publish = false
+
+[dependencies]
+object = { version = "0.38.1", default-features = false, features = ["read"] }
+sel4 = { git = "https://github.com/seL4/rust-sel4", rev = "d441a880938209f661201704dfbee7b91c5aa905" }
+sel4-root-task = { git = "https://github.com/seL4/rust-sel4", rev = "d441a880938209f661201704dfbee7b91c5aa905" }
+
+[[bin]]
+name = "velaos-pcb-recipient"
+path = "src/recipient.rs"
