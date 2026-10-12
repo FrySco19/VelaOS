@@ -66,3 +66,10 @@ on port 7881; provide Playwright through Node module resolution or
 `VELA_PLAYWRIGHT_MODULE`, and optionally an installed browser via `VELA_BROWSER`.
 Run it from the repository root with `node poc/product/glass/tests/studio_browser.cjs`.
 It saves temporary captures under `.local/` and expects an unused host session.
+
+## Exact-plan bridge update
+
+Studio now posts SHA-256-bound UTF-8 plan bytes to `/studio/approve`.
+The host rechecks digest/revision and uses the typed fail-closed transport;
+no JavaScript signer exists. See [TRUSTED_SELECTION.md](TRUSTED_SELECTION.md)
+for the signature contract, conformance tests and remaining native boundary.

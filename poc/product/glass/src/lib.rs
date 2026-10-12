@@ -6,6 +6,7 @@
 //!   GET  /state       -> view model (phase, candidates, result, counters, M0 lane)
 //!   POST /submit      {token, utterance}          -> ShellRuntime::submit
 //!   POST /click       {token, action, candidate}  -> ShellRuntime::click
+//!   POST /studio/approve -> signed exact-plan selection -> TrustedSelectionChannel
 //!        action = avvia | rivedi | annulla | chiudi
 //! ```
 //!
@@ -31,6 +32,7 @@ use vela_shell::{Click, Outcome, ShellError, ShellRuntime, ShellState, UiReject}
 
 pub const PAGE: &str = include_str!("../assets/glass.html");
 pub const STUDIO_PAGE: &str = include_str!("../assets/studio.html");
+pub mod trusted_selection;
 pub mod ui_state;
 pub const MAX_BODY: usize = 16 * 1024;
 pub const MAX_UTTERANCE: usize = 512;
@@ -58,7 +60,14 @@ impl Request {
         }
     }
     pub fn get(path: &str, host: &str) -> Self {
-        Self { method: "GET".into(), path: path.into(), host: Some(host.into()), origin: None, content_type: None, body: Vec::new() }
+        Self {
+            method: "GET".into(),
+            path: path.into(),
+            host: Some(host.into()),
+            origin: None,
+            content_type: None,
+            body: Vec::new(),
+        }
     }
 }
 
@@ -71,7 +80,11 @@ pub struct Response {
 
 impl Response {
     fn json(status: u16, v: Value) -> Self {
-        Self { status, content_type: "application/json; charset=utf-8", body: v.to_string() }
+        Self {
+            status,
+            content_type: "application/json; charset=utf-8",
+            body: v.to_string(),
+        }
     }
     fn err(status: u16, msg: &str) -> Self {
         Self::json(status, json!({"error": msg}))
@@ -98,6 +111,7 @@ pub struct GlassApp {
     hosts: Vec<String>,
     lanes: Lanes,
     studio: ui_state::Session,
+    selection_channel: Box<dyn trusted_selection::TrustedSelectionChannel>,
 }
 
 fn random_token() -> String {
@@ -111,7 +125,9 @@ fn hex(h: &[u8; 32]) -> String {
 }
 
 fn unix(t: SystemTime) -> u64 {
-    t.duration_since(UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0)
+    t.duration_since(UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0)
 }
 
 impl GlassApp {
@@ -119,7 +135,21 @@ impl GlassApp {
         Self::with_token(shell, lanes, port, random_token())
     }
     pub fn with_token(shell: ShellRuntime, lanes: Lanes, port: u16, token: String) -> Self {
-        Self { shell, token, hosts: vec![format!("127.0.0.1:{port}"), format!("localhost:{port}")], lanes, studio: ui_state::Session::default() }
+        Self {
+            shell,
+            token,
+            hosts: vec![format!("127.0.0.1:{port}"), format!("localhost:{port}")],
+            lanes,
+            studio: ui_state::Session::default(),
+            selection_channel: Box::new(trusted_selection::DisconnectedPcbChannel),
+        }
+    }
+    pub fn with_selection_channel(
+        mut self,
+        channel: impl trusted_selection::TrustedSelectionChannel + 'static,
+    ) -> Self {
+        self.selection_channel = Box::new(channel);
+        self
     }
     pub fn token(&self) -> &str {
         &self.token
@@ -140,10 +170,19 @@ impl GlassApp {
                 body: PAGE.replace("__VELA_TOKEN__", &self.token),
             },
             ("GET", "/state") => Response::json(200, self.view()),
-            ("GET", "/studio") => Response { status: 200, content_type: "text/html; charset=utf-8", body: STUDIO_PAGE.replace("__VELA_TOKEN__", &self.token) },
+            ("GET", "/studio") => Response {
+                status: 200,
+                content_type: "text/html; charset=utf-8",
+                body: STUDIO_PAGE.replace("__VELA_TOKEN__", &self.token),
+            },
             ("GET", "/studio/state") => Response::json(200, self.studio_view()),
-            ("POST", "/submit") | ("POST", "/click") | ("POST", "/studio/event") => self.post(req),
-            (_, "/" | "/state" | "/submit" | "/click") => Response::err(405, "metodo non consentito"),
+            ("POST", "/submit")
+            | ("POST", "/click")
+            | ("POST", "/studio/event")
+            | ("POST", "/studio/approve") => self.post(req),
+            (_, "/" | "/state" | "/submit" | "/click") => {
+                Response::err(405, "metodo non consentito")
+            }
             _ => Response::err(404, "nessuna route"),
         }
     }
@@ -154,7 +193,11 @@ impl GlassApp {
         {
             return Response::err(403, "origin non consentita");
         }
-        if !req.content_type.as_deref().is_some_and(|c| c.starts_with("application/json")) {
+        if !req
+            .content_type
+            .as_deref()
+            .is_some_and(|c| c.starts_with("application/json"))
+        {
             return Response::err(415, "serve application/json");
         }
         if req.body.len() > MAX_BODY {
@@ -166,26 +209,47 @@ impl GlassApp {
         if body.get("token").and_then(Value::as_str) != Some(self.token.as_str()) {
             return Response::err(403, "token mancante o errato");
         }
+        if req.path == "/studio/approve" {
+            return self.studio_approve(&body);
+        }
         if req.path == "/studio/event" {
-            if body.keys().any(|k| !["token", "event", "revision"].contains(&k.as_str())) { return Response::err(400, "campo studio non ammesso"); }
-            let Some(revision) = body.get("revision").and_then(Value::as_u64) else { return Response::err(400, "revision richiesta"); };
+            if body
+                .keys()
+                .any(|k| !["token", "event", "revision"].contains(&k.as_str()))
+            {
+                return Response::err(400, "campo studio non ammesso");
+            }
+            let Some(revision) = body.get("revision").and_then(Value::as_u64) else {
+                return Response::err(400, "revision richiesta");
+            };
             use ui_state::Event as E;
             let event = match body.get("event").and_then(Value::as_str) {
-                Some("summon") => E::Summon, Some("submit") => E::Submit,
-                Some("preview") => E::Preview, Some("clarify") => E::Clarify,
-                Some("edit") => E::Edit, Some("approve") => E::Approve,
-                Some("unavailable") => E::Unavailable, Some("cancel") => E::Cancel,
-                Some("reset") => E::Reset, _ => return Response::err(400, "evento studio sconosciuto"),
+                Some("summon") => E::Summon,
+                Some("submit") => E::Submit,
+                Some("preview") => E::Preview,
+                Some("clarify") => E::Clarify,
+                Some("edit") => E::Edit,
+                Some("cancel") => E::Cancel,
+                Some("reset") => E::Reset,
+                _ => return Response::err(400, "evento studio sconosciuto"),
             };
             return match self.studio.apply(event, revision) {
                 Ok(()) => Response::json(200, self.studio_view()),
-                Err(e) => Response::json(409, json!({"error":format!("{e:?}"), "state":self.studio_view()})),
+                Err(e) => Response::json(
+                    409,
+                    json!({"error":format!("{e:?}"), "state":self.studio_view()}),
+                ),
             };
         }
-        let allowed: &[&str] = if req.path == "/submit" { &["token", "utterance"] } else { &["token", "action", "candidate"] };
+        let allowed: &[&str] = if req.path == "/submit" {
+            &["token", "utterance"]
+        } else {
+            &["token", "action", "candidate"]
+        };
         if let Some(k) = body.keys().find(|k| !allowed.contains(&k.as_str())) {
             return Response::err(400, &format!("campo non ammesso: {k}"));
         }
+
         let result = if req.path == "/submit" {
             let Some(u) = body.get("utterance").and_then(Value::as_str) else {
                 return Response::err(400, "utterance mancante");
@@ -196,7 +260,10 @@ impl GlassApp {
             }
             self.shell.submit(u).map(|_| ())
         } else {
-            let idx = body.get("candidate").and_then(Value::as_u64).map(|n| n as usize);
+            let idx = body
+                .get("candidate")
+                .and_then(Value::as_u64)
+                .map(|n| n as usize);
             let click = match (body.get("action").and_then(Value::as_str), idx) {
                 (Some("avvia"), Some(candidate)) => Click::Avvia { candidate },
                 (Some("rivedi"), Some(candidate)) => Click::RivediPiano { candidate },
@@ -208,29 +275,155 @@ impl GlassApp {
         };
         match result {
             Ok(()) => Response::json(200, self.view()),
-            Err(UiReject::WrongState(p)) => Response::json(409, json!({"error": format!("gesto non valido nello stato {p:?}"), "state": self.view()})),
-            Err(UiReject::NotOffered(i)) => Response::json(409, json!({"error": format!("candidato {i} non mostrato"), "state": self.view()})),
+            Err(UiReject::WrongState(p)) => Response::json(
+                409,
+                json!({"error": format!("gesto non valido nello stato {p:?}"), "state": self.view()}),
+            ),
+            Err(UiReject::NotOffered(i)) => Response::json(
+                409,
+                json!({"error": format!("candidato {i} non mostrato"), "state": self.view()}),
+            ),
         }
     }
 
+    fn studio_approve(&mut self, body: &serde_json::Map<String, Value>) -> Response {
+        use trusted_selection::{
+            PcbReply, SelectionDenial, UserSelection, decode_hex, decode_variable_hex,
+        };
+        let allowed = [
+            "token",
+            "revision",
+            "plan_bytes_hex",
+            "plan_sha256",
+            "signature",
+        ];
+        if body.keys().any(|key| !allowed.contains(&key.as_str())) {
+            return Response::err(400, "campo di approvazione non ammesso");
+        }
+        let Some(revision) = body.get("revision").and_then(Value::as_u64) else {
+            return Response::err(400, "revision richiesta");
+        };
+        if self.studio.phase != ui_state::Phase::Preview || revision != self.studio.revision {
+            return Response::json(
+                409,
+                json!({"decision":"denied", "reason":"STALE_OR_UNAPPROVABLE_PLAN", "state":self.studio_view(), "authority_emitted":false}),
+            );
+        }
+
+        let Some(plan_hex) = body.get("plan_bytes_hex").and_then(Value::as_str) else {
+            return self.deny_studio_approval(revision, SelectionDenial::PlanChanged);
+        };
+        if plan_hex.len() > trusted_selection::MAX_PLAN_BYTES * 2 {
+            return self.deny_studio_approval(revision, SelectionDenial::PlanTooLarge);
+        }
+        let Ok(plan_bytes) = decode_variable_hex(plan_hex) else {
+            return self.deny_studio_approval(revision, SelectionDenial::PlanChanged);
+        };
+        let Some(digest_hex) = body.get("plan_sha256").and_then(Value::as_str) else {
+            return self.deny_studio_approval(revision, SelectionDenial::PlanChanged);
+        };
+        let Ok(plan_sha256) = decode_hex::<32>(digest_hex) else {
+            return self.deny_studio_approval(revision, SelectionDenial::PlanChanged);
+        };
+        if trusted_selection::plan_sha256(&plan_bytes) != plan_sha256 {
+            return self.deny_studio_approval(revision, SelectionDenial::PlanChanged);
+        }
+        let signature = match body.get("signature").and_then(Value::as_str) {
+            None | Some("") => [0; 64],
+            Some(value) => match decode_hex::<64>(value) {
+                Ok(signature) => signature,
+                Err(_) => {
+                    return self
+                        .deny_studio_approval(revision, SelectionDenial::InvalidAttestation);
+                }
+            },
+        };
+
+        if self
+            .studio
+            .apply(ui_state::Event::Approve, revision)
+            .is_err()
+        {
+            return Response::json(
+                409,
+                json!({"decision":"denied", "reason":"STALE_OR_UNAPPROVABLE_PLAN", "state":self.studio_view(), "authority_emitted":false}),
+            );
+        }
+        let selection = UserSelection {
+            session_binding: trusted_selection::plan_sha256(self.token.as_bytes()),
+            revision,
+            plan_sha256,
+            signature,
+        };
+        match self
+            .selection_channel
+            .request_token(&selection, &plan_bytes)
+        {
+            PcbReply::SelectionForwarded { request_id } => Response::json(
+                202,
+                json!({"decision":"forwarded", "request_id":request_id, "state":self.studio_view(), "authority_emitted":false}),
+            ),
+            PcbReply::Denied(reason) => self.deny_studio_approval(self.studio.revision, reason),
+        }
+    }
+
+    fn deny_studio_approval(
+        &mut self,
+        expected_revision: u64,
+        denial: trusted_selection::SelectionDenial,
+    ) -> Response {
+        if self.studio.phase == ui_state::Phase::Preview
+            && let Err(error) = self
+                .studio
+                .apply(ui_state::Event::Approve, expected_revision)
+        {
+            return Response::json(
+                409,
+                json!({"decision":"denied", "reason":format!("{error:?}"), "state":self.studio_view(), "authority_emitted":false}),
+            );
+        }
+        if self.studio.phase == ui_state::Phase::Authorizing
+            && let Err(error) = self
+                .studio
+                .apply(ui_state::Event::Unavailable, self.studio.revision)
+        {
+            return Response::json(
+                409,
+                json!({"decision":"denied", "reason":format!("{error:?}"), "state":self.studio_view(), "authority_emitted":false}),
+            );
+        }
+        Response::json(
+            200,
+            json!({"decision":"denied", "reason":denial.code(), "state":self.studio_view(), "authority_emitted":false}),
+        )
+    }
     fn lanes_view(&self) -> Value {
         match &self.lanes {
             Lanes::Bm25PlusM0(h) => {
                 let m0 = match h.get() {
                     M0Status::NotRun => json!({"state": "non eseguito"}),
-                    M0Status::Ok { ranked, mapped, millis, .. } => json!({"state": "ok", "ranked": ranked, "mapped": mapped, "millis": millis as u64}),
+                    M0Status::Ok {
+                        ranked,
+                        mapped,
+                        millis,
+                        ..
+                    } => {
+                        json!({"state": "ok", "ranked": ranked, "mapped": mapped, "millis": millis as u64})
+                    }
                     M0Status::Failed { error, .. } => json!({"state": "errore", "error": error}),
                 };
                 json!({"label": "BM25 + M0 reale (e5-small + LanceDB BM25) -> RRF k=60", "m0": m0})
             }
-            Lanes::Bm25PlusStandIn(why) => json!({"label": "BM25 + title stand-in -> RRF k=60 (M0 dense non attivo)", "m0": {"state": "assente", "error": why}}),
+            Lanes::Bm25PlusStandIn(why) => {
+                json!({"label": "BM25 + title stand-in -> RRF k=60 (M0 dense non attivo)", "m0": {"state": "assente", "error": why}})
+            }
             Lanes::Custom(l) => json!({"label": l, "m0": {"state": "n/a"}}),
         }
     }
 
     fn studio_view(&self) -> Value {
         json!({"phase":format!("{:?}",self.studio.phase), "revision":self.studio.revision,
-            "backend":"unconnected scaffold", "authority_emitted":false})
+            "backend":"trusted selection channel (fail-closed)", "authority_emitted":false})
     }
 
     /// View model. Exposes handles as hex for display/audit only; the page never sends them back.
@@ -248,10 +441,25 @@ impl GlassApp {
                     "handle": hex(&c.handle),
                 })).collect::<Vec<_>>(),
             }),
-            ShellState::Result { selection, action, outcome } => {
+            ShellState::Result {
+                selection,
+                action,
+                outcome,
+            } => {
                 let o = match outcome {
-                    Outcome::Executed { request_id, value, not_after } => json!({"kind": "executed", "request_id": request_id, "value": value, "not_after_unix": unix(*not_after)}),
-                    Outcome::Reviewed { request_id, not_after } => json!({"kind": "reviewed", "request_id": request_id, "not_after_unix": unix(*not_after)}),
+                    Outcome::Executed {
+                        request_id,
+                        value,
+                        not_after,
+                    } => {
+                        json!({"kind": "executed", "request_id": request_id, "value": value, "not_after_unix": unix(*not_after)})
+                    }
+                    Outcome::Reviewed {
+                        request_id,
+                        not_after,
+                    } => {
+                        json!({"kind": "reviewed", "request_id": request_id, "not_after_unix": unix(*not_after)})
+                    }
                 };
                 json!({"phase": "result", "action": format!("{action:?}"),
                        "selection": {"handle": hex(&selection.handle), "expected_version": selection.expected_version}, "outcome": o})
@@ -259,8 +467,16 @@ impl GlassApp {
             ShellState::Error { selection, error } => {
                 let e = match error {
                     ShellError::NothingFound => json!({"kind": "nothing_found"}),
-                    ShellError::Denied { code, stage, reason } => json!({"kind": "denied", "code": format!("{code:?}"), "contract_code": code.contract_code(), "stage": format!("{stage:?}"), "reason": reason}),
-                    ShellError::Executor { status } => json!({"kind": "executor", "status": status}),
+                    ShellError::Denied {
+                        code,
+                        stage,
+                        reason,
+                    } => {
+                        json!({"kind": "denied", "code": format!("{code:?}"), "contract_code": code.contract_code(), "stage": format!("{stage:?}"), "reason": reason})
+                    }
+                    ShellError::Executor { status } => {
+                        json!({"kind": "executor", "status": status})
+                    }
                 };
                 json!({"phase": "error", "error": e,
                        "selection": selection.map(|s| json!({"handle": hex(&s.handle), "expected_version": s.expected_version}))})
@@ -307,16 +523,31 @@ pub fn read_request(stream: &mut TcpStream) -> Option<Request> {
         }
     }
     if len > MAX_BODY {
-        return Some(Request { method, path, host, origin, content_type: ct, body: vec![0; MAX_BODY + 1] });
+        return Some(Request {
+            method,
+            path,
+            host,
+            origin,
+            content_type: ct,
+            body: vec![0; MAX_BODY + 1],
+        });
     }
     let mut body = vec![0; len];
     r.read_exact(&mut body).ok()?;
-    Some(Request { method, path, host, origin, content_type: ct, body })
+    Some(Request {
+        method,
+        path,
+        host,
+        origin,
+        content_type: ct,
+        body,
+    })
 }
 
 pub fn write_response(stream: &mut TcpStream, resp: &Response) {
     let reason = match resp.status {
         200 => "OK",
+        202 => "Accepted",
         400 => "Bad Request",
         403 => "Forbidden",
         404 => "Not Found",
@@ -332,7 +563,9 @@ pub fn write_response(stream: &mut TcpStream, resp: &Response) {
         resp.content_type,
         resp.body.len()
     );
-    let _ = stream.write_all(head.as_bytes()).and_then(|_| stream.write_all(resp.body.as_bytes()));
+    let _ = stream
+        .write_all(head.as_bytes())
+        .and_then(|_| stream.write_all(resp.body.as_bytes()));
 }
 
 /// Serve sequentially on `listener` (must be bound to loopback). `max` bounds the
@@ -380,13 +613,55 @@ pub mod demo {
             body: body.into(),
         };
         Corpus::new(vec![
-            d(EXACT_PROFILE, 2, "exact_profile", "Recorded configuration", "Archived configuration state for an earlier network session.\nDNS 9.9.9.9\nSSID ZEPHYR-731\nUUID 8b9539b7-3c6f-4bb1-9355-ae58471cf013"),
-            d(ESPRESSO, 4, "semantic_profile", "Espresso wireless session", "A laptop connects over encrypted Wi-Fi at a coffee shop. A secure tunnel towards Milan protects traffic on the public hotspot.\nDNS 1.1.1.1\nSSID CafeGuest-5G"),
-            d([0x13; 32], 1, "home_profile", "Home entertainment connection", "A home router serves the television and game console with automatic addresses. No secure tunnel is enabled.\nDNS 8.8.8.8\nSSID HomeLan-5G"),
-            d([0x14; 32], 1, "guide", "Wireless troubleshooting handbook", "Instructions for diagnosing a network name, resolver and connectivity. This is a guide, not a saved configuration.\ntopic connectivity"),
-            d([0x15; 32], 1, "media", "Ferry at sunset", "A short film of a sailboat crossing the bay in golden evening light.\ntopic sailing"),
-            d(NOTES, 3, "oid-notes", "Note progetto VelaOS (bozza)", "architettura microkernel note riunione seL4 LFS Biscuit"),
-            d(SECRETS, 9, "oid-keys", "Chiavi private", "seed wallet backup"),
+            d(
+                EXACT_PROFILE,
+                2,
+                "exact_profile",
+                "Recorded configuration",
+                "Archived configuration state for an earlier network session.\nDNS 9.9.9.9\nSSID ZEPHYR-731\nUUID 8b9539b7-3c6f-4bb1-9355-ae58471cf013",
+            ),
+            d(
+                ESPRESSO,
+                4,
+                "semantic_profile",
+                "Espresso wireless session",
+                "A laptop connects over encrypted Wi-Fi at a coffee shop. A secure tunnel towards Milan protects traffic on the public hotspot.\nDNS 1.1.1.1\nSSID CafeGuest-5G",
+            ),
+            d(
+                [0x13; 32],
+                1,
+                "home_profile",
+                "Home entertainment connection",
+                "A home router serves the television and game console with automatic addresses. No secure tunnel is enabled.\nDNS 8.8.8.8\nSSID HomeLan-5G",
+            ),
+            d(
+                [0x14; 32],
+                1,
+                "guide",
+                "Wireless troubleshooting handbook",
+                "Instructions for diagnosing a network name, resolver and connectivity. This is a guide, not a saved configuration.\ntopic connectivity",
+            ),
+            d(
+                [0x15; 32],
+                1,
+                "media",
+                "Ferry at sunset",
+                "A short film of a sailboat crossing the bay in golden evening light.\ntopic sailing",
+            ),
+            d(
+                NOTES,
+                3,
+                "oid-notes",
+                "Note progetto VelaOS (bozza)",
+                "architettura microkernel note riunione seL4 LFS Biscuit",
+            ),
+            d(
+                SECRETS,
+                9,
+                "oid-keys",
+                "Chiavi private",
+                "seed wallet backup",
+            ),
         ])
     }
 
@@ -407,9 +682,19 @@ pub mod demo {
 
     pub fn shell(engine: IntentEngine) -> ShellRuntime {
         let root = RootKeys::new();
-        let pdp = SelectionGatedPdp::new(root.public(), delegation(&root, "lfs", "read"), delegation(&root, "executor", "execute"), pcb().sk)
-            .expect("pdp");
-        ShellRuntime::new(USER, engine, pdp, HostExecutor::new(PublicKey::new(*pcb().pk)))
+        let pdp = SelectionGatedPdp::new(
+            root.public(),
+            delegation(&root, "lfs", "read"),
+            delegation(&root, "executor", "execute"),
+            pcb().sk,
+        )
+        .expect("pdp");
+        ShellRuntime::new(
+            USER,
+            engine,
+            pdp,
+            HostExecutor::new(PublicKey::new(*pcb().pk)),
+        )
     }
 
     /// Real M0 lane when `cfg` is usable, else BM25 + stand-in (reason reported).
@@ -418,10 +703,19 @@ pub mod demo {
             Some(Ok(c)) => {
                 let lane = M0Process::new(c);
                 let status = lane.status_handle();
-                (IntentEngine::bm25_only(corpus()).with_retriever(Box::new(lane)), super::Lanes::Bm25PlusM0(status))
+                (
+                    IntentEngine::bm25_only(corpus()).with_retriever(Box::new(lane)),
+                    super::Lanes::Bm25PlusM0(status),
+                )
             }
-            Some(Err(e)) => (IntentEngine::new(corpus()), super::Lanes::Bm25PlusStandIn(e.to_string())),
-            None => (IntentEngine::new(corpus()), super::Lanes::Bm25PlusStandIn("VELA_M0_DIR / --m0 non impostato".into())),
+            Some(Err(e)) => (
+                IntentEngine::new(corpus()),
+                super::Lanes::Bm25PlusStandIn(e.to_string()),
+            ),
+            None => (
+                IntentEngine::new(corpus()),
+                super::Lanes::Bm25PlusStandIn("VELA_M0_DIR / --m0 non impostato".into()),
+            ),
         }
     }
 }

@@ -968,10 +968,12 @@ dependencies = [
  "biscuit-auth",
  "ed25519-compact",
  "serde_json",
+ "sha2 0.10.9",
  "vela-executor-host",
  "vela-executor-policy",
  "vela-intent",
  "vela-m0-recall",
+ "vela-selection-contract",
  "vela-shell",
 ]
 
@@ -985,6 +987,14 @@ version = "0.1.0"
 dependencies = [
  "serde_json",
  "vela-intent",
+]
+
+[[package]]
+name = "vela-selection-contract"
+version = "0.1.0"
+dependencies = [
+ "ed25519-dalek",
+ "sha2 0.10.9",
 ]
 
 [[package]]
