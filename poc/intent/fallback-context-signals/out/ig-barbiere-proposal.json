@@ -1,0 +1,46 @@
+{
+  "utterance": "IG barbiere",
+  "mode": "FALLBACK CONTEXT-SIGNALS",
+  "llm": null,
+  "authority": false,
+  "rationale": "Utterance «IG barbiere»: nessun LLM; FALLBACK CONTEXT-SIGNALS. zero match Instagram/barbiere osservati; nessun package IG. Proposal vuota/zero-match dichiarata. Nessuna azione inventata. finestra UX: clock_tick 2026-10-12T04:08:42.1939507+02:00 (ttl_signal 30s, os.clock.local) Envelope scartati: 0. Nessuna autorità: solo click utente → UserSelection → Policy (Seleziona).",
+  "honesty": "zero match Instagram/barbiere osservati; nessun package IG. Proposal vuota/zero-match dichiarata. Nessuna azione inventata.",
+  "ux_window": [
+    "finestra UX: clock_tick 2026-10-12T04:08:42.1939507+02:00 (ttl_signal 30s, os.clock.local)"
+  ],
+  "dropped": 0,
+  "candidates": [
+    {
+      "title": "Browser history osservata (chrome) · keyword=instagram,barbiere,barber · match_count=0 · ig_package_present=false",
+      "kind": "file_changed",
+      "source": "ContextSignal",
+      "signal_source": "os.fs.observe",
+      "ttl_signal": 120,
+      "score": 1.0,
+      "handle": "66ec406ff93ebe5de7faa09fbe8ff969",
+      "handle_display_only": true,
+      "version": 1,
+      "observed_ts": "2026-10-12T04:08:42.1939507+02:00",
+      "mode": "FALLBACK CONTEXT-SIGNALS",
+      "authority": false,
+      "related": "zero-match",
+      "index": 0
+    },
+    {
+      "title": "Host session DESKTOP-G2CD2J5 / tella",
+      "kind": "service_up",
+      "source": "ContextSignal",
+      "signal_source": "os.host.session",
+      "ttl_signal": 120,
+      "score": 1.0,
+      "handle": "77854fc1ae0e695aba3597d600b8181b",
+      "handle_display_only": true,
+      "version": 1,
+      "observed_ts": "2026-10-12T04:08:42.1939507+02:00",
+      "mode": "FALLBACK CONTEXT-SIGNALS",
+      "authority": false,
+      "related": "observed",
+      "index": 1
+    }
+  ]
+}

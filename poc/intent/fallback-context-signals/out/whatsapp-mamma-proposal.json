@@ -1,0 +1,62 @@
+{
+  "utterance": "WhatsApp mamma",
+  "mode": "FALLBACK CONTEXT-SIGNALS",
+  "llm": null,
+  "authority": false,
+  "rationale": "Utterance «WhatsApp mamma»: nessun LLM; FALLBACK CONTEXT-SIGNALS. sessione WhatsApp osservata (WhatsApp.Root up; web.whatsapp.com visitata). contatto mamma non verificabile (contacts.db cifrato / non leggibile). Mai fingere chat con mamma. finestra UX: clock_tick 2026-10-12T04:08:42.1939507+02:00 (ttl_signal 30s, os.clock.local) Envelope scartati: 0. Nessuna autorità: solo click utente → UserSelection → Policy (Seleziona).",
+  "honesty": "sessione WhatsApp osservata (WhatsApp.Root up; web.whatsapp.com visitata). contatto mamma non verificabile (contacts.db cifrato / non leggibile). Mai fingere chat con mamma.",
+  "ux_window": [
+    "finestra UX: clock_tick 2026-10-12T04:08:42.1939507+02:00 (ttl_signal 30s, os.clock.local)"
+  ],
+  "dropped": 0,
+  "candidates": [
+    {
+      "title": "%LOCALAPPDATA%\\Packages\\5319275A.WhatsAppDesktop_*\\LocalState\\sessions\\*\\contacts.db · contatto mamma non verificabile",
+      "kind": "file_changed",
+      "source": "ContextSignal",
+      "signal_source": "os.fs.observe",
+      "ttl_signal": 180,
+      "score": 1.0,
+      "handle": "3c0fed77160a14a21ed016a0c4f203c3",
+      "handle_display_only": true,
+      "version": 1,
+      "observed_ts": "2026-10-12T04:08:42.1939507+02:00",
+      "mode": "FALLBACK CONTEXT-SIGNALS",
+      "authority": false,
+      "related": "observed",
+      "index": 0
+    },
+    {
+      "title": "Browser history osservata (?) · keyword=whatsapp · match_count=6 · latest=WhatsApp @ 2026-10-03T10:23:15+02:00",
+      "kind": "file_changed",
+      "source": "ContextSignal",
+      "signal_source": "os.fs.observe",
+      "ttl_signal": 120,
+      "score": 0.667,
+      "handle": "66ec406ff93ebe5de7faa09fbe8ff969",
+      "handle_display_only": true,
+      "version": 1,
+      "observed_ts": "2026-10-12T04:08:42.1939507+02:00",
+      "mode": "FALLBACK CONTEXT-SIGNALS",
+      "authority": false,
+      "related": "observed",
+      "index": 1
+    },
+    {
+      "title": "Processo osservato: WhatsApp.Root (pid 15624)",
+      "kind": "service_up",
+      "source": "ContextSignal",
+      "signal_source": "os.process.observe",
+      "ttl_signal": 60,
+      "score": 0.333,
+      "handle": "17de92083fa141a460e3beedd4051989",
+      "handle_display_only": true,
+      "version": 1,
+      "observed_ts": "2026-10-12T04:08:42.1939507+02:00",
+      "mode": "FALLBACK CONTEXT-SIGNALS",
+      "authority": false,
+      "related": "observed",
+      "index": 2
+    }
+  ]
+}
