@@ -13,9 +13,10 @@ This is not a daily-driver desktop yet. It is a systems artifact: contracts, den
 
 The [native convergence audit](docs/NATIVE_CONVERGENCE.md) separates the x86 Glass
 preview, Microkit guest and host runtime, and defines the delivery gates toward
-a native workstation. The new [Rust storage core](poc/storage-core/README.md)
-has bounded crash-recovery tests and no host-runtime dependency; it is not yet
-connected to a guest block driver or the live Glass/LFS flow.
+a native workstation. The [Rust storage core](poc/storage-core/README.md) now has
+a tested Microkit VirtIO adapter with signed recovery across two QEMU boots.
+The live native Glass/LFS flow remains open. **v0.1.0** releases this bounded
+Zero-Trust persistence milestone, with host-issued authorization fixtures.
 
 ---
 
