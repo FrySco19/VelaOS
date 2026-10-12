@@ -6,6 +6,7 @@ on:
       - 'poc/m5_executor/Dockerfile'
       - 'poc/m5_executor/executor.system'
       - 'poc/m5_executor/check-pins.py'
+      - 'poc/m5_executor/test_check_pins.py'
       - 'poc/m5_executor/app/Cargo.toml'
       - 'poc/m5_executor/app/rust-toolchain.toml'
       - 'docs/CONTRACTS_v0.md'
@@ -16,6 +17,7 @@ on:
       - 'poc/m5_executor/Dockerfile'
       - 'poc/m5_executor/executor.system'
       - 'poc/m5_executor/check-pins.py'
+      - 'poc/m5_executor/test_check_pins.py'
       - 'poc/m5_executor/app/Cargo.toml'
       - 'poc/m5_executor/app/rust-toolchain.toml'
       - 'docs/CONTRACTS_v0.md'
@@ -29,4 +31,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Check seL4/Microkit platform pins (no guest build)
-        run: python3 poc/m5_executor/check-pins.py
+        run: |
+          python3 poc/m5_executor/test_check_pins.py
+          python3 poc/m5_executor/check-pins.py
