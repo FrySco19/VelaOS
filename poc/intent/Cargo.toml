@@ -1,0 +1,13 @@
+[package]
+name = "vela-intent"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.90"
+license = "GPL-3.0-only"
+publish = false
+description = "VelaOS Intent Engine (host, std): utterance -> ranked Candidates (BM25 + RRF). Proposes only; holds no authority."
+
+# Intentionally EMPTY. This crate must not be able to sign, attenuate, grant or
+# admit anything, so it links no crypto, no Biscuit and no policy crate.
+# tests/no_authority.rs fails if a dependency is added here.
+[dependencies]

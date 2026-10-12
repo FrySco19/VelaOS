@@ -1,0 +1,25 @@
+[package]
+name = "vela-executor-policy"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.90"
+license = "GPL-3.0-only"
+description = "Host-side (std) Biscuit policy decision point that admits Executor v2 signed frames"
+
+[dependencies]
+biscuit-auth = { version = "=6.0.0", default-features = false, features = ["datalog-macro"] }
+ed25519-compact = { version = "=2.6.0", default-features = false }
+blake3 = { version = "=1.8.2", default-features = false, features = ["pure"] }
+
+[dev-dependencies]
+# Real Wasmi execution of admitted frames in the M-G1b / receipt tests (host model of the guest).
+vela-executor-host = { path = "../executor-host" }
+
+[features]
+# Process-abort probes in the durable LFS ledger, used only by the crash gate.
+fault-fixtures = []
+
+[[bin]]
+name = "lfs-crash-gate"
+path = "src/bin/lfs-crash-gate.rs"
+required-features = ["fault-fixtures"]

@@ -1,0 +1,10 @@
+[package]
+name = "vela-executor-keygen"
+version = "0.1.0"
+edition = "2024"
+default-run = "vela-executor-keygen"
+license = "GPL-3.0-only"
+
+[dependencies]
+ed25519-compact = { version = "=2.6.0", default-features = false }
+rand = "=0.8.5"

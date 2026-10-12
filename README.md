@@ -1,71 +1,259 @@
 # VelaOS
 
-**VelaOS is an AI-native, local-first operating-system architecture built around
-intent rather than a collection of resident applications.** A language model
-helps translate a user's request into a constrained plan; deterministic Rust
-services, explicit policy, and kernel-enforced capabilities decide what may
-actually happen.
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0--only-blue.svg)](LICENSE)
+[![Rust](https://img.shields.io/badge/Rust-1.90%2B-orange.svg)](https://www.rust-lang.org/)
+[![Status](https://img.shields.io/badge/status-Phase%202%20Done-brightgreen.svg)](#status-and-roadmap)
+[![Demo](https://img.shields.io/badge/demo-Glass%20%3A7878-informational.svg)](#getting-started)
 
-The project is transitioning its Rust/Linux proof of concept toward seL4
-protection domains. It is not yet a complete, installable, or production-ready
-operating system. Gate results describe bounded prototypes and tests, not
-product-wide guarantees.
+> **One-line:** State a goal. Review a proposal. Select an object. Let policy admit or deny. Persist only what a trusted clock and a durable ledger will stand behind.
+
+VelaOS is an operating-system research stack whose center of gravity is **authority**, not chat. The model helps you think. It never holds the keys. What you can run today is a host demonstration of that contract — Glass over a loopback bridge, a real Wasm executor path, a selection-gated PDP, a trusted clock for grant TTL, and an append-only LFS with `fsync` before any receipt is returned.
+
+This is not a daily-driver desktop yet. It is a systems artifact: contracts, deny codes, crash gates, and a UI that refuses to look like an LLM speaking for you.
+
+---
+
+## Vision
+
+Personal computing should feel like working with a competent colleague who **shows their work** — and who cannot sign for you.
+
+Most “AI OS” pitches collapse into a chat surface that silently mutates the world. VelaOS inverts the stack:
+
+1. You state an **objective**.
+2. Retrieval proposes **candidates** (data only — handles, versions, scores, sources).
+3. You make an explicit **selection** (gesture → `UserSelection`).
+4. A **policy decision point** admits or denies the exact envelope.
+5. An executor runs under **fuel / quota**, against a **trusted clock**.
+6. Effects that matter land in a **durable ledger** only after `fsync`.
+7. You get a **result**, a **receipt**, and an audit trail — or a clear statement of what did *not* happen.
+
+Local by default. Network and remote effects are plan steps you can see and revoke, never background surprises. The interpreter that drafts a plan is not the authority that commits it.
+
+The destination is a machine where **goals replace app grids**, **proposals are first-class**, **failure is honest**, and **provenance beats polish**.
+
+---
+
+## Principles
+
+These are load-bearing. A change that violates one is not a polish PR — it is a security regression.
+
+| # | Principle | Implication |
+| --- | --- | --- |
+| 1 | **AI interprets; it does not authorize.** | The model may rank and annotate. It cannot grant, sign, widen scope, or “confirm on your behalf.” Prompt text that claims authority is ignored. |
+| 2 | **The user selects; policy decides.** | A trusted shell records `UserSelection { handle, expected_version }` from a real gesture. The PDP admits or denies that envelope. User confirmation ≠ policy decision. |
+| 3 | **Everything is a proposal until admitted.** | UI rule: AI output is labeled **Proposal**. Outcomes are labeled **Policy decision** with a stable code. A proposal never wears a decision’s colors. |
+| 4 | **Permissions are narrow, timed, revocable.** | Each grant is *operation · object · duration*. Defaults are short-lived. Scope attenuates; it never expands past the token. |
+| 5 | **Fail closed; recover visibly.** | Missing trusted time, poisoned store, expired/revoked grant, or an ambiguous post-crash outcome → no silent retry that repeats effects. |
+| 6 | **Provenance over polish.** | Results carry input versions, digests, and receipts. Generated text is marked **generated** and is never presented as the original object. |
+| 7 | **Keyboard-first, accessible, offline-capable.** | Primary actions without a mouse. Contrast, reduced motion, and screen-reader labels are part of the contract. No local interpreter → manual / template mode. |
+| 8 | **The page is not trusted.** | Glass may send an utterance or a click on a *shown* candidate — never a forged handle or version. Authority lives in the shell and PDP, not in HTML. |
+
+---
+
+## Architecture
+
+### Control flow
+
+```mermaid
+flowchart TB
+  subgraph Client["Untrusted client"]
+    U[User]
+    G["Glass<br/>loopback HTML + HTTP"]
+  end
+
+  subgraph Host["Trusted host"]
+    I["Intent engine<br/>BM25 + RRF · data-only candidates"]
+    S["ShellRuntime<br/>UserSelection channel"]
+    P["SelectionGated PDP<br/>Biscuit / capabilities"]
+    E["Executor<br/>Wasm · fuel / quota"]
+    C["Trusted clock<br/>wall HWM · monotonic TTL"]
+    L["Durable LFS<br/>append-only · fsync · Ed25519 receipts"]
+  end
+
+  U -->|objective| G
+  G -->|utterance| I
+  I -->|candidates| G
+  G -->|click on shown candidate| S
+  S -->|UserSelection| P
+  P -->|admit| E
+  P -->|deny + C5 code| G
+  E --> C
+  C -->|TTL alive| L
+  C -->|EXPIRED| G
+  L -->|receipt C4| G
+  L -->|audit / undo| H[History]
+```
+
+### Sequence: admit → execute → persist
+
+```mermaid
+sequenceDiagram
+  actor User
+  participant Glass
+  participant Intent
+  participant Shell
+  participant PDP
+  participant Clock
+  participant LFS
+
+  User->>Glass: objective
+  Glass->>Intent: utterance
+  Intent-->>Glass: ranked candidates (no authority)
+  User->>Glass: select candidate i
+  Glass->>Shell: on_user_action(Start, i)
+  Shell->>PDP: UserSelection{handle, expected_version}
+  alt admitted
+    PDP->>Clock: mint grant / check TTL
+    Clock-->>PDP: alive
+    PDP->>LFS: execute under Wasm fuel
+    LFS->>LFS: write_all → sync_data (fsync)
+    LFS-->>Glass: receipt (epoch, request_id, digests)
+  else denied / expired / poisoned
+    PDP-->>Glass: POLICY_DENIED | EXPIRED | …
+    Note over Glass: show what did NOT happen
+  end
+```
+
+### Trust boundary
+
+| Trusts | Does not trust |
+| --- | --- |
+| Shell gesture → `UserSelection` | Glass HTML / JS |
+| PDP admission frame | Model output / “rationale” text |
+| Monotonic clock for grant TTL | Wall-clock jumps that would extend a grant |
+| LFS signature under pinned key | Unsynced buffers; torn tails are truncated, not invented |
+| Deny codes (C5) as the user-visible truth | Silent retries after `AMBIGUOUS` |
+
+### Layers
+
+| Layer | Responsibility | Non-goals |
+| --- | --- | --- |
+| **Glass** | Local translucent UI; proposal / decision labeling; loopback-only bridge | Authority, network bind, forged handles |
+| **Intent** | Utterance → ranked candidates; retrieval + fusion | Any authority type (compile-fail boundaries) |
+| **Shell** | Owns the trusted selection channel; routes gesture → PDP | Signing, token minting, bypassing denials |
+| **PDP / policy** | Admit/deny, grants, fuel, deny codes | Treating AI text as a decision |
+| **Trusted clock** | Wall high-water mark; grant TTL on monotonic time | Extending grants across clock regression |
+| **Durable LFS** | Authenticated append-only receipts; `fsync` before return; fail-closed poison | Pretending an unsynced write committed |
+
+Wire contracts (envelopes, receipts, deny codes) are versioned independently of the UI. Guest and host share the same semantic vocabulary so a denial on metal means the same thing as a denial in the host demo.
+
+---
+
+## UX: Glass
+
+Glass is the current face of the zero-app model: one objective field, not an endless thread.
+
+**What you see**
+
+- Candidates ranked with provenance pills (source, version, score) — labeled **Proposal**.
+- Plan steps you can review; sensitive writes demand an explicit confirmation that restates the effect.
+- Policy outcomes as **Policy decision** with a stable code — never styled like a model success.
+- Themes: Light · Dawn · Deep.
+- Permanent honesty about locality: this demo is loopback-only.
+
+**What the longer contract specifies** (documented; not all shipped)
+
+Ephemeral workspace panels: Objective · Plan · Objects & provenance · Authorization · Result · History — plus global audit (`Ctrl+H`) and a permissions panel with revoke. Keyboard map, accessibility, and offline/manual fallback are part of that spec.
+
+**Anti-patterns (forbidden)**
+
+Chat-only UI · silent actions · LLM-as-authority · generic “OK” on destructive steps · perpetual global permissions · hiding a policy denial behind an automatic retry · presenting generated text as original content.
+
+---
+
+## Status and roadmap
+
+Evidence below is from the host / QEMU verification path as of October 2026. “Done” means **demonstrated and gated**, not “shipped product.”
+
+### Phase 1 — Done
+
+Foundation of the authority story on the host:
+
+- End-to-end QEMU bridge verification (historical marker set included in the Phase 2 E2E run).
+- Real Wasm executor with fuel / quota enforcement.
+- **M-G1b**: selection-gated PDP — planner output cannot become a `UserSelection`; AI-only paths → `POLICY_DENIED`.
+- Intent engine with compile-time boundary tests (no authority types leak into retrieval).
+- Glass host demo: loopback HTML + HTTP, proposal → click → shell → PDP.
+- UX zero-app contracts and reproducible flows (read / write / deny).
+
+### Phase 2 — Done · Trusted Guest Clock + durable LFS (`fsync`)
+
+Closed on the verification path:
+
+| Gate | Result |
+| --- | --- |
+| Policy suite | **69 / 69** |
+| QEMU `verify-bridge-e2e` | **PASS · 37 markers** (no panic / FAULT; prohibited markers absent) |
+| Crash gate (process abort, 200 runs) | **0** lost announced receipts · **0** double effects · torn tails truncated |
+| Grant TTL | Wall cannot walk backward to extend a grant; monotonic check before execute **and** before LFS commit |
+| Durable LFS (host) | Append-only ledger; authenticated receipts; `write_all` → `sync_data` → *then* return receipt; poison fails closed |
+| Epoch | Persistent across boots; unclean prior session stays **AMBIGUOUS** until reconciled |
+
+**Still open inside Phase 2’s shadow (honest):**
+
+- Guest LFS ledger is still in-memory (**M-LFS-4**) — no cross-reboot persistence inside the guest domain yet.
+- No RTC / TPM root for absolute time across reboot.
+- Guest writer trusts the PCB’s deadline check (same model as the notary); pre-boot time is not visible to the guest.
+- Production trust roots (demo seeds only); `result_handle` / `expected_version` on the write path (**M-LFS-5**) still open.
+- Real power-loss with disk cache: simulated via process abort, not bare metal.
+
+### Phase 3 — Next
+
+1. **Idiot-proof QEMU packaging** — one command path from clone to a known-good VM, no folklore.
+2. **Bare-metal Raspberry Pi 4** — authority + durable path on device; power-loss and clock behavior on metal.
+3. **Release hygiene** — changelog and tag **`v0.1.0`** when packaging is credible (not before).
+
+Until those land, treat the host Glass demo as the public face and the QEMU E2E as the proof.
+
+---
+
+## Getting started
+
+### Prerequisites
+
+- Rust toolchain ≥ the workspace `rust-version` (Glass crate: **1.90+**), with `cargo`.
+- A checkout that contains `poc/product/glass` and its path dependencies (`vela-intent`, `vela-shell`, `vela-m0-recall`, executor policy / host).
+- Optional but recommended for full recall lanes: a local M0 directory with `bridge_recall.py`, `.venv`, and `.model-cache`.
+
+### Run Glass (host demo)
+
+From the repository root:
+
+```bash
+cd poc/product/glass
+
+# Full recall lanes (point --m0 at your VelaOS-public poc/m0 tree)
+cargo run --offline --release -- --m0 /path/to/VelaOS-public/poc/m0
+
+# Or without M0 — fixture / stub retrieval still exercises the authority path
+# cargo run --offline --release --
+```
+
+The binary binds **loopback only** and prints the URL. Default port:
+
+**http://127.0.0.1:7878/**
+
+Override with `--port <n>` if needed. Open that URL in a browser on the same machine. Try an objective, review the **Proposal**, select a candidate, and watch admission or a deny code. There is no remote authority path in this demo.
+
+If `cargo` cannot find the package, confirm you are inside `poc/product/glass` (package name `vela-glass`). Startup logs include the bound port and which recall lanes are active.
+
+### What “good” looks like
+
+1. Glass loads; theme dock works (Light / Dawn / Deep).
+2. An utterance yields candidates — each clickable, none executable without selection.
+3. Selecting a candidate either runs under a grant (receipt / request id) or surfaces a **Policy decision** with a C5 code.
+4. An AI-only / planner-only attempt to act without a user selection is denied — by design.
+
+---
+
+## Component gates and seL4 port
 
 [![M1 Rust checks](https://github.com/FrySco19/VelaOS/actions/workflows/lfs-m1.yml/badge.svg)](https://github.com/FrySco19/VelaOS/actions/workflows/lfs-m1.yml)
 [![M2 Rust checks](https://github.com/FrySco19/VelaOS/actions/workflows/neural-bus-m2.yml/badge.svg)](https://github.com/FrySco19/VelaOS/actions/workflows/neural-bus-m2.yml)
 
-## Vision: the zero-app paradigm
+The sections below track the component gates (M0–M5) and the seL4 protection-domain port that run alongside the Phase 1–2 authority path described above.
 
-Traditional desktop systems organize work around applications that users open,
-configure, and leave running. VelaOS instead aims to organize work around user
-intent:
-
-1. **The LLM Control Plane** interprets a request and proposes a finite,
-   structured workflow. Model output is untrusted input: it cannot grant
-   permission, choose arbitrary storage objects, or invoke privileged services
-   directly.
-2. **The deterministic Rust Data Plane** validates the proposed workflow,
-   resolves exact authorized object handles, checks policy and capabilities,
-   and performs the operation through typed service interfaces.
-3. **Ephemeral interfaces and workflows** are assembled for the task, present
-   only the necessary controls, and can disappear when the task completes.
-   Persistent system services remain, but the goal is to avoid requiring a
-   resident app for every kind of work.
-
-This is an architectural direction, not a claim that today's prototypes have
-eliminated desktop applications. The model proposes; trusted policy and
-services decide and execute.
-
-## Architecture: seL4, capabilities, and WebAssembly
-
-The target architecture uses **seL4 protection domains** to isolate services
-such as the Local File Store (LFS), Neural Bus, WASM executor, Orchestrator, and
-Policy and Capability Broker (PCB). Each domain receives only the kernel
-capabilities it needs; typed IPC endpoints define how domains communicate.
-
-The PCB verifies offline **Biscuit authorization tokens** against application
-policy. A Biscuit token is not itself a seL4 capability: after successful
-verification, the PCB may derive narrowly scoped, short-lived native
-capabilities for a specific operation. seL4 enforces access based on possession
-of those capabilities, while services still validate request semantics.
-
-Untrusted WASM components are intended to run in a bounded Wasmtime executor
-**without WASI** and without ambient file, network, process, or device access.
-The host exposes only explicitly linked interfaces. Per-invocation fuel,
-epoch-based interruption, memory limits, and bounded IPC constrain execution.
-
-The architecture and threat boundaries are described in the [M5 design](docs/M5_DESIGN.md).
-Gate A/B's reproducible QEMU protection-domain scaffold and exact commands are in
-[`poc/m5_sel4/`](poc/m5_sel4/README.md).
-
-The native [M4 session](poc/m4/README.md) now connects authorized saves,
-candidate selection and single-use confirmation to persistent recovery. Its
-default integration test uses a ranking fixture. A separate offline test now
-passes with real M0 embeddings and hybrid search through durable KEEP/reopen;
-a consumer UI remains pending. The [seL4 CI](.github/workflows/sel4-boot.yml) builds the pinned
-guest and checks bounded Wasm plus the fixed intent flow with a 60-second limit.
-
-## Project status
+### Component gate status
 
 | Gate | Status | Scope and evidence |
 | --- | --- | --- |
@@ -100,50 +288,7 @@ host-observed values nor the artifact sizes are whole-system RAM/latency
 qualification. See [the Gate F/G report](GATE_F_G_REPORT.md) for the run data,
 resource estimates, and residual risks.
 
-## Non-negotiable engineering targets
-
-These are acceptance targets, **not claims that the current system has already
-met them**:
-
-| Metric | Target | Qualification |
-| --- | --- | --- |
-| Total OS idle RAM | **< 1.5 GB** | Measure the complete runtime at idle; a model process's working set or unloaded footprint is not a system-wide measurement. |
-| Intent-to-execution routing latency | **< 250 ms** | Measure end-to-end routing under the pinned workload; report percentiles and maximum separately from cold model wake-up. |
-
-The latest recorded 300-request SLM run had a 155.918 ms p95 and a 307.335 ms
-maximum with the model already loaded, so that run did **not** meet the maximum
-latency target. Cold wake-up was measured separately at approximately 2.945 s.
-The measured 512-token streaming profile had 121.65 ms p95 and 245.77 ms maximum
-in one new round. The rejected mmap profile retained 3.94 GB resident host pages;
-streaming reduced that sample to 589 MB, while active private commit stayed
-approximately 4.55 GB. Full repeated and integrated qualification remains open.
-The invariant-prefix adapter subsequently scored 296/300 on one round with a
-129.40 ms maximum: host focus travels as structured context, and native policy
-still prevents the model from manufacturing a selection. Its repeated gate is
-recorded separately from these earlier trials. The latest 20-round run had a
-single 264.23 ms route-cache-miss sample (p95 163.46 ms), so the strict planner
-gate remains failed. A focused cache authorization benchmark measured a 0.601 ms
-maximum over 6,000 hits with fresh Biscuit checks. The outlier was local
-ready-model inference, not a cache hit or a QEMU measurement; no authorization
-fast path was introduced.
-Idle measurements were process-level, not total-OS
-measurements, so the <1.5 GB target is also not yet certified. Detailed
-measurements and caveats are recorded in [RUNTIME_STATUS.md](docs/RUNTIME_STATUS.md).
-
-## VelaOS and conventional desktop operating systems
-
-| Axis | VelaOS (target architecture) | Windows | macOS |
-| --- | --- | --- | --- |
-| Kernel architecture | seL4 microkernel; Gate A boot demonstrated in QEMU, service isolation is next | Windows NT hybrid kernel | XNU hybrid kernel |
-| UI paradigm | Intent-centric direction; task-scoped, ephemeral interfaces | Primarily app-centric desktop | Primarily app-centric desktop |
-| Permission model | PCB verifies Biscuit authority and derives scoped, ephemeral seL4 capabilities | User Access Control (UAC), access tokens, ACLs, and application sandboxing | Transparency, Consent, and Control (TCC), entitlements, and app sandboxing |
-| RAM footprint | **Target:** <1.5 GB total OS idle RAM; not yet measured/qualified for the complete system | Varies by release, device, configuration, and workload; no directly comparable VelaOS baseline | Varies by release, device, configuration, and workload; no directly comparable VelaOS baseline |
-
-This is an architectural comparison, not a claim of feature or performance
-parity. The VelaOS column describes the target and current gate evidence, not a
-finished product.
-
-## Gate A: reproduce the QEMU boot
+### Gate A: reproduce the QEMU boot
 
 From the repository root, with Docker available:
 
@@ -158,7 +303,7 @@ Use `Ctrl+A`, then `X` to exit QEMU. This smoke test does not validate Gate B
 isolation or physical hardware behavior. See the [Gate A README](poc/m5_sel4/README.md)
 for toolchain details and scope.
 
-## Boot the published QEMU preview image
+### Boot the published QEMU preview image
 
 Download `velaos-qemu-loader.img` and `velaos-qemu-loader.img.sha256` from the
 [VelaOS 2.2 runtime/QEMU preview release](https://github.com/FrySco19/VelaOS/releases/tag/v2.2-runtime-preview)
@@ -183,7 +328,7 @@ separate Gate C root-task proof. Exit QEMU with `Ctrl+A`, then `X`. The preview
 guest is a development demonstration with volatile LFS state, not an installable
 or security-qualified OS.
 
-## Repository map
+### Repository map
 
 | Path | Contents |
 | --- | --- |
@@ -201,10 +346,33 @@ or security-qualified OS.
 `components/` and `build/` contain the previous Debian/KDE preview and do not
 implement the new AI-native architecture.
 
+---
+
 ## Contributing
 
-Reproducible tests, security reviews, and clear reporting of limitations are
-welcome. See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md),
-and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). License information is available
-in [LICENSE](LICENSE), [`LICENSES/`](LICENSES/README.md), and
-[THIRD_PARTY.md](THIRD_PARTY.md).
+VelaOS is careful systems work. Reviewers will reject “helpful” shortcuts that skip selection or policy.
+
+1. **Read the principles** before changing UX or the admit path.
+2. **Keep authority out of the model and out of the page.** If AI text can be mistaken for a decision, the change is wrong.
+3. **Touch boundaries with tests.** Intent must not gain authority types. Glass must not accept forged handles. PDP deny codes stay stable or get an explicit migration note.
+4. **Document failure modes.** New deny / error paths need user-visible copy that states what did *not* happen.
+5. **Small, reviewable diffs.** Prefer one invariant per PR.
+6. **No push to `main`, no force-push, no release tag** without an explicit go-ahead from the maintainer. Feature work lands on an agreed branch; packaging and tags are coordinated.
+
+Issues and design discussion: use the repository issue tracker once the public tree is the source of truth. Until a `v0.1.0` tag exists, treat host demo + QEMU E2E logs as the ground truth.
+
+---
+
+## License
+
+Copyright (c) VelaOS contributors.
+
+Licensed under the **GNU General Public License v3.0 only** (`GPL-3.0-only`), except where individual files state otherwise.
+
+See [`LICENSE`](LICENSE) for the full text. Third-party components retain their own licenses; see `THIRD_PARTY.md` when present in the tree.
+
+---
+
+## Document status
+
+Published project overview. Architecture diagrams describe the stated host-demo and prototype boundaries; they do not imply a complete production OS. Phase labels follow verification evidence, not marketing.

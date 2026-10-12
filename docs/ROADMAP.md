@@ -11,6 +11,13 @@ componente su un fixture non certifica un sistema operativo consumer.
 | M3 — control plane | Router locale implementato | Cinque intent finiti, policy Rust e cache con nuova autorizzazione. Modello non concede authority. Qualificazione ripetuta, ingresso persistente e RAM dell'intero OS restano aperti. |
 | M4 — conferma e recovery | Milestone implementata, qualificazione aperta | Provider persistente M1, supervisor, rollback esatto e sessione nativa; 12 test locali con richiamo reale. Conferma umana è simulata da eventi fidati del test, non da una UI consumer. |
 | M5 — seL4 | Port parziale in QEMU | Cinque domini, prova separata di grant/revoca, Wasm limitato e flusso fisso con risultato 42. Il guest usa LFS volatile e non integra SLM, Biscuit o recovery durevole. |
+| M5 — Bridge PCB–Executor seL4 | Fasi 2/3 verificate in QEMU; gate aperto | Pagina condivisa 4 KiB, richiesta firmata Ed25519, ack via protected call, Wasm ricevuto eseguito con risultato 7. Rifiuti di firma, bounds, scope, replay, fuel e WASI verificati. Biscuit nel PCB, TTL/replay persistente, LFS end-to-end e misure sul target restano aperti. |
+
+## M5 — bridge PCB–Executor
+
+Il [prototipo](../poc/m5_executor/README.md) usa Wasmi `no_std`, una pagina condivisa di 4 KiB e una chiamata Microkit protetta con ack e identificatore di richiesta. L'Executor autentica uno snapshot privato e interpreta gli stessi byte con fuel e limiti di memoria, senza WASI. Il risultato 7 ritorna al PCB nei registri IPC. Il runner Rust ripete build e boot e richiede tutti i marker dei casi negativi; i test host verificano descrittori e crittografia.
+
+Il [contratto del bridge](../poc/m5_executor/BRIDGE_CONTRACT.md) definisce ownership, gestione replay, distinzione fra token e capability kernel e i criteri ancora aperti: Biscuit e attenuazione nel PCB, scadenza con clock fidato, replay persistente, revoca/cancellazione e recupero crash, persistenza dei risultati LFS e misure RAM/latenza dell'intero sistema. Non è una chiusura di M5.
 
 ## Prossimo percorso verso un sistema utilizzabile
 

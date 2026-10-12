@@ -1,0 +1,23 @@
+[package]
+name = "vela-glass"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.90"
+license = "GPL-3.0-only"
+publish = false
+description = "VelaOS Glass host demo: clickable local HTML over a loopback-only std HTTP bridge. Avvia / Rivedi piano -> ShellRuntime::click -> UserSelection -> SelectionGatedPdp. No route skips the selection."
+
+[dependencies]
+vela-intent = { path = "../../intent" }
+vela-shell = { path = "../shell" }
+vela-m0-recall = { path = "../m0-recall" }
+vela-executor-policy = { path = "../../m5_executor/policy" }
+vela-executor-host = { path = "../../m5_executor/executor-host" }
+serde_json = "=1.0.145"
+# Root keys / delegations / demo PCB key for the host demo binary (NOT production keys).
+biscuit-auth = { version = "=6.0.0", default-features = false, features = ["datalog-macro"] }
+ed25519-compact = { version = "=2.6.0", default-features = false }
+
+[[bin]]
+name = "vela-glass"
+path = "src/main.rs"
