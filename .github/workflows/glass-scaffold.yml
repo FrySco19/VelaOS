@@ -1,0 +1,17 @@
+name: Glass UI scaffold
+on:
+  push:
+    paths: ['poc/product/glass/**', '.github/workflows/glass-scaffold.yml']
+  pull_request:
+    paths: ['poc/product/glass/**', '.github/workflows/glass-scaffold.yml']
+permissions:
+  contents: read
+jobs:
+  lifecycle:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare Rust
+        run: rustup toolchain install 1.96.1 --profile minimal
+      - name: Test lifecycle and host transport boundary
+        run: cargo +1.96.1 test --locked --manifest-path poc/product/glass/Cargo.toml
