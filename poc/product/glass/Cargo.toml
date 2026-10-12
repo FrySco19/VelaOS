@@ -5,7 +5,7 @@ edition = "2024"
 rust-version = "1.90"
 license = "GPL-3.0-only"
 publish = false
-description = "VelaOS Glass host demo: clickable local HTML over a loopback-only std HTTP bridge. Avvia / Rivedi piano -> ShellRuntime::click -> UserSelection -> SelectionGatedPdp. No route skips the selection."
+description = "VelaOS Glass host demo: clickable local HTML over a loopback-only std HTTP bridge. Seleziona / Rivedi piano -> ShellRuntime::click -> UserSelection -> SelectionGatedPdp. No route skips the selection."
 
 [dependencies]
 vela-intent = { path = "../../intent" }

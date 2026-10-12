@@ -63,7 +63,7 @@
   header input { flex:1; border:0; outline:0; background:transparent; color:var(--theme-text); font:inherit }
   button { border:0; border-radius:12px; padding:8px 14px; font:inherit; font-weight:var(--type-body-weight); white-space:nowrap; cursor:pointer; background:transparent; color:var(--theme-text) }
   button.ghost { min-width:112px }
-  button.primary { background:var(--accent-teal); color:#1A2332; font-weight:var(--type-body-strong-weight); min-width:88px }
+  button.primary { background:var(--accent-teal); color:#1A2332; font-weight:var(--type-body-strong-weight); min-width:108px }
   button:disabled { opacity:.4; cursor:default }
   main { width:min(860px,94vw); margin-top:18px; padding:18px 22px; display:none }
   .objective { color:var(--theme-text); margin-bottom:8px }
@@ -114,28 +114,48 @@ const click = (action, candidate) => post("/click", candidate === undefined ? { 
 function render(v, err) {
   const p = $("panel"), s = v.state; p.replaceChildren(); p.style.display = s.phase === "idle" ? "none" : "block";
   if (s.phase === "glass") {
-    p.append(el("div", { class: "objective" }, s.utterance));
-    p.append(el("div", { class: "muted" }, "Proposta — dati, nessuna autorità. Scegli tu."));
-    for (const c of s.candidates) {
+    const rows = Array.isArray(s.candidates) ? s.candidates : [];
+    p.append(el("div", { class: "objective" }, s.utterance || ""));
+    if (rows.length === 0) {
+      const why = (s.rationale && String(s.rationale).trim()) || "nessun match osservato";
+      p.append(el("div", { class: "muted" }, "Proposta — nessun match osservato. Nessuna autorità."));
       p.append(el("div", { class: "row" },
         el("div", { class: "t" },
-          el("span", { class: "cand-title" }, c.title),
-          el("br"),
-          el("small", {}, "v", c.version, " · rrf ", c.score.toFixed(4), " · ", ...c.sources.map((x) => el("span", { class: "pill" }, x))),
-          el("small", { class: "handle" }, "proposta · handle ", c.handle)),
-        el("button", { class: "ghost", on: () => click("rivedi", c.index) }, "Rivedi piano"),
-        el("button", { class: "primary", on: () => click("avvia", c.index) }, "Avvia")));
+          el("span", { class: "cand-title" }, why),
+          el("small", { class: "handle" }, "zero match osservati · authority=false"))));
+    } else {
+      p.append(el("div", { class: "muted" }, "Proposta — dati, nessuna autorità. Scegli tu."));
+      for (const c of rows) {
+        p.append(el("div", { class: "row" },
+          el("div", { class: "t" },
+            el("span", { class: "cand-title" }, c.title),
+            el("br"),
+            el("small", {}, "v", c.version, " · rrf ", c.score.toFixed(4), " · ", ...c.sources.map((x) => el("span", { class: "pill" }, x))),
+            el("small", { class: "handle" }, "proposta · handle ", c.handle)),
+          el("button", { class: "ghost", on: () => click("rivedi", c.index) }, "Rivedi piano"),
+          el("button", { class: "primary", on: () => click("avvia", c.index) }, "Seleziona")));
+      }
+      if (s.rationale) p.append(el("div", { class: "note" }, "Nota IA (non verificata, nessun effetto): ", s.rationale));
     }
-    if (s.rationale) p.append(el("div", { class: "note" }, "Nota IA (non verificata, nessun effetto): ", s.rationale));
-    p.append(el("div", { style: "margin-top:12px" }, el("button", { on: () => click("annulla") }, "Annulla")));
+    if (s.dismiss === "chiudi") p.append(el("div", { style: "margin-top:12px" }, el("button", { on: () => click("chiudi") }, "Chiudi")));
+    else p.append(el("div", { style: "margin-top:12px" }, el("button", { on: () => click("annulla") }, "Annulla")));
   } else if (s.phase === "result") {
     const o = s.outcome;
-    p.append(el("div", { class: "ok" }, o.kind === "executed" ? `Avviato: request ${o.request_id}, risultato ${o.value}` : `Piano autorizzato (non eseguito): request ${o.request_id}`));
+    p.append(el("div", { class: "ok" }, o.kind === "executed" ? `Eseguito: request ${o.request_id}, risultato ${o.value}` : `Piano autorizzato (non eseguito): request ${o.request_id}`));
     p.append(el("div", { class: "muted" }, "UserSelection{handle ", el("code", {}, s.selection.handle.slice(0, 16), "…"), ", expected_version ", s.selection.expected_version, "} · grant valido fino a ", new Date(o.not_after_unix * 1000).toLocaleTimeString()));
     p.append(el("div", { style: "margin-top:12px" }, el("button", { on: () => click("chiudi") }, "Chiudi")));
   } else if (s.phase === "error") {
     const e = s.error;
-    p.append(el("div", { class: "bad" }, e.kind === "denied" ? `${e.code} (${e.contract_code}) @ ${e.stage}: ${e.reason}` : e.kind === "nothing_found" ? "Nessun candidato locale." : `Executor status ${e.status}`));
+    const why = (s.rationale && String(s.rationale).trim()) || "nessun match osservato";
+    if (e.kind === "nothing_found") {
+      p.append(el("div", { class: "muted" }, "Proposta — nessun match osservato. Nessuna autorità."));
+      p.append(el("div", { class: "row" },
+        el("div", { class: "t" },
+          el("span", { class: "cand-title" }, why),
+          el("small", { class: "handle" }, "zero match osservati · authority=false"))));
+    } else {
+      p.append(el("div", { class: "bad" }, e.kind === "denied" ? `${e.code} (${e.contract_code}) @ ${e.stage}: ${e.reason}` : `Executor status ${e.status}`));
+    }
     p.append(el("div", { style: "margin-top:12px" }, el("button", { on: () => click("chiudi") }, "Chiudi")));
   }
   if (err) p.append(el("div", { class: "note" }, err));

@@ -9,11 +9,16 @@
 //!        action = avvia | rivedi | annulla | chiudi
 //! ```
 //!
+//! The primary gesture is labeled Seleziona (synonym Scegli proposta). Its wire
+//! name stays `avvia`. Intent boundary: that click is a UserSelection of a shown
+//! index only. Intent does not execute. Glass has no execute route.
+//!
 //! The ONLY way toward the PDP is `POST /click` with `avvia`/`rivedi` and the
 //! INDEX of a candidate currently shown on the glass. The body can carry no
 //! handle, version, selection, token or frame: unknown fields are rejected (400)
 //! and the shell re-derives `UserSelection{handle, expected_version}` from the
-//! displayed row. There is no admit/grant/select route.
+//! displayed row. There is no admit/grant/select route. A zero-match Intent
+//! result is still a Proposal: rationale, empty candidates, authority false.
 //!
 //! Host demo hardening (not an isolation boundary): loopback bind, `Host` header
 //! pinned to the bound port, per-run random token, JSON content-type required,
@@ -101,6 +106,8 @@ pub struct GlassApp {
     token: String,
     hosts: Vec<String>,
     lanes: Lanes,
+    /// Utterance of the latest accepted submit. The shell drops it on NothingFound.
+    last_utterance: String,
 }
 
 fn random_token() -> String {
@@ -122,7 +129,13 @@ impl GlassApp {
         Self::with_token(shell, lanes, port, random_token())
     }
     pub fn with_token(shell: ShellRuntime, lanes: Lanes, port: u16, token: String) -> Self {
-        Self { shell, token, hosts: vec![format!("127.0.0.1:{port}"), format!("localhost:{port}")], lanes, }
+        Self {
+            shell,
+            token,
+            hosts: vec![format!("127.0.0.1:{port}"), format!("localhost:{port}")],
+            lanes,
+            last_utterance: String::new(),
+        }
     }
     pub fn token(&self) -> &str {
         &self.token
@@ -179,7 +192,13 @@ impl GlassApp {
             if u.is_empty() || u.len() > MAX_UTTERANCE {
                 return Response::err(400, "utterance vuota o troppo lunga");
             }
-            self.shell.submit(u).map(|_| ())
+            match self.shell.submit(u) {
+                Ok(_) => {
+                    self.last_utterance = u.to_string();
+                    Ok(())
+                }
+                Err(e) => Err(e),
+            }
         } else {
             let idx = body.get("candidate").and_then(Value::as_u64).map(|n| n as usize);
             let action = body.get("action").and_then(Value::as_str);
@@ -223,6 +242,7 @@ impl GlassApp {
                 "phase": "glass",
                 "utterance": p.utterance,
                 "auto_resolve": p.auto_resolve(),
+                "authority": false,
                 "rationale": p.rationale,
                 "candidates": p.candidates.iter().enumerate().map(|(i, c)| json!({
                     "index": i, "title": c.title, "version": c.version, "score": c.score,
@@ -238,15 +258,28 @@ impl GlassApp {
                 json!({"phase": "result", "action": format!("{action:?}"),
                        "selection": {"handle": hex(&selection.handle), "expected_version": selection.expected_version}, "outcome": o})
             }
-            ShellState::Error { selection, error } => {
-                let e = match error {
-                    ShellError::NothingFound => json!({"kind": "nothing_found"}),
-                    ShellError::Denied { code, stage, reason } => json!({"kind": "denied", "code": format!("{code:?}"), "contract_code": code.contract_code(), "stage": format!("{stage:?}"), "reason": reason}),
-                    ShellError::Executor { status } => json!({"kind": "executor", "status": status}),
-                };
-                json!({"phase": "error", "error": e,
-                       "selection": selection.map(|s| json!({"handle": hex(&s.handle), "expected_version": s.expected_version}))})
-            }
+            ShellState::Error { selection, error } => match error {
+                // Intent returned no real row. Still a Proposal: no invented app, URL, or channel.
+                ShellError::NothingFound => json!({
+                    "phase": "glass",
+                    "utterance": self.last_utterance,
+                    "auto_resolve": false,
+                    "authority": false,
+                    "rationale": catalog::ZERO_MATCH_RATIONALE,
+                    "candidates": [],
+                    "dismiss": "chiudi",
+                }),
+                ShellError::Denied { code, stage, reason } => json!({
+                    "phase": "error",
+                    "error": {"kind": "denied", "code": format!("{code:?}"), "contract_code": code.contract_code(), "stage": format!("{stage:?}"), "reason": reason},
+                    "selection": selection.map(|s| json!({"handle": hex(&s.handle), "expected_version": s.expected_version})),
+                }),
+                ShellError::Executor { status } => json!({
+                    "phase": "error",
+                    "error": {"kind": "executor", "status": status},
+                    "selection": selection.map(|s| json!({"handle": hex(&s.handle), "expected_version": s.expected_version})),
+                }),
+            },
         };
         json!({
             "state": state,

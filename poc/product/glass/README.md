@@ -8,9 +8,10 @@ la crittografia garantisce."
 utterance --POST /submit--> ShellRuntime::submit -> IntentEngine
    lanes: BM25 (Rust, vela-intent)  +  M0 (poc/m0/bridge_recall.py: e5-small dense + LanceDB BM25 + RRF)
    -> RRF k=60 -> Candidates (data only, auto_resolve=false)  -> glass page
-click Avvia / Rivedi piano --POST /click {action, candidate INDEX}-->
+click Seleziona (synonym Scegli proposta) / Rivedi piano --POST /click {action, candidate INDEX}-->
    ShellRuntime::click -> UserSelection{handle, expected_version} (re-derived from the shown row)
-   -> TrustedSelectionChannel -> SelectionGatedPdp::admit_task_at -> (Avvia) HostExecutor
+   Intent boundary: the click is that UserSelection only. Intent does not execute.
+   -> TrustedSelectionChannel -> SelectionGatedPdp::admit_task_at -> host shell may dispatch
 ```
 
 ## Surfaces
@@ -43,9 +44,15 @@ Each M0 query spawns the Python bridge (cold model load: ~5-11 s on this host).
 
 ## Guarantees (tested, host model)
 
+* The primary gesture is labeled Seleziona. Scegli proposta is the same gesture's secondary name.
+  The click body is `{ action: "avvia", candidate index }`. Intent boundary: that click is a
+  `UserSelection` only. Intent does not execute. Glass has no execute route.
 * Only `POST /click` with `avvia`/`rivedi` and a shown candidate index reaches the PDP.
   Bodies carrying `handle`, `expected_version`, `selection`, `frame`, `grant`, `ttl`, ... are 400.
   No `/admit`, `/grant`, `/select`, `/execute` route (404).
+* Zero observed matches still open a Proposal. The row says «nessun match osservato»
+  (zero match osservati) and `authority` is false. Glass does not invent apps, URLs, or channels,
+  and it does not present an empty list as success.
 * Loopback bind, `Host` pinned to the bound port, per-run token, `application/json`
   required, foreign `Origin` refused; untrusted text rendered via `textContent` only.
 * M0 lane fails closed (empty lane) on missing checkout, timeout, schema error,

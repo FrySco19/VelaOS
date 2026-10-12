@@ -68,9 +68,18 @@ pub const SUBMIT_FIELDS: &[&str] = &["token", "utterance"];
 /// JSON keys `POST /click` may carry. Anything else is rejected.
 pub const CLICK_FIELDS: &[&str] = &["token", "action", "candidate"];
 
-/// Click actions the shell accepts. The wire name `rivedi` is the
-/// "Rivedi piano" gesture. No other action is a Glass gesture.
+/// Click actions the shell accepts. The wire name `avvia` is the primary
+/// gesture labeled Seleziona. Scegli proposta is that same gesture's secondary
+/// name. The wire name `rivedi` is "Rivedi piano". No other action is a Glass
+/// gesture. Intent boundary: the click is a UserSelection only, never execute.
 pub const ALLOWED_CLICK_ACTIONS: &[&str] = &["avvia", "rivedi", "annulla", "chiudi"];
+
+/// Rationale on a Proposal when Intent observed no real candidate.
+/// Not an app, a URL, or a channel.
+pub const ZERO_MATCH_RATIONALE: &str = "nessun match osservato";
+
+/// Secondary line for that same empty observation.
+pub const ZERO_MATCH_ROW: &str = "zero match osservati";
 
 /// Paths that must stay absent. They would skip the shell click.
 pub const FORBIDDEN_ROUTES: &[&str] = &[
@@ -225,23 +234,23 @@ pub static COMPONENTS: &[Component] = &[
     },
     Component {
         name: "Proposal panel",
-        purpose: "The shell's glass phase, as data. The objective lead is the utterance in body type. Rows show index, title, version, score, sources, and a handle in hex for audit. auto_resolve stays false.",
-        when_allowed: "Only while the shell is in the glass phase and is showing the panel, for candidates the shell is showing.",
-        must_not: "Must not let the page post a handle or version back, collect the objective here, style the list as a policy decision, or hide that the rows authorize nothing.",
+        purpose: "The shell's glass phase, as data. The objective lead is the utterance in body type. Rows show index, title, version, score, sources, and a handle in hex for audit. auto_resolve stays false. authority stays false. A real Intent row, such as one titled by the corpus, is shown with that title only. When Intent returns zero real matches the panel still opens: the row is the rationale «nessun match osservato» (zero match osservati), not a blank panel and not an invented app, URL, or channel.",
+        when_allowed: "While the shell is showing the panel, for candidates Intent actually returned. Also when Intent observed zero matches: one rationale row, no candidate index.",
+        must_not: "Must not let the page post a handle or version back, collect the objective here, style the list as a policy decision, hide that the rows authorize nothing, invent a candidate when the list is empty, or present an empty list as success.",
         shell_toolbar: "Content above windows and desktop content. Not over the top bar or the dock, and not the side panel.",
-        intent: "Rows are Intent candidates, data only.",
-        policy: "Showing the panel issues no grant, frame, or selection.",
+        intent: "Rows are Intent candidates, data only. Zero matches stay an observation. Intent does not invent a row.",
+        policy: "Showing the panel issues no grant, frame, or selection. authority is false until a gesture on a shown index.",
         layer: OVER,
         verdict: ALLOW,
     },
     Component {
         name: "Gesture row",
-        purpose: "Avvia is the one teal primary (#2EC4B6) on a shown index. Rivedi piano, Annulla, and Chiudi stay neutral. Annulla authorizes nothing. Chiudi dismisses a result or an error.",
-        when_allowed: "Avvia and Rivedi piano only in the glass phase on a shown index. Annulla only from that phase. Chiudi only from result or error.",
-        must_not: "Must not add actions, paint a dock underline, click a row the panel is not showing, or skip ShellRuntime::click.",
-        shell_toolbar: "Gestures are shell clicks. The toolbar does not gain these buttons.",
-        intent: "The index picks a shown Intent row. Intent does not choose.",
-        policy: "The shell re-derives UserSelection and asks the PDP. The gesture is not itself a grant. Annulla authorizes nothing.",
+        purpose: "Seleziona is the one teal primary (#2EC4B6) on a shown index. Scegli proposta is the secondary name of that same gesture. Rivedi piano, Annulla, and Chiudi stay neutral. Annulla authorizes nothing. Chiudi dismisses a result, an error, or a zero-match proposal. The click body is { action, candidate index } and never a handle.",
+        when_allowed: "Seleziona and Rivedi piano only in the glass phase on a shown index. No Seleziona on a zero-match row: there is no index. Annulla only from the glass phase when a row is shown. Chiudi from result, error, or a zero-match proposal.",
+        must_not: "Must not add actions, paint a dock underline, click a row the panel is not showing, skip ShellRuntime::click, or send a handle with the click.",
+        shell_toolbar: "Gestures are shell clicks. The toolbar does not gain Seleziona or Rivedi piano. The shell re-derives UserSelection { handle, expected_version } from the displayed row.",
+        intent: "Intent boundary: the click is a UserSelection only, never execute. The index picks a shown Intent row. Intent does not choose and does not confirm.",
+        policy: "The shell re-derives UserSelection and asks the PDP. The gesture is not itself a grant. Intent never executes, and Glass has no execute route. Rivedi piano can admit without dispatch. The host shell avvia click can admit and dispatch only after that selection. Annulla authorizes nothing. A wrong state or an unshown index is refused.",
         layer: OVER,
         verdict: ALLOW,
     },
@@ -258,7 +267,7 @@ pub static COMPONENTS: &[Component] = &[
     },
     Component {
         name: "Outcome panel",
-        purpose: "What the shell recorded after a gesture, in body-strong type: executed, reviewed, denied with a stable code, nothing found, or an executor status. Not a second accent.",
+        purpose: "What the shell recorded after a gesture, in body-strong type: executed, reviewed, denied with a stable code, or an executor status. A zero-match observation is a Proposal, not this panel. Not a second accent.",
         when_allowed: "After the shell enters result or error, until Chiudi.",
         must_not: "Must not mint a grant, extend a TTL, retry a denial, or present generated text as the original object.",
         shell_toolbar: "Displays shell state above the base. Does not replace the toolbar.",
@@ -417,14 +426,14 @@ pub static INVENTORY: &[InventoryItem] = &[
         symbol: "main#panel candidates",
         verdict: ALLOW,
         component: "Proposal panel",
-        note: "Candidate rows in the glass phase. Objective lead is the utterance. Handle hex is display only.",
+        note: "Candidate rows in the glass phase. Objective lead is the utterance. Handle hex is display only. An empty candidate list renders the zero-match rationale, not a blank panel.",
     },
     InventoryItem {
         path: "assets/glass.html",
         symbol: "gesture buttons",
         verdict: ALLOW,
         component: "Gesture row",
-        note: "Avvia, Rivedi piano, Annulla, Chiudi. They post an action and, when needed, an index.",
+        note: "Seleziona (Scegli proposta), Rivedi piano, Annulla, Chiudi. They post an action and, when needed, an index. The click is a UserSelection only.",
     },
     InventoryItem {
         path: "assets/glass.html",
@@ -704,9 +713,26 @@ mod tests {
         let page = crate::PAGE;
         assert!(page.contains("proposta · handle "));
         assert!(page.contains("c.handle"));
+        assert!(page.contains("c.title"));
+        assert!(page.contains("\"Seleziona\""));
+        assert!(!page.contains("\"Avvia\""));
         assert!(page.contains("click(\"avvia\", c.index)"));
         assert!(page.contains("click(\"rivedi\", c.index)"));
         assert!(!page.contains("c.handle,"));
+        assert!(page.contains(ZERO_MATCH_RATIONALE));
+        assert!(page.contains(ZERO_MATCH_ROW));
+        assert!(page.contains("authority=false"));
+        let gesture = COMPONENTS.iter().find(|c| c.name == "Gesture row").unwrap();
+        assert!(gesture.purpose.contains("Seleziona"));
+        assert!(gesture.purpose.contains("Scegli proposta"));
+        assert!(gesture.intent.contains("UserSelection only, never execute"));
+        let gesture_doc = section(DOC, "Gesture row");
+        assert!(gesture_doc.contains("Seleziona") && gesture_doc.contains("Scegli proposta"));
+        assert!(gesture_doc.contains("UserSelection only, never execute"));
+        let proposal_doc = section(DOC, "Proposal panel");
+        assert!(proposal_doc.contains(ZERO_MATCH_RATIONALE));
+        assert!(proposal_doc.contains(ZERO_MATCH_ROW));
+        assert!(proposal_doc.contains("authority"));
         assert!(page.contains("--font-family: Inter,"));
         assert!(page.contains("--accent-teal: #2EC4B6"));
         assert!(page.contains("--glass-ephemeral-blur: 20px"));

@@ -199,6 +199,43 @@ fn ai_only_path_is_policy_denied_and_the_glass_shows_but_does_not_act() {
 }
 
 #[test]
+fn zero_match_stays_a_proposal_and_invents_nothing() {
+    let mut a = app();
+    let r = submit(&mut a, "zzzqqqplugh");
+    assert_eq!(r.status, 200, "{}", r.body);
+    let v = r.json_body();
+    assert_eq!(v["state"]["phase"], "glass");
+    assert_eq!(v["state"]["utterance"], "zzzqqqplugh");
+    assert_eq!(v["state"]["auto_resolve"], false);
+    assert_eq!(v["state"]["authority"], false);
+    assert_eq!(v["state"]["dismiss"], "chiudi");
+    assert!(v["state"]["candidates"].as_array().unwrap().is_empty());
+    let rationale = v["state"]["rationale"].as_str().unwrap();
+    assert!(
+        rationale.contains("nessun match osservato") || rationale.contains("zero match osservati"),
+        "{rationale}"
+    );
+    let blob = r.body.to_ascii_lowercase();
+    assert!(!blob.contains("http://") && !blob.contains("https://"), "no invented url");
+    assert!(!blob.contains("geolier"), "a missing match is not a fabricated row");
+    assert_eq!(counters(&a), (0, 0, 0), "a zero-match proposal authorizes nothing");
+    assert_eq!(click(&mut a, json!({"action": "avvia", "candidate": 0})).status, 409);
+    assert_eq!(counters(&a), (0, 0, 0));
+    assert_eq!(click(&mut a, json!({"action": "chiudi"})).json_body()["state"]["phase"], "idle");
+}
+
+#[test]
+fn shown_candidate_row_keeps_its_title_for_seleziona() {
+    let mut a = app();
+    let v = submit(&mut a, QUERY).json_body();
+    let c0 = &v["state"]["candidates"][0];
+    assert_eq!(c0["title"], "Recorded configuration");
+    assert!(c0["handle"].as_str().unwrap().chars().all(|ch| ch.is_ascii_hexdigit()));
+    assert_eq!(v["state"]["authority"], false);
+    assert!(c0.get("url").is_none());
+}
+
+#[test]
 fn bm25_only_engine_ranks_with_real_bm25_and_no_stand_in_lane() {
     let p = IntentEngine::bm25_only(corpus()).propose_candidates("note progetto VelaOS");
     assert_eq!(p.candidates[0].handle, NOTES);
@@ -237,7 +274,9 @@ fn real_loopback_socket_serves_page_and_click_flow() {
     });
     let (st, page) = http(port, format!("GET / HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\n\r\n"));
     assert_eq!(st, 200);
-    assert!(page.contains(TOKEN) && page.contains("Avvia") && page.contains("Rivedi piano"));
+    assert!(page.contains(TOKEN) && page.contains("Seleziona") && page.contains("Rivedi piano"));
+    assert!(!page.contains("\"Avvia\""));
+    assert!(page.contains("nessun match osservato") && page.contains("zero match osservati"));
     assert!(!page.contains("__VELA_TOKEN__"));
     let (st, _) = http(port, post_raw(port, "/submit", &json!({"token": TOKEN, "utterance": QUERY}).to_string()));
     assert_eq!(st, 200);

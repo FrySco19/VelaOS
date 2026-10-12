@@ -224,23 +224,23 @@ stand-in. The Proposal panel shows the utterance.
 
 - **Layer:** ephemeral overlay
 - **Verdict:** allow
-- **Purpose:** The shell's glass phase, shown as data. The objective lead is the utterance, body type, theme text colour, not teal and not muted. Rows show candidate index, title, version, score, sources, and the handle in hex so a person can audit the row. `auto_resolve` stays false. The page never sends that handle back.
-- **When allowed:** Only while the shell is in the glass phase and is showing the panel, and only for candidates the shell is actually showing.
-- **Must not:** Must not let the page post a handle or version. Must not collect the objective in this panel. Must not style the list as a policy decision. Must not hide that showing the rows authorizes nothing. Counters stay at zero until a gesture.
+- **Purpose:** The shell's glass phase, shown as data. The objective lead is the utterance, body type, theme text colour, not teal and not muted. Rows show candidate index, title, version, score, sources, and the handle in hex so a person can audit the row. `auto_resolve` stays false. `authority` stays false. A real Intent row is shown with the title Intent returned, and no other. When Intent returns zero real matches the panel still opens: the row is the rationale «nessun match osservato» (zero match osservati), not a blank panel and not an invented app, URL, or channel. The page never sends a handle back.
+- **When allowed:** While the shell is showing the panel, for candidates Intent actually returned. Also when Intent observed zero matches: one rationale row, no candidate index.
+- **Must not:** Must not let the page post a handle or version. Must not collect the objective in this panel. Must not style the list as a policy decision. Must not hide that showing the rows authorizes nothing. Must not invent a candidate when the list is empty, or present an empty list as success. Counters stay at zero until a gesture on a shown index.
 - **Shell / toolbar:** Content above windows and desktop content, never over the top-bar band or the dock hit area. Not an application dock, not the side panel, and not a menu on the toolbar.
-- **Intent:** Rows are Intent candidates (BM25, M0, RRF). Data only. The model does not pick the row.
-- **Policy:** Showing the panel issues no grant, no frame, and no `UserSelection`. Admission happens only after a gesture, inside the shell.
+- **Intent:** Rows are Intent candidates (BM25, M0, RRF). Data only. The model does not pick the row. Zero matches stay an observation. Intent does not invent a row.
+- **Policy:** Showing the panel issues no grant, no frame, and no `UserSelection`. `authority` is false until a gesture on a shown index. Admission happens only after that gesture, inside the shell.
 
 ### Gesture row
 
 - **Layer:** ephemeral overlay
 - **Verdict:** allow
-- **Purpose:** The only actions. Avvia is the one teal primary (`#2EC4B6`) and takes the index of a shown candidate. Rivedi piano, Annulla, and Chiudi stay neutral. Annulla returns to idle and authorizes nothing. Chiudi dismisses a result or an error. Wire names: `avvia`, `rivedi`, `annulla`, `chiudi`. The click body is `{ action, candidate index }` and never a handle.
-- **When allowed:** Avvia and Rivedi piano only in the glass phase, and only on an index the panel is showing. Annulla only from that phase. Chiudi only from result or error. Any other action is rejected.
+- **Purpose:** The only actions. Seleziona is the one teal primary (`#2EC4B6`) and takes the index of a shown candidate. Scegli proposta is the secondary name of that same gesture. Rivedi piano, Annulla, and Chiudi stay neutral. Annulla returns to idle and authorizes nothing. Chiudi dismisses a result, an error, or a zero-match proposal. Wire names: `avvia`, `rivedi`, `annulla`, `chiudi`. The click body is `{ action, candidate index }` and never a handle.
+- **When allowed:** Seleziona and Rivedi piano only in the glass phase, and only on an index the panel is showing. No Seleziona on a zero-match row: there is no index. Annulla only from the glass phase when a row is shown. Chiudi from result, error, or a zero-match proposal. Any other action is rejected.
 - **Must not:** Must not add actions (`approve_all`, grant, select, admit). Must not click a row that is not shown. Must not skip `ShellRuntime::click`. Must not send a handle with the click.
-- **Shell / toolbar:** These are shell clicks. The toolbar does not gain Avvia or Rivedi piano. The shell re-derives `UserSelection { handle, expected_version }` from the displayed row.
-- **Intent:** The index picks a shown Intent row. Intent does not choose and does not confirm.
-- **Policy:** The shell asks the PDP with the selection it derived. The gesture is not itself a grant. Rivedi piano can admit without dispatch. Avvia can admit and dispatch. Annulla authorizes nothing. A wrong state or an unshown index is refused.
+- **Shell / toolbar:** These are shell clicks. The toolbar does not gain Seleziona or Rivedi piano. The shell re-derives `UserSelection { handle, expected_version }` from the displayed row.
+- **Intent:** Intent boundary: the click is a UserSelection only, never execute. The index picks a shown Intent row. Intent does not choose and does not confirm.
+- **Policy:** The shell asks the PDP with the selection it derived. The gesture is not itself a grant. Intent never executes, and Glass has no execute route. Rivedi piano can admit without dispatch. The host shell `avvia` click can admit and dispatch only after that selection. Annulla authorizes nothing. A wrong state or an unshown index is refused.
 
 ### Rationale note
 
@@ -257,7 +257,7 @@ stand-in. The Proposal panel shows the utterance.
 
 - **Layer:** ephemeral overlay
 - **Verdict:** allow
-- **Purpose:** What the shell recorded after a gesture, in body-strong type. Executed, reviewed, denied (stable code, stage, reason), nothing found, or an executor status. The selection the shell emitted may be shown for audit, including when the grant is valid until. Outcome text is not a second accent.
+- **Purpose:** What the shell recorded after a gesture, in body-strong type. Executed, reviewed, denied (stable code, stage, reason), or an executor status. A zero-match observation is a Proposal, not this panel. The selection the shell emitted may be shown for audit, including when the grant is valid until. Outcome text is not a second accent.
 - **When allowed:** After the shell enters result or error, until Chiudi.
 - **Must not:** Must not mint a grant, extend a TTL, or retry a denial. Must not restyle a denial as a model success. Must not present generated text as the original object. Must not offer a generic confirm that commits a further effect.
 - **Shell / toolbar:** Displays shell state above the base. Does not replace the toolbar.
@@ -296,7 +296,7 @@ the §7 ISO does not serve it.
 
 What the crate contains today, classified. Allow rows are the overlay and the
 transport. Deny rows are either banned paths or host-demo stand-ins that must
-not grow. Ephemeral panels in `assets/glass.html` consume the Art tokens (Inter, ephemeral frost, teal on Avvia only).
+not grow. Ephemeral panels in `assets/glass.html` consume the Art tokens (Inter, ephemeral frost, teal on Seleziona only).
 
 | Path | Symbol | Verdict | Component | Note |
 | --- | --- | --- | --- | --- |
@@ -311,8 +311,8 @@ not grow. Ephemeral panels in `assets/glass.html` consume the Art tokens (Inter,
 | `src/catalog.rs` | `COMPONENTS` | allow | — | These rules. Not a surface. |
 | `assets/glass.html` | `#q / #go` | deny | Objective surface | Host-demo stand-in of the Shell top-bar search. Not product Glass chrome. Do not grow it into a toolbar. |
 | `assets/glass.html` | `header.glass` | deny | Top system bar | Persistent branded header. Stand-in of a toolbar. Do not grow it into the §7 bar. |
-| `assets/glass.html` | `main#panel candidates` | allow | Proposal panel | Candidate rows in the glass phase. Objective lead is the utterance. Handle hex is display only. |
-| `assets/glass.html` | `gesture buttons` | allow | Gesture row | Avvia, Rivedi piano, Annulla, Chiudi. |
+| `assets/glass.html` | `main#panel candidates` | allow | Proposal panel | Candidate rows in the glass phase. Objective lead is the utterance. Handle hex is display only. An empty candidate list renders the zero-match rationale, not a blank panel. |
+| `assets/glass.html` | `gesture buttons` | allow | Gesture row | Seleziona (Scegli proposta), Rivedi piano, Annulla, Chiudi. The click is a UserSelection only. |
 | `assets/glass.html` | `.note` | allow | Rationale note | Unverified model text. `textContent` only. No effect. |
 | `assets/glass.html` | `result/error` | allow | Outcome panel | Renders the shell result or error. Does not mint the grant it displays. |
 | `assets/glass.html` | `footer#foot` | allow | Audit strip | Lanes, M0, selection count, grant count, frame count, trace. Display only. |
