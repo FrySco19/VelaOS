@@ -59,8 +59,16 @@ const MARKERS: &[&str] = &[
     "E2E N3: output for AI-only request=11 -> status=10 not persisted",
     "E2E N4: forged receipt rejected by PCB notary",
     "E2E N5: replayed admission request=12 status=4 attempts=6 (no Wasm, no commit)",
+    // M-CLK-3: trusted in-guest monotonic clock for grant TTL.
+    "E2E CLK: guest monotonic CNTPCT_EL0 freq=",
+    "E2E CLK [1]: request=12 grant ttl=120s alive in-guest remaining_ms=",
+    "E2E CLK [2]: request=13 grant ttl=1s expired in-guest after ",
+    "-> EXPIRED code=7, result discarded, no LFS commit",
     "ALL E2E CHECKS PASSED; intent -> selection -> grant -> Wasm 21 -> receipt notarized",
 ];
+
+/// Must never appear: an expired grant reaching the LFS writer.
+const FORBIDDEN: &[&str] = &["LFS committed epoch=1 request=13", "LFS refused request=13"];
 
 fn main() {
     let args: Vec<_> = env::args().collect();
@@ -113,6 +121,9 @@ fn main() {
             1,
             "missing/duplicate marker: {marker}"
         );
+    }
+    for forbidden in FORBIDDEN {
+        assert!(!log.contains(forbidden), "expired grant reached LFS: {forbidden}");
     }
     for line in log.lines().filter(|line| line.starts_with("VelaOS ")) {
         println!("{line}");

@@ -49,7 +49,8 @@ COPY Makefile executor.system executor-e2e.system check-wx.py ./
 COPY app/ ./app/
 
 RUN chmod +x app/rustc-wrapper.sh
-RUN test -s app/generated/e2e_frame.bin && test -s app/generated/e2e_meta.bin
+RUN test -s app/generated/e2e_frame.bin && test -s app/generated/e2e_meta.bin \
+    && test -s app/generated/e2e_frame_short.bin && test -s app/generated/e2e_clock.bin
 RUN --mount=type=secret,id=pcb_seed,required=true --mount=type=secret,id=lfs_seed,required=true \
     VELA_PCB_SEED=/run/secrets/pcb_seed VELA_LFS_SEED=/run/secrets/lfs_seed make build E2E=1
 

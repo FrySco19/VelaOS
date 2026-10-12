@@ -16,7 +16,7 @@ ifeq ($(E2E),1)
 SYSTEM_FILE := executor-e2e.system
 CARGO_FEATURES := --features e2e
 LFS_ELF := $(BUILD)/lfs.elf
-E2E_INPUTS := app/src/bin/lfs.rs app/generated/e2e_frame.bin app/generated/e2e_meta.bin
+E2E_INPUTS := app/src/bin/lfs.rs app/src/guest_clock.rs app/generated/e2e_frame.bin app/generated/e2e_meta.bin app/generated/e2e_frame_short.bin app/generated/e2e_clock.bin
 else
 SYSTEM_FILE := executor.system
 CARGO_FEATURES :=

@@ -40,6 +40,10 @@ pub mod pipeline;
 /// M-G1c LFS writer + PCB notary orchestration (State Ledger).
 pub mod ledger;
 
+/// M-CLK-3: in-guest monotonic deadline logic (same file the QEMU PCB compiles).
+#[path = "../../app/src/guest_clock.rs"]
+pub mod guest_clock;
+
 /// M-CLK-1: injectable trusted clock (wall for minting, monotonic for TTL).
 pub mod clock;
 

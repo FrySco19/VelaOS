@@ -27,6 +27,9 @@ const USER: &str = "vela-user";
 const EPOCH: u64 = 1;
 const DENIED_ID: u32 = 11;
 const ADMITTED_ID: u32 = 12;
+/// M-CLK-3: second admission whose grant TTL is 1 s (expires in-guest).
+const SHORT_ID: u32 = 13;
+const SHORT_TTL_SECS: u64 = 1;
 const FUEL: u64 = 10_000;
 
 fn seed(path: &Path, create: bool) -> [u8; 32] {
@@ -139,6 +142,31 @@ fn main() {
     fs::write(out.join("e2e_frame.bin"), admission.frame.as_slice()).unwrap();
     fs::write(out.join("e2e_meta.bin"), meta).unwrap();
 
+    // [M-CLK-3] Second explicit UserSelection, grant TTL 1 s. The guest PCB
+    // anchors this TTL on its own monotonic counter and must refuse to commit
+    // the result once it is dead.
+    let short_selection = channel.select(top, candidates[0].version);
+    let short = TaskRequest {
+        selection: Some(short_selection),
+        request_id: SHORT_ID,
+        ttl: Duration::from_secs(SHORT_TTL_SECS),
+        planner_note: String::new(),
+        ..base.clone()
+    };
+    let short_admission = match pdp.admit_task_at(&short, now) {
+        TaskOutcome::Admitted(a) => a,
+        TaskOutcome::Denied { code, stage, reason } => panic!("{code:?} at {stage:?}: {reason}"),
+    };
+    assert_eq!(pdp.frames_signed(), 2);
+    let short_ttl = short_admission.not_after.duration_since(now).unwrap().as_secs();
+    assert_eq!(short_ttl, SHORT_TTL_SECS);
+    let mut clock = [0u8; 16];
+    clock[0..4].copy_from_slice(b"VCLK");
+    clock[4..8].copy_from_slice(&SHORT_ID.to_le_bytes());
+    clock[8..16].copy_from_slice(&short_ttl.to_le_bytes());
+    fs::write(out.join("e2e_frame_short.bin"), short_admission.frame.as_slice()).unwrap();
+    fs::write(out.join("e2e_clock.bin"), clock).unwrap();
+
     println!("intent: {intent:?} -> {} candidates (data only)", candidates.len());
     println!("AI-only request {DENIED_ID}: {deny_code:?} (code {}), frames_signed=0", deny_code.contract_code());
     println!(
@@ -148,5 +176,6 @@ fn main() {
         admission.authority_digest.iter().take(8).map(|b| format!("{b:02x}")).collect::<String>()
     );
     println!("admitted request {ADMITTED_ID}: frame {} B payload, fuel {FUEL}", admission.payload.len());
+    println!("admitted request {SHORT_ID}: grant ttl {short_ttl}s (guest clock expiry check)");
     println!("wrote {}", out.display());
 }
