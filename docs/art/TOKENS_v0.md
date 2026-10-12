@@ -127,8 +127,12 @@ Tokens:
 
 - `--sidepanel-present: always`
 - `--sidepanel-edge: right` (default; left only if Francesco says)
-- `--sidepanel-frost: ephemeral` (uses `--glass-ephemeral-*`, or shell frost if Shell owns the chrome). Shell owns chrome z-order. The panel is Shell chrome, not a Glass overlay. Denied-list exception: this is shell chrome.
+- `--sidepanel-frost: permanent` — permanent shell frost stack (`--glass-frost-blur` 24px / saturate 140% / opacity 0.72), matching Shell SHELL_SPEC_v0. Shell owns chrome z-order. The panel is Shell chrome, not a Glass overlay. Denied-list exception: this is shell chrome.
 - `--sidepanel-transition: 180ms` ease for level changes anytime
+
+Ephemeral Glass overlays stay 20px/0.88 and are NOT the side panel.
+
+The panel is not a chat — no bubbles/thread; Objective→Proposal→Gesture→Audit; same frost language as toolbar.
 
 Levels do not require a reboot. The preference persists for the session.
 
