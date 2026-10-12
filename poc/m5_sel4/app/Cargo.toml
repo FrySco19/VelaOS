@@ -1,0 +1,31 @@
+[package]
+name = "velaos-gate-a-hello"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.92"
+publish = false
+autobins = false
+
+[[bin]]
+name = "pcb"
+path = "src/pcb.rs"
+
+[[bin]]
+name = "orchestrator"
+path = "src/orchestrator.rs"
+
+[[bin]]
+name = "bus"
+path = "src/bus.rs"
+
+[[bin]]
+name = "lfs"
+path = "src/lfs.rs"
+
+[[bin]]
+name = "executor"
+path = "src/executor.rs"
+
+[dependencies]
+sel4-microkit = { git = "https://github.com/seL4/rust-sel4", rev = "d441a880938209f661201704dfbee7b91c5aa905" }
+wasmi = { version = "=2.0.0", default-features = false, features = ["stable", "validate", "prefer-btree-collections"] }

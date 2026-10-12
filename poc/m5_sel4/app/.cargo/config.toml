@@ -1,0 +1,14 @@
+[env]
+RUST_TARGET_PATH = { value = "targets", relative = true }
+
+[build]
+target = "aarch64-sel4-microkit"
+rustc-wrapper = "./rustc-wrapper.sh"
+
+[unstable]
+unstable-options = true
+build-std = ["core", "alloc", "compiler_builtins"]
+build-std-features = ["compiler-builtins-mem"]
+
+[resolver]
+incompatible-rust-versions = "fallback"

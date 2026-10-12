@@ -1,0 +1,10 @@
+{
+  "all_under_5ms": true,
+  "capability_verifications": 6000,
+  "llm_calls": 0,
+  "m3_gate_closed": false,
+  "max_ms": 0.7508,
+  "p95_ms": 0.21760000000000002,
+  "samples": 6000,
+  "scope": "ready in-process proposal-cache hit plus fresh Biscuit authorization; no service dispatch or object bytes"
+}

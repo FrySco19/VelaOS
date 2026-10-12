@@ -2,6 +2,32 @@
 
 VelaOS si basa su software esistente. Copyright e licenze dei rispettivi autori restano validi.
 
+## Runtime Neural e anteprima seL4 corrente
+
+I crate Rust M0–M4 e il port M5 sono identificati dai rispettivi `Cargo.toml` e
+lockfile. Le loro licenze esplicite prevalgono sul default del repository. Il
+port usa Microkit SDK 2.3.0 verificato con SHA-256 e `rust-sel4` alla revisione
+`d441a880938209f661201704dfbee7b91c5aa905`.
+
+Il manifest ufficiale Microkit 2.3.0 fissa il kernel seL4 a
+`6e7c3b733d296cfd88d5fbf635c96e447a882374` e Microkit a
+`8780fab8699f5aeec109b21325ff37c741736b24`. La preview include archivi sorgente
+corrispondenti di kernel, Microkit e Rust/seL4 insieme alle immagini e checksum;
+conservano licenze e intestazioni originali. Vedere il
+[manifest upstream](https://github.com/seL4/microkit-manifest/blob/2.3.0/default.xml)
+e [licenze Microkit](https://github.com/seL4/microkit/blob/2.3.0/LICENSE.md).
+I componenti non sono tutti sotto una singola licenza Vela: il kernel e i servizi
+upstream mantengono i rispettivi copyright/SPDX.
+
+I pesi SLM, gli asset di embedding e i DLL CUDA non sono inclusi nelle immagini
+seL4 o negli archivi sorgente Vela. Il bootstrap nativo verifica gli asset
+fissati; le condizioni dei rispettivi fornitori restano applicabili.
+
+## Preview desktop storica Debian/KDE
+
+La tabella e le note ISO seguenti descrivono la precedente preview desktop,
+non i contenuti dell'attuale loader QEMU Neural/seL4.
+
 | Componente | Origine e note |
 | --- | --- |
 | Debian 13, kernel e pacchetti | [Debian](https://www.debian.org/); licenze dei singoli pacchetti in `/usr/share/doc/<pacchetto>/copyright` nella ISO |

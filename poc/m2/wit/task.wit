@@ -1,5 +1,10 @@
 package vela:task@1.0.0;
 
+interface object-access {
+    read: func(handle: list<u8>, maximum: u32) -> result<list<u8>, string>;
+}
+
 world task {
+    import object-access;
     export run: func(input: string) -> result<string, string>;
 }

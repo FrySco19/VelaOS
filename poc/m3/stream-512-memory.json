@@ -1,0 +1,18 @@
+{
+  "private_peak_sampled_bytes": 4545949696,
+  "whole_system_gate_passed": false,
+  "profile": "load-mode none, 512 context, all tensors CUDA0, KV offload, sleep idle 5s",
+  "idle_after": {
+    "working_set_bytes": 469155840,
+    "private_bytes": 842022912
+  },
+  "idle_before": {
+    "working_set_bytes": 353263616,
+    "private_bytes": 463642624
+  },
+  "working_peak_sampled_bytes": 589180928,
+  "planner_rounds": 1,
+  "date": "2026-10-11",
+  "scope": "Windows worker only; not complete OS",
+  "sample_interval_ms": 250
+}
