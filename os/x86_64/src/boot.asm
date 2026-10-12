@@ -11,7 +11,7 @@ align 8
     ; framebuffer request tag: 1024x768x32
     dw 5, 0
     dd 20
-    dd 1024, 768, 32
+    dd 1024, 768, 32              ; firmware mode; the kernel switches to the target mode via DISPI
 align 8
     dw 0, 0                       ; end tag
     dd 8
