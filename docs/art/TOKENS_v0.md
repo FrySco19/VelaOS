@@ -1,172 +1,171 @@
-# VelaOS Design Tokens v0
+# VelaOS Design Tokens v0 — QUALITY v1
 
-English visual-design tokens for Glass / Zero-App chrome (top bar, dock, ephemeral surfaces).
-Aligned to **ISO VB section 7** closed decisions (read-only reference: native shell at `vela/vbox-iso` / `os/x86_64/README.md` @ `60a5b8b`). This sheet does **not** redesign that shell and does **not** modify `os/x86_64/`.
+Executable sheet for Shell chrome and the host Glass demo. Geometry is ISO VB §7 (read-only: `os/x86_64/README.md` @ `60a5b8b` on `vela/vbox-iso`). Materials and type are upgraded here. This file lives at `docs/art/TOKENS_v0.md` on `art/tokens-v0`. It does not edit `os/x86_64/`.
 
-Branch base: `main` @ `6f05ff0`. Branch: `art/tokens-v0`.
+Host demo minimum: the utterance `ciao` is **body** copy. It stays readable on frost in Light and Deep.
 
-## No-conflict rules (ISO VB §7)
+## Typography (real)
 
-1. Do not change shell geometry or chrome layout described in §7 (top bar + floating bottom-centre dock; Focus hides both).
-2. Do not invent a second accent for “active”: active dock state is always **frosted tile + teal underline**.
-3. Dock glyph set and order are fixed: **Vela · Find · Spaces · Notes · Media · Settings** (six monochrome glyphs). Rename only with Francesco’s OK.
-4. Themes remain exactly **Light / Dawn / Deep** — no extra theme names in v0.
-5. Art tokens live under `docs/art/` (and future `art/*` branches). Component specs belong to Vela Glass UI / Vela Shell; kernel/shell pixels under `os/x86_64/` are out of scope for this branch.
-6. Never push these tokens onto `vela/vbox-iso` or `main` without Francesco’s OK.
+Family: **Inter**, then `"Segoe UI"`, `system-ui`, `sans-serif`.
 
-## Frost materials (Glass)
+```css
+--font-family: Inter, "Segoe UI", system-ui, sans-serif;
+```
 
-| Token | Value | Notes |
-|-------|-------|--------|
-| `--glass-frost-blur` | `24px` | Backdrop blur for bar, dock, ephemeral Glass |
-| `--glass-frost-saturate` | `140%` | Slight saturation lift over wallpaper |
-| `--glass-frost-opacity` | `0.72` | Fill opacity of frost layer |
-| `--glass-frost-border` | `rgba(255,255,255,0.18)` | Hairline highlight |
-| `--glass-frost-highlight` | `rgba(255,255,255,0.28)` | Top-edge sheen |
-| `--glass-frost-shadow` | `0 8px 28px rgba(0,0,0,0.28)` | Soft depth under floating chrome |
-| `--glass-ephemeral-opacity` | `0.88` | Short-lived Glass surfaces (higher than bar/dock) |
-| `--glass-ephemeral-blur` | `20px` | Slightly tighter blur for ephemeral panels |
+Chrome and Glass use this stack. Kernel bitmap and debug fonts stay off the top bar, dock, windows, and Glass.
 
-Wallpaper-derived blur only (v0.2 limit): windows behind bar/dock are not blurred.
+| Role | Size | Weight | Line-height | Tracking | Token prefix |
+|------|-----:|-------:|------------:|----------|--------------|
+| display | 28px | 600 | 1.2 | -0.02em | `--type-display` |
+| title | 20px | 600 | 1.25 | -0.01em | `--type-title` |
+| body | 15px | 400 | 1.45 | 0 | `--type-body` |
+| body-strong | 15px | 600 | 1.45 | 0 | `--type-body-strong` |
+| label | 13px | 500 | 1.35 | 0.01em | `--type-label` |
+| caption | 12px | 400 | 1.35 | 0.02em | `--type-caption` |
+| micro | 11px | 500 | 1.3 | 0.04em | `--type-micro` |
 
-## Teal underline (active)
+Each role sets `--type-<role>-size`, `--type-<role>-weight`, `--type-<role>-line`, `--type-<role>-tracking` to the four numbers above. Micro is tooltips only.
 
-| Token | Value | Notes |
-|-------|-------|--------|
-| `--accent-teal` | `#2EC4B6` | Primary accent; splash progress + active underline |
-| `--accent-teal-underline-height` | `2px` | Dock active underline thickness |
-| `--accent-teal-underline-opacity` | `1` | Solid underline (no glow in v0) |
-| `--accent-teal-underline-radius` | `1px` | Soften ends slightly |
-| `--accent-teal-muted` | `rgba(46,196,182,0.35)` | Inactive/hover wash |
+**Contrast AA**
 
-## Themes
+| Pair | Foreground | Ground |
+|------|------------|--------|
+| Deep body | `#E8EEF5` | Deep frost `rgba(20,28,44,0.70)` over `#0B1220` |
+| Light body | `#1A2332` | Light frost `rgba(255,255,255,0.78)` or `#FFFFFF` |
+| Dawn body | `#F2EDE4` | Dawn frost `rgba(42,52,68,0.72)` over `#1C2430` |
 
-Shared roles: `bg`, `surface`, `text`, `text-muted`, `accent`, `border`, `shadow`.
-`accent` maps to `--accent-teal` in all themes for v0.
+Primary copy (Objective, Proposal titles, Gesture labels, Outcome, the field that holds `ciao`) uses the body pair for the active theme. Muted (`#5B6B7C` / `#B7B0A4` / `#8B97A8`) is caption and audit metadata only. Teal `#2EC4B6` is accent only: the active dock underline and the one primary gesture. Teal is not used for long body text.
 
-### Light
+**Locale.** Default `en`. Alternate `it` (Welcome card and Settings, same as ISO §7). Strings stay one line: `white-space: nowrap`.
 
-| Token | Value |
-|-------|--------|
-| `--theme-light-bg` | `#F4F7F8` |
-| `--theme-light-surface` | `#FFFFFF` |
-| `--theme-light-text` | `#1A2332` |
-| `--theme-light-text-muted` | `#5B6B7C` |
-| `--theme-light-accent` | `var(--accent-teal)` |
-| `--theme-light-border` | `rgba(26,35,50,0.12)` |
-| `--theme-light-shadow` | `0 8px 24px rgba(26,35,50,0.10)` |
-| `--theme-light-frost-tint` | `rgba(255,255,255,0.78)` |
+| String | Role | Min content width |
+|--------|------|------------------:|
+| Conferma | body-strong 15px/600 | 88px |
+| Impostazioni | label 13px/500 | 108px |
+| Rivedi piano | body 15px/400 | 112px |
 
-### Dawn
+`ciao` uses body 15px/400, line-height 1.45, theme body color. It is not micro, not muted, and not teal.
 
-| Token | Value |
-|-------|--------|
-| `--theme-dawn-bg` | `#1C2430` |
-| `--theme-dawn-surface` | `#2A3444` |
-| `--theme-dawn-text` | `#F2EDE4` |
-| `--theme-dawn-text-muted` | `#B7B0A4` |
-| `--theme-dawn-accent` | `var(--accent-teal)` |
-| `--theme-dawn-border` | `rgba(242,237,228,0.14)` |
-| `--theme-dawn-shadow` | `0 10px 28px rgba(0,0,0,0.35)` |
-| `--theme-dawn-frost-tint` | `rgba(42,52,68,0.72)` |
+## Frost materials (credible)
 
-### Deep
+Permanent chrome (top bar, dock, windows) and ephemeral Glass share one stack. Ephemeral changes blur and fill opacity only.
 
-| Token | Value |
-|-------|--------|
-| `--theme-deep-bg` | `#0B1220` |
-| `--theme-deep-surface` | `#141C2C` |
-| `--theme-deep-text` | `#E8EEF5` |
-| `--theme-deep-text-muted` | `#8B97A8` |
-| `--theme-deep-accent` | `var(--accent-teal)` |
-| `--theme-deep-border` | `rgba(232,238,245,0.12)` |
-| `--theme-deep-shadow` | `0 12px 32px rgba(0,0,0,0.45)` |
-| `--theme-deep-frost-tint` | `rgba(20,28,44,0.70)` |
+| Token | Permanent | Ephemeral Glass |
+|-------|-----------|-----------------|
+| blur | `24px` `--glass-frost-blur` | `20px` `--glass-ephemeral-blur` |
+| saturate | `140%` `--glass-frost-saturate` | `140%` (same) |
+| opacity | `0.72` `--glass-frost-opacity` | `0.88` `--glass-ephemeral-opacity` |
+| frost-tint | per theme (below) | same tint |
+| border | `rgba(255,255,255,0.18)` `--glass-frost-border` | same |
+| highlight | `rgba(255,255,255,0.28)` `--glass-frost-highlight` | same |
+| shadow | `0 8px 28px rgba(0,0,0,0.28)` `--glass-frost-shadow` | same |
 
-Default first-boot theme: **Light** (Welcome card); Deep is the night-sea desktop reference.
+```css
+backdrop-filter: blur(var(--glass-frost-blur)) saturate(var(--glass-frost-saturate));
+background: var(--theme-frost-tint); /* opacity token multiplies the frost layer */
+```
 
-## Dock (familiar toolbar)
+Ephemeral panels set blur to `20px` and layer opacity to `0.88`.
 
-Geometry (ISO §7 — do not redesign):
+| Theme | `--theme-*-frost-tint` | bg | surface | text | text-muted |
+|-------|------------------------|----|---------|------|------------|
+| Light | `rgba(255,255,255,0.78)` | `#F4F7F8` | `#FFFFFF` | `#1A2332` | `#5B6B7C` |
+| Dawn | `rgba(42,52,68,0.72)` | `#1C2430` | `#2A3444` | `#F2EDE4` | `#B7B0A4` |
+| Deep | `rgba(20,28,44,0.70)` | `#0B1220` | `#141C2C` | `#E8EEF5` | `#8B97A8` |
 
-- Floating **bottom-centre**, frosted glass, **always visible** (`hiding: none`) except Focus mode.
-- Exactly **6** monochrome glyphs, fixed order:
+Accent on every theme: `#2EC4B6` (`--accent-teal`). Borders: Light `rgba(26,35,50,0.12)`, Dawn `rgba(242,237,228,0.14)`, Deep `rgba(232,238,245,0.12)`.
 
-| Index | Glyph id | Role |
-|------:|----------|------|
-| 1 | `vela` | Primary / Vela console |
-| 2 | `find` | Find / search |
-| 3 | `spaces` | Spaces (virtual desktops) |
+**Beauty.** The night-sea wallpaper and sail stay readable through frost. Blur is wallpaper-derived (ISO v0.2 limit: windows behind the bar and dock are not blurred). Fill opacity stays at 0.72 on permanent chrome so the sea is still visible; ephemeral Glass at 0.88 is for short-lived reading, then it closes.
+
+## Toolbar familiar (Shell)
+
+ISO §7 geometry. Do not resize or reorder.
+
+**Top bar.** Height `40px` (`--topbar-height`). Frost stack above (opacity 0.72). Left to right: sail (`18px`) + **VelaOS** · app menus · Spaces dots (`6px`, gap `6px`) · search / network / volume / battery (`16px`) · live date and time (weight 500). Item gap `12px`. Hidden only in Focus (`--topbar-hiding: focus-only`).
+
+**Dock.** Floating bottom-centre. Always visible except Focus. Frost pill, radius `20px`, outer height `64px`, padding `8px` `12px`, margin-bottom `16px`. Six monochrome glyphs, fixed order:
+
+| Index | Id | Label |
+|------:|----|-------|
+| 1 | `vela` | Vela |
+| 2 | `find` | Find |
+| 3 | `spaces` | Spaces |
 | 4 | `notes` | Notes |
 | 5 | `media` | Media |
 | 6 | `settings` | Settings |
 
-| Token | Value | Notes |
-|-------|-------|--------|
-| `--dock-height` | `64px` | Outer hit target height |
-| `--dock-padding-y` | `8px` | Vertical padding inside frost |
-| `--dock-padding-x` | `12px` | Horizontal padding |
-| `--dock-gap` | `8px` | Space between glyph cells |
-| `--dock-glyph-size` | `28px` | Monochrome icon optical size |
-| `--dock-cell-size` | `44px` | Square cell |
-| `--dock-radius` | `20px` | Frost pill radius |
-| `--dock-glyph-color` | `currentColor` | Monochrome; inherit theme text |
-| `--dock-glyph-opacity-idle` | `0.72` | Idle glyphs |
-| `--dock-glyph-opacity-active` | `1` | Active glyph |
-| `--dock-tile-frost-opacity` | `0.90` | Active frosted tile fill |
-| `--dock-tile-radius` | `14px` | Active tile corner |
-| `--dock-underline-width` | `20px` | Teal underline length under active tile |
-| `--dock-margin-bottom` | `16px` | Lift above screen edge |
+| Token | Value |
+|-------|-------|
+| `--dock-cell-size` | `44px` |
+| `--dock-glyph-size` | `28px` |
+| `--dock-gap` | `8px` |
+| `--dock-glyph-opacity-idle` | `0.72` |
+| `--dock-glyph-opacity-active` | `1` |
+| `--dock-glyph-color` | `currentColor` |
+| `--dock-tile-frost-opacity` | `0.90` |
+| `--dock-tile-radius` | `14px` |
+| `--accent-teal` | `#2EC4B6` |
+| `--accent-teal-underline-height` | `2px` |
+| `--dock-underline-width` | `20px` |
+| `--accent-teal-underline-radius` | `1px` |
 
-Active state = `--dock-tile-frost-*` + `--accent-teal` underline (`--accent-teal-underline-height`). No other active accent.
+**Active** = frost tile + teal underline `2px` high × `20px` wide. That is the only active accent. No second accent, no glow.
 
-## Top bar
+**Windows.** Controls `–` `□` `×` on the right (`12px` glyphs, gap `10px`). **Focus** (F11 / View / `focus`) hides top bar and dock. **Notifications** anchor top-right, inset `12px`, max width `320px`. Spaces are virtual desktops.
 
-| Token | Value | Notes |
-|-------|-------|--------|
-| `--topbar-height` | `40px` | Familiar top system bar |
-| `--topbar-frost-opacity` | `0.70` | Frost fill |
-| `--topbar-item-gap` | `12px` | Cluster spacing |
-| `--topbar-icon-size` | `16px` | Status icons (search, network, volume, battery) |
-| `--topbar-clock-weight` | `500` | Live date + time |
-| `--topbar-sail-size` | `18px` | Sail glyph beside VelaOS wordmark |
-| `--topbar-spaces-dot-size` | `6px` | Spaces dots |
-| `--topbar-spaces-dot-gap` | `6px` | Dot spacing |
-| `--topbar-hiding` | `focus-only` | Hidden only in Focus (F11) |
+## Side panel (always present)
 
-Chrome order (left → right): sail + **VelaOS** · app menus · Spaces dots · search / network / volume / battery · live date+time.
+A lateral panel is always present in the shell chrome. It is not ephemeral Glass. Three authorization/visibility levels, user-changeable anytime:
 
-## Windows & Focus
+| Level | Token | Behaviour |
+|-------|-------|-----------|
+| Full | `--sidepanel-level: full` | Full width `--sidepanel-width-full: 320px`; Objective + Proposal + Gesture + Rationale + Audit visible |
+| Reduced | `--sidepanel-level: reduced` | Width `--sidepanel-width-reduced: 72px`; icon rail / collapsed labels; primary gesture still reachable |
+| Hidden | `--sidepanel-level: hidden` | Width `--sidepanel-width-hidden: 0` / off-canvas; panel slot reserved (always present in layout); invoke via gesture or shortcut to restore |
 
-| Token | Value | Notes |
-|-------|-------|--------|
-| `--window-controls` | `close-max-min-right` | Right-aligned `–` `□` `×` |
-| `--window-control-size` | `12px` | Control glyph size |
-| `--window-control-gap` | `10px` | Gap between controls |
-| `--focus-hides` | `topbar,dock` | Focus mode (F11 / View / `focus`) |
-| `--notification-anchor` | `top-right` | Notifications |
-| `--notification-gap` | `12px` | Inset from top/right edges |
-| `--notification-max-width` | `320px` | Card max width |
-| `--spaces-model` | `virtual-desktops` | Spaces = virtual desktops |
+Tokens:
 
-## Ephemeral Glass surfaces
+- `--sidepanel-present: always`
+- `--sidepanel-edge: right` (default; left only if Francesco says)
+- `--sidepanel-frost: ephemeral` (uses `--glass-ephemeral-*`, or shell frost if Shell owns the chrome). Shell owns chrome z-order. The panel is Shell chrome, not a Glass overlay. Denied-list exception: this is shell chrome.
+- `--sidepanel-transition: 180ms` ease for level changes anytime
 
-Use frost tokens with `--glass-ephemeral-*` for short-lived panels (menus, popovers, Welcome card chrome). Keep teal as the only accent. Prefer Light/Dawn/Deep theme roles for text and borders; do not introduce a fourth theme.
+Levels do not require a reboot. The preference persists for the session.
 
-## Implementation notes
+Ephemeral Glass still closes when its phase ends. The side-panel slot stays in the shell layout at the chosen level. Focus hides the top bar and the dock; it does not delete the side-panel slot.
 
-- Prefer CSS custom properties as named above; map 1:1 into Glass/Shell component specs.
-- Monochrome dock glyphs: single-color paths; tint via `--dock-glyph-color` / theme text.
-- Values are v0 starting points for implementers; pixel-perfect capture from VirtualBox screenshots may refine blur/opacity later without changing glyph order or active-state rules.
+## Ephemeral Glass (context-driven — NOT empty demo windows)
 
-## Zero-App concept alignment
+Dock-free. Shown only while the host Shell phase is `glass`, `result`, or `error`. `Chiudi` / `Annulla` remove the surface. The verified result stays.
 
-Fluidity and beauty for Zero-App moments, read from the night-sea / sail wallpaper and ephemeral Glass. This note does not add tokens, themes, or a second accent.
+Catalog names, purpose, and required content:
 
-- **Wallpaper.** Deep night-sea and a sail; a moonlight path on the water; a cool blue palette. Theme **Deep** is the emotional home of Zero-App moments (still one of Light / Dawn / Deep — no extra theme name).
-- **Ephemeral Glass over wallpaper.** Frost blur and opacity (`--glass-frost-*`, `--glass-ephemeral-*`) keep the sea and sail alive behind the UI. Beauty is transparency, not solid cards.
-- **Motion.** Notifications may ghost and fade. Glass appears and closes. The result stays; the chrome leaves — *Il risultato resta. Glass si chiude.*
-- **Accent discipline.** Teal (`--accent-teal`) only for primary actions (Conferma, Sì, play/pause, checks, Wi-Fi). Never a second accent that fights the moonlit teal water. Dock active state stays frosted tile + teal underline.
-- **Shell vs Zero-App.** Dock and top bar stay for the familiar shell. Zero-App moments are dock-free floating Glass. Do not force the dock into ephemeral frames.
-- **Language.** Italian chrome is fine. Token names stay English and language-agnostic.
-- **Guiding line.** Only what is needed, for as long as it is needed — fluidity over permanence.
+| Name | Purpose | Required content |
+|------|---------|------------------|
+| Frost | Ephemeral material | blur `20px`, saturate `140%`, opacity `0.88`, theme frost-tint, border, highlight, shadow |
+| Theme | Light / Dawn / Deep | one theme; Deep is the night-sea home |
+| Objective | User intent | the utterance (`ciao`); body color; one line |
+| Proposal | Candidates | title, version, score for each candidate; no authority |
+| Gesture | One primary teal action | **Avvia** in teal; Rivedi piano, Annulla, Chiudi are neutral |
+| Rationale | Planner note, no effect | the note text; caption color is allowed |
+| Outcome | Verified result | request id and value, or reviewed-not-executed; remains after close |
+| Audit | What was checked | lane, selections emitted, grants, frames signed, trace |
+| Loopback | Verified channel | `127.0.0.1`, Host pinned to the bound port, per-run token, `application/json` |
+
+Gesture labels use body or body-strong, `nowrap`, and the locale min widths above. The host page sends only an utterance or `{action, candidate index}`.
+
+## Zero-App fluidity
+
+Deep night-sea and sail are the emotional home. Glass borrows that wallpaper through frost, then leaves. Only the blocks the current phase needs are mounted, and only until `Chiudi` or `Annulla`. The dock stays on the Shell desktop and stays off ephemeral frames. Italian chrome is allowed; token names stay English. Guiding line: only what is needed, for as long as it is needed. *Il risultato resta. Glass si chiude.*
+
+## No-conflict
+
+Aligned to **ISO VB §7** closed decisions, read-only, commit `60a5b8b` (`os/x86_64/README.md` on `vela/vbox-iso`): top system bar + floating bottom-centre dock, six monochrome glyphs, active = frosted tile + teal underline, windows with right-aligned – □ ×, Focus hides bar and dock, notifications top-right, Spaces = virtual desktops, themes Light / Dawn / Deep, English default with Italian on the Welcome card.
+
+1. §7 geometry in this sheet is unchanged: top bar `40px`; dock bottom-centre; cell `44px`; glyph `28px`; gap `8px`; underline `2×20` in `#2EC4B6`; Focus hides bar and dock.
+2. Active dock state is frost tile + that underline. No second accent.
+3. Glyph order is Vela, Find, Spaces, Notes, Media, Settings. Rename only with Francesco’s OK.
+4. Themes are Light, Dawn, and Deep only.
+5. Edits stay on `art/*` and `docs/art/`. `os/x86_64/` is out of scope.
+6. Do not push this sheet onto `vela/vbox-iso` or `main` without Francesco’s OK.
+7. The side panel is additive shell chrome (`--sidepanel-present: always`, edge `right`). It does not change §7 bar, dock, glyph, or teal geometry.
