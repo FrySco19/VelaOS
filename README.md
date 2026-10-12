@@ -182,16 +182,16 @@ Closed on the verification path:
 
 | Gate | Result |
 | --- | --- |
-| Policy suite | **69 / 69** |
-| QEMU `verify-bridge-e2e` | **PASS · 37 markers** (no panic / FAULT; prohibited markers absent) |
+| Policy suite | **78 / 78** (69 prior + 9 head-anchor) |
+| QEMU `verify-bridge-e2e` | **PASS · 37 markers** on the prior guest image (host-only anchor not in that run; no panic / FAULT; prohibited markers absent) |
 | Crash gate (process abort, 200 runs) | **0** lost announced receipts · **0** double effects · torn tails truncated |
 | Grant TTL | Wall cannot walk backward to extend a grant; monotonic check before execute **and** before LFS commit |
-| Durable LFS (host) | Append-only ledger; authenticated receipts; `write_all` → `sync_data` → *then* return receipt; poison fails closed |
+| Durable LFS (host) | Append-only ledger; authenticated receipts; `write_all` → `sync_data` → head anchor → *then* return receipt; a shorter or substituted witnessed prefix fails closed |
 | Epoch | Persistent across boots; unclean prior session stays **AMBIGUOUS** until reconciled |
 
 **Still open inside Phase 2’s shadow (honest):**
 
-- Guest LFS ledger is still in-memory (**M-LFS-4**) — no cross-reboot persistence inside the guest domain yet.
+- Guest LFS ledger is still in-memory (**M-LFS-4**) — no cross-reboot persistence inside the guest domain yet. The host log now refuses a truncated or substituted prefix via a head anchor; restoring an older copy of the log and the anchor together is still undetected.
 - No RTC / TPM root for absolute time across reboot.
 - Guest writer trusts the PCB’s deadline check (same model as the notary); pre-boot time is not visible to the guest.
 - Production trust roots (demo seeds only); `result_handle` / `expected_version` on the write path (**M-LFS-5**) still open.

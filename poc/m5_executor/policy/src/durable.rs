@@ -8,13 +8,19 @@
 //!   Ed25519 signature + 8-byte BLAKE3 checksum (140 bytes, fixed size). The
 //!   wire receipt is stored verbatim; nothing about the guest wire changes.
 //! * Write order: validate -> sign -> `write_all` -> `sync_data` (fsync) ->
-//!   **only then** the receipt is returned to the PCB. A crash before the fsync
-//!   returns no receipt; at reopen the torn tail is truncated, so the notary
-//!   never sees an "OK" receipt without an integral record behind it.
+//!   fsync the head anchor -> **only then** the receipt is returned to the PCB.
+//!   A crash before the record fsync returns no receipt; at reopen an
+//!   *unwitnessed* torn tail is truncated, so the notary never sees an "OK"
+//!   receipt without an integral record behind it.
+//! * The head anchor (`head.vlfs`) stores the witnessed sequence and the BLAKE3
+//!   tip of that record. A shorter log, or a prefix whose tip differs, refuses
+//!   to open (anti-rollback). A longer intact prefix — crash after the record
+//!   fsync, before the anchor fsync — is kept and the anchor advances.
 //! * Recovery accepts only a contiguous prefix of records that pass magic,
 //!   checksum, signature under the pinned LFS key and `seq = n + 1`. Damage that
 //!   is *not* a torn tail (a bad record followed by a good one) refuses to open
-//!   (fail-closed) instead of silently dropping receipts.
+//!   (fail-closed) instead of silently dropping receipts. A witnessed record
+//!   that no longer decodes also refuses to open: it is not truncated away.
 //! * Idempotency `(epoch, request_id)` survives restarts: a retry after reopen
 //!   returns the byte-identical stored receipt (Ed25519 signing is
 //!   deterministic and `seq` is persisted), never a re-signed one.
@@ -81,11 +87,7 @@ impl LedgerStore for MemoryStore {
 }
 
 /// C4.4 admission check, identical to `Ledger::commit` in `ledger_wire.rs`.
-fn authorize(
-    pcb: PublicKey,
-    frame: &[u8; bridge::PAGE_SIZE],
-    c: &Commit,
-) -> Result<(), LfsStatus> {
+fn authorize(pcb: PublicKey, frame: &[u8; bridge::PAGE_SIZE], c: &Commit) -> Result<(), LfsStatus> {
     if c.status != 0 || c.request_id == 0 || c.request_id > u32::MAX as u64 {
         return Err(LfsStatus::Malformed);
     }
@@ -103,6 +105,9 @@ fn authorize(
 
 pub const LEDGER_FILE: &str = "ledger.vlfs";
 pub const EPOCH_FILE: &str = "epoch.bin";
+/// Witnessed tip of the durable log (seq + record digest). Separate from the
+/// append-only log so truncating `ledger.vlfs` cannot look like a shorter history.
+pub const HEAD_FILE: &str = "head.vlfs";
 const FILE_MAGIC: &[u8; 8] = b"VLFSLOG1";
 const FORMAT_VERSION: u32 = 1;
 const SUM_LEN: usize = 8;
@@ -123,6 +128,154 @@ fn checksum(domain: &[u8], bytes: &[u8]) -> [u8; SUM_LEN] {
 const HEADER_DOMAIN: &[u8] = b"VelaOS.LFS.Header.v1\0";
 const RECORD_DOMAIN: &[u8] = b"VelaOS.LFS.Record.v1\0";
 const EPOCH_DOMAIN: &[u8] = b"VelaOS.LFS.Epoch.v1\0";
+const HEAD_DOMAIN: &[u8] = b"VelaOS.LFS.Head.v1\0";
+const TIP_DOMAIN: &[u8] = b"VelaOS.LFS.Tip.v1\0";
+const HEAD_MAGIC: &[u8; 8] = b"VHEAD001";
+const TIP_LEN: usize = 32;
+/// magic + witnessed seq + tip digest + checksum.
+pub const HEAD_LEN: usize = 8 + 8 + TIP_LEN + SUM_LEN;
+
+/// Last witnessed receipt: `seq` records are durable, and `tip` is
+/// [`record_tip`] of record `seq` (`seq == 0` ⇒ tip is all zeros).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct HeadAnchor {
+    pub seq: u64,
+    pub tip: [u8; TIP_LEN],
+}
+
+/// Domain-separated BLAKE3-256 of one on-disk record (the bytes of [`encode_record`]).
+pub fn record_tip(raw_record: &[u8]) -> [u8; TIP_LEN] {
+    let mut h = blake3::Hasher::new();
+    h.update(TIP_DOMAIN);
+    h.update(raw_record);
+    *h.finalize().as_bytes()
+}
+
+pub fn encode_head(seq: u64, tip: &[u8; TIP_LEN]) -> [u8; HEAD_LEN] {
+    let mut b = [0; HEAD_LEN];
+    b[..8].copy_from_slice(HEAD_MAGIC);
+    b[8..16].copy_from_slice(&seq.to_le_bytes());
+    b[16..48].copy_from_slice(tip);
+    let sum = checksum(HEAD_DOMAIN, &b[..48]);
+    b[48..].copy_from_slice(&sum);
+    b
+}
+
+pub fn decode_head(bytes: &[u8]) -> Option<HeadAnchor> {
+    if bytes.len() != HEAD_LEN || bytes[..8] != *HEAD_MAGIC {
+        return None;
+    }
+    if checksum(HEAD_DOMAIN, &bytes[..48]) != bytes[48..] {
+        return None;
+    }
+    let seq = u64::from_le_bytes(bytes[8..16].try_into().ok()?);
+    let mut tip = [0; TIP_LEN];
+    tip.copy_from_slice(&bytes[16..48]);
+    if seq == 0 && tip != [0; TIP_LEN] {
+        return None;
+    }
+    Some(HeadAnchor { seq, tip })
+}
+
+fn read_head(dir: &Path) -> io::Result<Option<HeadAnchor>> {
+    match fs::read(dir.join(HEAD_FILE)) {
+        Err(e) if e.kind() == io::ErrorKind::NotFound => Ok(None),
+        Err(e) => Err(e),
+        Ok(b) => decode_head(&b)
+            .map(Some)
+            .ok_or_else(|| invalid("head anchor corrupted (fail-closed)")),
+    }
+}
+
+/// Read the head anchor. Missing and corrupt files are errors.
+pub fn load_head(dir: &Path) -> io::Result<HeadAnchor> {
+    read_head(dir)?.ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "head anchor missing"))
+}
+
+fn write_head(dir: &Path, seq: u64, tip: &[u8; TIP_LEN]) -> io::Result<()> {
+    let tmp = dir.join("head.vlfs.tmp");
+    {
+        let mut f = File::create(&tmp)?;
+        f.write_all(&encode_head(seq, tip))?;
+        f.sync_all()?;
+    }
+    fs::rename(&tmp, dir.join(HEAD_FILE))?;
+    sync_dir(dir)
+}
+
+struct HeadPlan {
+    truncate_to: Option<u64>,
+    advance: Option<(u64, [u8; TIP_LEN])>,
+    truncated_bytes: u64,
+    anchor_advanced: bool,
+}
+
+fn witnessed_tip_matches(head: &HeadAnchor, entries: &[Receipt]) -> bool {
+    if head.seq == 0 {
+        return head.tip == [0; TIP_LEN];
+    }
+    let Some(index) = (head.seq as usize).checked_sub(1) else {
+        return false;
+    };
+    match entries.get(index) {
+        Some(receipt) => record_tip(&encode_record(receipt)) == head.tip,
+        None => false,
+    }
+}
+
+/// Decide how the on-disk anchor relates to the integral prefix.
+/// Refusal happens before any truncation: a witnessed receipt is never dropped.
+fn plan_head(
+    dir: &Path,
+    entries: &[Receipt],
+    good_end: usize,
+    file_len: usize,
+) -> io::Result<HeadPlan> {
+    let head = read_head(dir)?;
+    let n = entries.len() as u64;
+    let torn = file_len > good_end;
+    let truncate_to = torn.then_some(good_end as u64);
+    let truncated_bytes = if torn {
+        (file_len - good_end) as u64
+    } else {
+        0
+    };
+    match head {
+        None if n == 0 => Ok(HeadPlan {
+            truncate_to,
+            advance: Some((0, [0; TIP_LEN])),
+            truncated_bytes,
+            anchor_advanced: false,
+        }),
+        None => Err(invalid(
+            "head anchor missing while receipts exist (fail-closed)",
+        )),
+        Some(h) if n < h.seq => Err(invalid(
+            "ledger shorter than head anchor; refusing rollback (fail-closed)",
+        )),
+        Some(h) => {
+            if !witnessed_tip_matches(&h, entries) {
+                return Err(invalid(
+                    "head anchor tip does not match the witnessed prefix (fail-closed)",
+                ));
+            }
+            let advance = if n > h.seq {
+                let last = entries
+                    .last()
+                    .ok_or_else(|| invalid("ledger ahead of a zero-length anchor is empty"))?;
+                Some((n, record_tip(&encode_record(last))))
+            } else {
+                None
+            };
+            Ok(HeadPlan {
+                truncate_to,
+                anchor_advanced: advance.is_some(),
+                advance,
+                truncated_bytes,
+            })
+        }
+    }
+}
 
 fn encode_header(lfs: &PublicKey) -> [u8; HEADER_LEN] {
     let mut h = [0; HEADER_LEN];
@@ -206,6 +359,8 @@ pub struct Recovery {
     pub records: usize,
     /// Bytes of torn tail discarded (0 on a clean file).
     pub truncated_bytes: u64,
+    /// The on-disk anchor was behind an intact longer prefix and was advanced.
+    pub anchor_advanced: bool,
 }
 
 /// Fault-injection phases for the crash gate (feature `fault-fixtures`).
@@ -225,6 +380,7 @@ pub enum CrashPhase {
 pub struct FileLedger {
     file: File,
     path: PathBuf,
+    dir: PathBuf,
     lfs: PublicKey,
     entries: Vec<Receipt>,
     index: HashMap<(u64, u64), usize>,
@@ -235,11 +391,15 @@ pub struct FileLedger {
 }
 
 impl FileLedger {
-    /// Open (or create) `dir/ledger.vlfs` pinned to the LFS public key `lfs`,
-    /// recovering the longest integral prefix.
+    /// Open (or create) `dir/ledger.vlfs` pinned to the LFS public key `lfs`.
+    ///
+    /// Recovers the longest integral prefix that is still consistent with the
+    /// head anchor. A shorter prefix, or a prefix whose witnessed tip differs,
+    /// refuses to open and leaves both files untouched.
     pub fn open(dir: &Path, lfs: PublicKey, capacity: usize) -> io::Result<Self> {
         fs::create_dir_all(dir)?;
         let path = dir.join(LEDGER_FILE);
+        let created = !path.exists();
         let mut file = OpenOptions::new()
             .read(true)
             .write(true)
@@ -249,13 +409,34 @@ impl FileLedger {
         let mut bytes = Vec::new();
         file.read_to_end(&mut bytes)?;
         if bytes.len() < HEADER_LEN {
-            // Torn or missing header can only happen at creation, before any
-            // receipt existed: start a fresh log.
+            let witnessed = match read_head(dir) {
+                Ok(head) => head.is_some_and(|h| h.seq > 0),
+                Err(e) => {
+                    if created {
+                        drop(file);
+                        let _ = fs::remove_file(&path);
+                    }
+                    return Err(e);
+                }
+            };
+            if witnessed {
+                // `create(true)` may have materialized an empty file after the
+                // ledger was removed. Drop that decoy; keep the anchor.
+                if created {
+                    drop(file);
+                    let _ = fs::remove_file(&path);
+                }
+                return Err(invalid(
+                    "ledger missing while head anchor witnessed receipts (fail-closed)",
+                ));
+            }
+            // Torn or missing header with nothing witnessed: start a fresh log.
             file.set_len(0)?;
             file.seek(SeekFrom::Start(0))?;
             file.write_all(&encode_header(&lfs))?;
             file.sync_all()?;
             sync_dir(dir)?;
+            write_head(dir, 0, &[0; TIP_LEN])?;
             bytes = encode_header(&lfs).to_vec();
         }
         if bytes[..HEADER_LEN] != encode_header(&lfs) {
@@ -291,18 +472,22 @@ impl FileLedger {
                 "ledger corrupted before its tail; refusing to drop receipts (fail-closed)",
             ));
         }
-        let truncated_bytes = (bytes.len() - good_end) as u64;
-        if truncated_bytes > 0 {
-            file.set_len(good_end as u64)?;
-            file.sync_all()?;
-        }
         if entries.len() > capacity {
             return Err(invalid("ledger holds more records than its capacity"));
+        }
+        let plan = plan_head(dir, &entries, good_end, bytes.len())?;
+        if let Some(end) = plan.truncate_to {
+            file.set_len(end)?;
+            file.sync_all()?;
+        }
+        if let Some((seq, tip)) = plan.advance {
+            write_head(dir, seq, &tip)?;
         }
         file.seek(SeekFrom::End(0))?;
         Ok(Self {
             file,
             path,
+            dir: dir.to_path_buf(),
             lfs,
             entries,
             index,
@@ -310,7 +495,8 @@ impl FileLedger {
             poisoned: false,
             recovery: Recovery {
                 records: good,
-                truncated_bytes,
+                truncated_bytes: plan.truncated_bytes,
+                anchor_advanced: plan.anchor_advanced,
             },
             crash: None,
         })
@@ -356,6 +542,9 @@ impl FileLedger {
         self.file.write_all(&rec)?;
         self.probe(CrashPhase::BeforeSync, nth);
         self.file.sync_data()?;
+        // Witness the record only after its bytes are durable. A crash in
+        // between leaves a stale anchor, which open() advances if the prefix matches.
+        write_head(&self.dir, r.body.seq, &record_tip(&rec))?;
         self.probe(CrashPhase::AfterSync, nth);
         Ok(())
     }
@@ -464,7 +653,11 @@ impl EpochStore {
                 let next = prev
                     .checked_add(1)
                     .ok_or_else(|| invalid("epoch exhausted"))?;
-                let boot = if b[16] == 1 { Boot::Clean } else { Boot::Recovered };
+                let boot = if b[16] == 1 {
+                    Boot::Clean
+                } else {
+                    Boot::Recovered
+                };
                 (next, boot, Some(prev))
             }
         };

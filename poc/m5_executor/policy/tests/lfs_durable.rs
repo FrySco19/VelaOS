@@ -8,17 +8,18 @@ use ed25519_compact::PublicKey;
 use std::fs;
 use std::path::{Path, PathBuf};
 use vela_executor_policy::durable::{
-    FileLedger, HEADER_LEN, LEDGER_FILE, LedgerStore, MemoryStore, RECORD_LEN,
+    FileLedger, HEAD_FILE, HEADER_LEN, LEDGER_FILE, LedgerStore, MemoryStore, RECORD_LEN,
+    encode_head, encode_record, record_tip,
 };
-use vela_executor_policy::ledger::{
-    Commit, E2eError, E2eHost, ExecReply, LfsStatus, SimulatedLfs,
-};
+use vela_executor_policy::ledger::{Commit, E2eError, E2eHost, ExecReply, LfsStatus, SimulatedLfs};
 use vela_executor_policy::{DenyCode, bridge};
 
 const EPOCH: u64 = 7;
 
 fn dir(name: &str) -> PathBuf {
-    let d = PathBuf::from(env!("CARGO_TARGET_TMPDIR")).join("lfs_durable").join(name);
+    let d = PathBuf::from(env!("CARGO_TARGET_TMPDIR"))
+        .join("lfs_durable")
+        .join(name);
     let _ = fs::remove_dir_all(&d);
     d
 }
@@ -35,10 +36,18 @@ fn file_len(d: &Path) -> u64 {
 fn wasm(page: &[u8; bridge::PAGE_SIZE]) -> ExecReply {
     let mut exec = vela_executor_host::HostExecutor::new(PublicKey::new(*pcb().pk));
     let r = exec.call(page);
-    ExecReply { status: r.status as u64, value: r.value, request_id: r.request_id, attempts: r.attempts }
+    ExecReply {
+        status: r.status as u64,
+        value: r.value,
+        request_id: r.request_id,
+        attempts: r.attempts,
+    }
 }
 
-fn selected_task<'a>(f: &'a mut Fixture, id: u32) -> vela_executor_policy::pipeline::TaskRequest<'a> {
+fn selected_task<'a>(
+    f: &'a mut Fixture,
+    id: u32,
+) -> vela_executor_policy::pipeline::TaskRequest<'a> {
     let sel = f.channel.select(NOTES, 3);
     let mut t = task(&f.candidates, NOTES, id);
     t.selection = Some(sel);
@@ -65,9 +74,16 @@ fn lfs_durable_commit_survives_restart_with_byte_identical_receipt() {
     *h2.page = page;
     let again = h2.commit_and_notarize(&commit).unwrap();
     assert!(again.replayed);
-    assert_eq!(again.receipt, first, "no re-sign after restart: same seq, same signature");
+    assert_eq!(
+        again.receipt, first,
+        "no re-sign after restart: same seq, same signature"
+    );
     assert!(first.verify(&PublicKey::new(*lfs_keys().pk)));
-    assert_eq!(file_len(&d), (HEADER_LEN + RECORD_LEN) as u64, "no new effect");
+    assert_eq!(
+        file_len(&d),
+        (HEADER_LEN + RECORD_LEN) as u64,
+        "no new effect"
+    );
 }
 
 #[test]
@@ -84,7 +100,10 @@ fn lfs_durable_retry_x3_same_receipt_one_effect() {
         assert!(n.replayed);
         assert_eq!(n.receipt, first.receipt);
     }
-    assert_eq!((file_len(&d), h.lfs.persisted(), h.executions), (size, 1, 1));
+    assert_eq!(
+        (file_len(&d), h.lfs.persisted(), h.executions),
+        (size, 1, 1)
+    );
 }
 
 #[test]
@@ -97,7 +116,10 @@ fn lfs_durable_conflict_is_13_and_not_persisted() {
     let (commit, _) = h.run_task_at(&t, now, wasm).unwrap();
     let size = file_len(&d);
     assert_eq!(
-        h.commit_and_notarize(&Commit { value: 22, ..commit }),
+        h.commit_and_notarize(&Commit {
+            value: 22,
+            ..commit
+        }),
         Err(E2eError::Writer(LfsStatus::IdempotencyConflict))
     );
     assert_eq!(file_len(&d), size);
@@ -125,13 +147,27 @@ fn lfs_durable_unauthorized_output_persists_nothing() {
     let (commit, _) = h.run_task_at(&t, now, wasm).unwrap();
     let size = file_len(&d);
     for bad in [
-        Commit { request_id: 2, ..commit },
-        Commit { authority_digest: [0xEE; 32], epoch: 8, ..commit },
+        Commit {
+            request_id: 2,
+            ..commit
+        },
+        Commit {
+            authority_digest: [0xEE; 32],
+            epoch: 8,
+            ..commit
+        },
     ] {
-        assert_eq!(h.commit_and_notarize(&bad), Err(E2eError::Writer(LfsStatus::PolicyDenied)));
+        assert_eq!(
+            h.commit_and_notarize(&bad),
+            Err(E2eError::Writer(LfsStatus::PolicyDenied))
+        );
     }
     assert_eq!(
-        h.commit_and_notarize(&Commit { status: 6, epoch: 9, ..commit }),
+        h.commit_and_notarize(&Commit {
+            status: 6,
+            epoch: 9,
+            ..commit
+        }),
         Err(E2eError::Writer(LfsStatus::Malformed))
     );
     assert_eq!(file_len(&d), size);
@@ -152,9 +188,9 @@ fn lfs_durable_quota_exceeded_is_11() {
     assert_eq!(h.lfs.persisted(), 1);
 }
 
-/// Two committed records, then the second one is torn (crash mid-append,
-/// before fsync completed): recovery keeps record 1 only, and a retry of
-/// request 2 produces exactly one new effect.
+/// Record 1 is witnessed. Record 2 was torn before the head anchor advanced
+/// (crash mid-append): recovery keeps record 1 only, and a retry of request 2
+/// produces exactly one new effect.
 #[test]
 fn lfs_durable_torn_tail_is_truncated_without_phantom_receipt() {
     let d = dir("torn");
@@ -174,11 +210,18 @@ fn lfs_durable_torn_tail_is_truncated_without_phantom_receipt() {
     let file = fs::OpenOptions::new().write(true).open(&path).unwrap();
     file.set_len(full - 37).unwrap();
     drop(file);
+    // The successful commit had already witnessed record 2. Rewind the anchor
+    // to the crash window: record 2's bytes are not yet witnessed.
+    let tip = record_tip(&encode_record(&r1));
+    fs::write(d.join(HEAD_FILE), encode_head(1, &tip)).unwrap();
 
     let f2 = fixture();
     let mut h = durable_host(&f2, &d, 64);
     let rec = h.lfs.store().recovery();
-    assert_eq!((rec.records, rec.truncated_bytes), (1, (RECORD_LEN - 37) as u64));
+    assert_eq!(
+        (rec.records, rec.truncated_bytes),
+        (1, (RECORD_LEN - 37) as u64)
+    );
     assert_eq!(h.lfs.get(EPOCH, 1), Some(r1));
     assert_eq!(h.lfs.get(EPOCH, 2), None, "no phantom receipt");
     *h.page = p2;
@@ -192,7 +235,7 @@ fn lfs_durable_torn_tail_is_truncated_without_phantom_receipt() {
 }
 
 #[test]
-fn lfs_durable_bitflip_in_last_record_is_dropped() {
+fn lfs_durable_bitflip_in_witnessed_record_is_refused() {
     let d = dir("bitflip_tail");
     let mut f = fixture();
     let now = f.now;
@@ -205,10 +248,15 @@ fn lfs_durable_bitflip_in_last_record_is_dropped() {
     let mut bytes = fs::read(&path).unwrap();
     bytes[HEADER_LEN + 40] ^= 0x01;
     fs::write(&path, &bytes).unwrap();
-    let f2 = fixture();
-    let h = durable_host(&f2, &d, 64);
-    assert_eq!(h.lfs.persisted(), 0);
-    assert_eq!(file_len(&d), HEADER_LEN as u64);
+    let err = FileLedger::open(&d, PublicKey::new(*lfs_keys().pk), 64)
+        .err()
+        .unwrap();
+    assert_eq!(err.kind(), std::io::ErrorKind::InvalidData);
+    assert_eq!(
+        fs::read(&path).unwrap(),
+        bytes,
+        "witnessed record is not dropped"
+    );
 }
 
 #[test]
@@ -227,7 +275,9 @@ fn lfs_durable_corruption_before_tail_refuses_to_open() {
     let mut bytes = fs::read(&path).unwrap();
     bytes[HEADER_LEN + 40] ^= 0x01; // record 1 damaged, record 2 intact
     fs::write(&path, &bytes).unwrap();
-    let err = FileLedger::open(&d, PublicKey::new(*lfs_keys().pk), 64).err().unwrap();
+    let err = FileLedger::open(&d, PublicKey::new(*lfs_keys().pk), 64)
+        .err()
+        .unwrap();
     assert_eq!(err.kind(), std::io::ErrorKind::InvalidData);
     assert_eq!(fs::read(&path).unwrap(), bytes, "nothing truncated");
 }
@@ -236,7 +286,9 @@ fn lfs_durable_corruption_before_tail_refuses_to_open() {
 fn lfs_durable_wrong_lfs_key_refuses_to_open() {
     let d = dir("wrong_key");
     FileLedger::open(&d, PublicKey::new(*lfs_keys().pk), 8).unwrap();
-    let err = FileLedger::open(&d, PublicKey::new(*pcb().pk), 8).err().unwrap();
+    let err = FileLedger::open(&d, PublicKey::new(*pcb().pk), 8)
+        .err()
+        .unwrap();
     assert_eq!(err.kind(), std::io::ErrorKind::InvalidData);
 }
 
@@ -258,12 +310,27 @@ fn lfs_durable_parity_with_in_memory_ledger() {
     for c in [
         commit,
         commit,
-        Commit { value: 22, ..commit },
-        Commit { request_id: 2, ..commit },
-        Commit { status: 6, ..commit },
-        Commit { epoch: 99, ..commit },
+        Commit {
+            value: 22,
+            ..commit
+        },
+        Commit {
+            request_id: 2,
+            ..commit
+        },
+        Commit {
+            status: 6,
+            ..commit
+        },
+        Commit {
+            epoch: 99,
+            ..commit
+        },
     ] {
-        assert_eq!(mem.commit(&sk, pcb_pk, &page, &c), file.commit(&sk, pcb_pk, &page, &c));
+        assert_eq!(
+            mem.commit(&sk, pcb_pk, &page, &c),
+            file.commit(&sk, pcb_pk, &page, &c)
+        );
     }
     assert_eq!(mem.len(), file.len());
 }

@@ -2,7 +2,7 @@
 
 Stato: **accettato per il path host** (branch `vela/lfs-clock`, base `f0942be`).
 Piano di riferimento: `docs/PLAN_LFS_DURABLE_AND_CLOCK.md` su `origin/vela/release-prep`.
-Copre M-LFS-1, M-LFS-2, M-LFS-3, M-CLK-1 e **M-CLK-3 (clock fidato nel guest QEMU)**. **Non** copre M-LFS-4/5 né M-CLK-2 (vedi §5).
+Copre M-LFS-1, M-LFS-2, M-LFS-3, M-CLK-1, **M-CLK-3 (clock fidato nel guest QEMU)** e l'ancora di testa host verso M-LFS-4 (§6). **Non** chiude la persistenza guest di M-LFS-4, né M-LFS-5, né M-CLK-2 (vedi §5).
 
 ## 1. Scelta di archivio: Opzione A (append-only + fsync)
 
@@ -30,7 +30,7 @@ Il record contiene **esattamente** body + firma del wire receipt: nessun cambio 
 1. valida (C4.4: frame autenticato sotto chiave PCB, request_id, authority digest; status = 0)
 2. idempotenza `(epoch, request_id)`: stesso contenuto → receipt memorizzata (`Replayed`), diverso → `IDEMPOTENCY_CONFLICT` (13)
 3. firma deterministica (Ed25519 senza noise) con `seq = n + 1`
-4. `write_all` → `sync_data` (fsync) → **solo dopo** la receipt torna al PCB
+4. `write_all` → `sync_data` (fsync) → fsync dell'ancora `head.vlfs` (§6) → **solo dopo** la receipt torna al PCB
 5. Errore I/O → store avvelenato: ogni commit successivo rifiutato (11) fino a riapertura + recovery
 
 All'apertura: si accetta il prefisso contiguo di record con magic, checksum,
@@ -120,6 +120,9 @@ cargo run --release --locked --manifest-path poc/m5_executor/policy/Cargo.toml -
 
 - **Guest QEMU**: il dominio `velaos-lfs` usa ancora il ledger in memoria
   `Ledger<8>`; nessuna persistenza cross-reboot in guest (M-LFS-4 aperto).
+  L'ancora host (§6) non entra nell'immagine.
+- **Rollback accoppiato**: sostituire insieme `ledger.vlfs` e `head.vlfs` con uno
+  snapshot precedente non è rilevabile. Serve un contatore fuori da questa directory.
 - **TTL nel guest**: enforced dal PCB guest sul contatore hardware (M-CLK-3), ma
   il writer LFS guest non ricontrolla la deadline (fida il PCB, stesso modello
   del notary); il tempo trascorso **prima del boot** non è visibile al guest
@@ -132,3 +135,46 @@ cargo run --release --locked --manifest-path poc/m5_executor/policy/Cargo.toml -
 - Notary PCB ancora in memoria (risoluzione cross-boot via ledger durevole + firma).
 - `result_handle` / `expected_version` sul write path (M-LFS-5) aperto.
 - Seed PCB/LFS di test, non trust root di produzione.
+
+## 6. Ancora anti-rollback sull'host (incremento verso M-LFS-4)
+
+`head.vlfs` è un testimone separato dal log append-only, così un troncamento
+di `ledger.vlfs` non può più sembrare una storia più corta.
+
+| Parte | Byte | Contenuto |
+| --- | --- | --- |
+| Header | 56 | `VHEAD001` · seq u64 · tip BLAKE3-256 del record `seq` · checksum BLAKE3/8 |
+
+`seq == 0` (nessuna receipt testimoniata) ha tip di zeri. Il tip è
+BLAKE3-256 domain-separated (`VelaOS.LFS.Tip.v1`) dei byte di `encode_record`.
+Scrittura atomica come l'epoch: tmp → `sync_all` → rename → `fsync` della directory.
+L'ancora si aggiorna **dopo** `sync_data` del record e **prima** che la receipt torni al PCB.
+
+All'apertura, prima di qualsiasi troncamento:
+
+- log più corto dell'ancora, tip del prefisso testimoniato diverso, ancora assente
+  mentre esistono receipt, ancora corrotta, oppure log assente/sotto l'header
+  mentre `seq > 0` → **rifiuto**, file lasciati come trovati;
+- log più lungo con il prefisso testimoniato intatto (crash fra fsync del record
+  e fsync dell'ancora) → si tiene il prefisso e si avanza l'ancora;
+- coda strappata **oltre** la seq testimoniata → troncata come in §1 (il record
+  non era ancora annunciato).
+
+Un bit-flip sull'ultima receipt già testimoniata non viene più scartato in
+silenzio: l'apertura fallisce.
+
+Evidenza di questo incremento (Linux, Rust 1.96.1, `--locked`; QEMU non rieseguito:
+niente Docker in questo ambiente, e il wire guest non è stato modificato):
+
+| Suite | Esito |
+| --- | --- |
+| policy totale | **78/78** (69 precedenti + `lfs_head` 9) |
+| `lfs_durable` / `lfs_epoch` / `clock_ttl` / `guest_clock` | 11/11 · 3/3 · 11/11 · 3/3 |
+| clippy `--all-targets --features fault-fixtures -D warnings` | pulito |
+| `lfs-crash-gate 200` | PASS: 0 receipt annunciate perse, 0 doppi effetti, 600/600 record, 3500 byte strappati troncati, 100 replay / 100 recommit |
+
+```text
+cargo test --locked --manifest-path poc/m5_executor/policy/Cargo.toml
+cargo test --locked --manifest-path poc/m5_executor/policy/Cargo.toml --test lfs_head
+cargo run --release --locked --manifest-path poc/m5_executor/policy/Cargo.toml --features fault-fixtures --bin lfs-crash-gate -- 200
+```

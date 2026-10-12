@@ -47,7 +47,7 @@ pub mod guest_clock;
 /// M-CLK-1: injectable trusted clock (wall for minting, monotonic for TTL).
 pub mod clock;
 
-/// M-LFS-1..3: durable append-only + fsync ledger store and persistent epoch.
+/// M-LFS-1..4 (host): durable append-only + fsync ledger, head anchor, persistent epoch.
 pub mod durable;
 
 /// Same bound as M1/M2 authority code.
