@@ -158,3 +158,15 @@ Use frost tokens with `--glass-ephemeral-*` for short-lived panels (menus, popov
 - Prefer CSS custom properties as named above; map 1:1 into Glass/Shell component specs.
 - Monochrome dock glyphs: single-color paths; tint via `--dock-glyph-color` / theme text.
 - Values are v0 starting points for implementers; pixel-perfect capture from VirtualBox screenshots may refine blur/opacity later without changing glyph order or active-state rules.
+
+## Zero-App concept alignment
+
+Fluidity and beauty for Zero-App moments, read from the night-sea / sail wallpaper and ephemeral Glass. This note does not add tokens, themes, or a second accent.
+
+- **Wallpaper.** Deep night-sea and a sail; a moonlight path on the water; a cool blue palette. Theme **Deep** is the emotional home of Zero-App moments (still one of Light / Dawn / Deep — no extra theme name).
+- **Ephemeral Glass over wallpaper.** Frost blur and opacity (`--glass-frost-*`, `--glass-ephemeral-*`) keep the sea and sail alive behind the UI. Beauty is transparency, not solid cards.
+- **Motion.** Notifications may ghost and fade. Glass appears and closes. The result stays; the chrome leaves — *Il risultato resta. Glass si chiude.*
+- **Accent discipline.** Teal (`--accent-teal`) only for primary actions (Conferma, Sì, play/pause, checks, Wi-Fi). Never a second accent that fights the moonlit teal water. Dock active state stays frosted tile + teal underline.
+- **Shell vs Zero-App.** Dock and top bar stay for the familiar shell. Zero-App moments are dock-free floating Glass. Do not force the dock into ephemeral frames.
+- **Language.** Italian chrome is fine. Token names stay English and language-agnostic.
+- **Guiding line.** Only what is needed, for as long as it is needed — fluidity over permanence.
