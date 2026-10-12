@@ -8,7 +8,7 @@ DISPLAY_ARGS=(); MON=(-monitor stdio)
 if [ "${1:-}" = "--headless" ]; then
   DISPLAY_ARGS=(-display none); MON=(-monitor "unix:$G/monitor.sock,server,nowait"); shift
 fi
-ACCEL=(); [ -w /dev/kvm ] && ACCEL=(-enable-kvm -cpu host)
+ACCEL=(); [ "${VELA_KVM:-0}" = 1 ] && ACCEL=(-enable-kvm -cpu host)   # opt-in: nested KVM can hang
 exec qemu-system-x86_64 "${ACCEL[@]}" -m 1024 -smp 2 \
   -vga std "${DISPLAY_ARGS[@]}" "${MON[@]}" \
   -serial "file:$G/serial.log" \

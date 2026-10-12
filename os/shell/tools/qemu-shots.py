@@ -51,18 +51,18 @@ def main():
         if "first frame drawn" not in log: print("guest did not draw a frame", file=sys.stderr); return 1
         print(f"first frame after {time.time()-t0:.1f}s")
         s = socket.socket(socket.AF_UNIX); s.connect(os.path.join(G, "monitor.sock")); s.setblocking(False)
-        time.sleep(1); hmp(s, "", 0.3)
+        time.sleep(3); hmp(s, "", 0.3)
         shot(s, a.out, "01-boot-desktop")
         # guest cursor starts at screen centre (960,540); move it to the dock's Notes glyph
         cur = [960, 540]
-        move_to(s, 960, 1020, cur); time.sleep(2); shot(s, a.out, "02-pointer-over-dock")
+        move_to(s, 960, 1020, cur); time.sleep(4); shot(s, a.out, "02-pointer-over-dock")
         # click the visible left part of the Find window -> focus + raise
         move_to(s, 400, 500, cur); hmp(s, "mouse_button 1", .3); hmp(s, "mouse_button 0", .3); time.sleep(2)
         shot(s, a.out, "03-click-raises-find")
         hmp(s, "sendkey f11", .3); time.sleep(2); shot(s, a.out, "04-focus-mode")
-        hmp(s, "sendkey esc", .3); hmp(s, "sendkey ctrl-alt-1", .3); time.sleep(4); shot(s, a.out, "05-theme-light")
-        hmp(s, "sendkey ctrl-alt-2", .3); time.sleep(4); shot(s, a.out, "06-theme-dawn")
-        hmp(s, "sendkey ctrl-alt-3", .3); hmp(s, "sendkey ctrl-alt-right", .3); time.sleep(4); shot(s, a.out, "07-space-2")
+        hmp(s, "sendkey esc", .3); hmp(s, "sendkey ctrl-alt-1", .3); time.sleep(12); shot(s, a.out, "05-theme-light")
+        hmp(s, "sendkey ctrl-alt-2", .3); time.sleep(12); shot(s, a.out, "06-theme-dawn")
+        hmp(s, "sendkey ctrl-alt-3", .3); time.sleep(12); shot(s, a.out, "07-theme-deep")
         log = open(os.path.join(G, "serial.log"), errors="replace").read()
         open(os.path.join(a.out, "serial.log"), "w").write(log)
         hmp(s, "quit", .5)

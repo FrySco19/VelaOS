@@ -10,6 +10,8 @@ echo "VelaOS: OS-0 boot to pixels"
 for m in $(cat /lib/vela-modules.list); do insmod "/lib/vela-modules/$m" 2>/dev/null; done
 # wait for a framebuffer (bochs / virtio / vmwgfx via fbdev emulation, or vesafb)
 i=0; while [ ! -e /dev/fb0 ] && [ $i -lt 50 ]; do sleep 0.1; i=$((i+1)); done
+# wait for keyboard + mouse event nodes (psmouse probes after the display driver)
+i=0; while [ "$(ls /dev/input/event* 2>/dev/null | wc -l)" -lt 2 ] && [ $i -lt 50 ]; do sleep 0.1; i=$((i+1)); done
 [ -e /sys/class/graphics/fbcon/cursor_blink ] && echo 0 > /sys/class/graphics/fbcon/cursor_blink
 export TZ=UTC
 for arg in $(cat /proc/cmdline); do
