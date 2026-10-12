@@ -15,6 +15,22 @@ use vela_executor_policy::{DenyCode, bridge};
 
 const EPOCH: u64 = 1;
 
+#[test]
+fn recovered_history_requires_signature_contiguous_sequence_and_unique_request() {
+    let key = lfs_keys();
+    let c = Commit { epoch: 1, request_id: 12, status: 0, value: 21, authority_digest: [7;32] };
+    let r = Receipt::sign(&key.sk, ReceiptBody::of(&c, 1));
+    let mut ledger: Ledger<8> = Ledger::new();
+    let mut forged = r; forged.signature[0] ^= 1;
+    assert_eq!(ledger.recover(forged, &key.pk), Err(LfsStatus::PolicyDenied));
+    let skipped = Receipt::sign(&key.sk, ReceiptBody::of(&c, 2));
+    assert_eq!(ledger.recover(skipped, &key.pk), Err(LfsStatus::PolicyDenied));
+    assert_eq!(ledger.recover(r, &key.pk), Ok(()));
+    assert_eq!(ledger.get(1,12), Some(r));
+    assert_eq!(ledger.recover(skipped, &key.pk), Err(LfsStatus::PolicyDenied));
+    assert_eq!(ledger.len(), 1);
+}
+
 fn host(f: &Fixture) -> E2eHost {
     let lfs = SimulatedLfs::new(lfs_keys().sk, PublicKey::new(*pcb().pk));
     E2eHost::new(gated(&f.root), lfs, EPOCH)

@@ -1,0 +1,15 @@
+{
+  "boots": [
+    {
+      "boot": 1,
+      "markers": 41,
+      "sha256": "044bc511f59c435666e687ec4cc8040e7e0a785189e180ac1f9a621c41a0267d"
+    },
+    {
+      "boot": 2,
+      "markers": 5,
+      "sha256": "044bc511f59c435666e687ec4cc8040e7e0a785189e180ac1f9a621c41a0267d"
+    }
+  ],
+  "scope": "QEMU block persistence; host-generated selection/Biscuit fixture; not Glass"
+}

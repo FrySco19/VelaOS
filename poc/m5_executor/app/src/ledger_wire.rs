@@ -240,6 +240,18 @@ impl<const N: usize> Ledger<N> {
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
+    pub fn receipts(&self) -> impl Iterator<Item = Receipt> + '_ {
+        self.entries.iter().flatten().copied()
+    }
+    /// Boot recovery: only a contiguous, authenticated history is imported.
+    pub fn recover(&mut self, r: Receipt, key: &PublicKey) -> Result<(), LfsStatus> {
+        if !r.verify(key) || r.body.seq != self.seq + 1 || r.body.status != 0
+            || self.get(r.body.epoch, r.body.request_id).is_some() {
+            return Err(LfsStatus::PolicyDenied);
+        }
+        let slot = self.entries.iter_mut().find(|r| r.is_none()).ok_or(LfsStatus::QuotaExceeded)?;
+        *slot = Some(r); self.seq = r.body.seq; Ok(())
+    }
     pub fn get(&self, epoch: u64, request_id: u64) -> Option<Receipt> {
         self.entries
             .iter()

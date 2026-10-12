@@ -45,3 +45,9 @@ Storico della precedente preview desktop Debian/KDE; non descrive l'architettura
 - Conservato il prototipo storico web in un archivio separato con licenza MIT.
 
 Questa release non introduce un modello preinstallato e non certifica installer o hardware fisico.
+
+## v0.1.0 — Zero-Trust persistence milestone — 2026-10-12
+
+- Integrated the native Microkit VirtIO adapter and signed bounded snapshot recovery (41 first-boot markers, 5 cold-recovery markers; original 37-marker regression retained).
+- Added the root one-command launcher and release CI; first-time SDK/toolchain preparation is not promised within three minutes.
+- Host-issued Biscuit/selection fixtures are explicitly accepted for this prototype release. Full native Glass/LFS, production authorization and physical hardware qualification remain open.

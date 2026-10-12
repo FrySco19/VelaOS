@@ -182,7 +182,7 @@ Foundation of the authority story on the host:
 - Glass host demo: loopback HTML + HTTP, proposal → click → shell → PDP.
 - UX zero-app contracts and reproducible flows (read / write / deny).
 
-### Phase 2 — Done · Trusted Guest Clock + durable LFS (`fsync`)
+### Phase 2 — Done · Zero-Trust persistence milestone v0.1.0
 
 Closed on the verification path:
 
@@ -192,12 +192,13 @@ Closed on the verification path:
 | QEMU `verify-bridge-e2e` | **PASS · 37 markers** (no panic / FAULT; prohibited markers absent) |
 | Crash gate (process abort, 200 runs) | **0** lost announced receipts · **0** double effects · torn tails truncated |
 | Grant TTL | Wall cannot walk backward to extend a grant; monotonic check before execute **and** before LFS commit |
+| Guest VirtIO persistence | **41 + 5 markers**, two separate QEMU boots, signed note/receipt recovered; bounded test-domain backend |
 | Durable LFS (host) | Append-only ledger; authenticated receipts; `write_all` → `sync_data` → *then* return receipt; poison fails closed |
 | Epoch | Persistent across boots; unclean prior session stays **AMBIGUOUS** until reconciled |
 
 **Still open inside Phase 2’s shadow (honest):**
 
-- Guest LFS ledger is still in-memory (**M-LFS-4**) — no cross-reboot persistence inside the guest domain yet.
+- The default E2E remains volatile; the hardware feature now persists a bounded signed snapshot through VirtIO. Complete immutable/encrypted guest LFS and native Glass integration remain open.
 - No RTC / TPM root for absolute time across reboot.
 - Guest writer trusts the PCB’s deadline check (same model as the notary); pre-boot time is not visible to the guest.
 - Production trust roots (demo seeds only); `result_handle` / `expected_version` on the write path (**M-LFS-5**) still open.
@@ -209,11 +210,36 @@ Closed on the verification path:
 2. **Bare-metal Raspberry Pi 4** — authority + durable path on device; power-loss and clock behavior on metal.
 3. **Release hygiene** — changelog and tag **`v0.1.0`** when packaging is credible (not before).
 
-Hardware qualification and release tagging remain open. Treat the host Glass demo as the public face and the QEMU E2E as the bounded prototype proof.
+Hardware qualification remains open. v0.1.0 packages the bounded persistence milestone, not a daily-driver OS. Treat the host Glass demo as the public face and the QEMU E2E as the bounded prototype proof.
 
 ---
 
 ## Getting started
+
+### One-command native boot (v0.1.0)
+
+```sh
+bash run-velaos.sh
+# equivalent: make boot
+```
+
+On Windows with Rust and Docker in WSL Debian:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\verify-bridge-e2e.ps1 -Hardware
+```
+
+The launcher builds pinned seL4/Microkit and Rust domains, then checks **41 markers
+on the first QEMU boot and 5 on a separate cold boot** against the same VirtIO
+disk. The appunto and signed receipt survive; the idempotent retry leaves its
+SHA-256 unchanged. [Evidence and exact boundaries](docs/LFS_HARDWARE_LOCAL.md).
+
+Requires Cargo, Docker/BuildKit and Python 3. A first SDK/toolchain build may take
+15–40 minutes; **a sub-three-minute cold launch is not established**. Cached
+launch speed depends on the machine and cache. This is a serial QEMU proof, not
+the graphical x86 Glass desktop. Linux is a build host/container only.
+UserSelection/Biscuit remain host fixtures; production trust roots, full guest
+LFS, native Glass storage, RTC/TPM and physical hardware remain open.
 
 ### Prerequisites
 

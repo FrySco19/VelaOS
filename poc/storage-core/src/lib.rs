@@ -17,6 +17,16 @@ pub trait BlockDevice {
     fn read(&mut self, sector: u64, out: &mut [u8; SECTOR]) -> Result<(), Self::Error>;
     fn write(&mut self, sector: u64, bytes: &[u8; SECTOR]) -> Result<(), Self::Error>;
     fn flush(&mut self) -> Result<(), Self::Error>;
+    fn read_block(&mut self, sector: u64, out: &mut [u8; SECTOR]) -> Result<(), Self::Error> {
+        self.read(sector, out)
+    }
+    fn write_block(&mut self, sector: u64, bytes: &[u8; SECTOR]) -> Result<(), Self::Error> {
+        self.write(sector, bytes)
+    }
+    /// Block-device fsync: stable completion, not a host filesystem call.
+    fn fsync(&mut self) -> Result<(), Self::Error> {
+        self.flush()
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]

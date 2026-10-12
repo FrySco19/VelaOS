@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- verify-bridge-e2e: executor.system + simulated LFS writer domain. -->
+<system>
+    <memory_region name="pcb_executor_page" size="0x1_000" />
+    <memory_region name="virtio_mmio" size="0x4000" phys_addr="0xa000000" />
+    <memory_region name="virtio_dma" size="0x1000" />
+
+    <protection_domain name="pcb" priority="100" stack_size="0x10_000">
+        <program_image path="pcb.elf" />
+        <map mr="pcb_executor_page" vaddr="0x4000_0000" perms="rw" setvar_vaddr="shared_page_addr" />
+    </protection_domain>
+
+    <protection_domain name="executor" priority="101" stack_size="0x10_000">
+        <program_image path="executor.elf" />
+        <map mr="pcb_executor_page" vaddr="0x4000_0000" perms="r" setvar_vaddr="shared_page_addr" />
+    </protection_domain>
+
+    <!-- Reads the admission page to check the output is authorized; cannot write it. -->
+    <protection_domain name="lfs" priority="102" stack_size="0x10_000">
+        <program_image path="lfs.elf" />
+        <map mr="virtio_mmio" vaddr="0x50000000" perms="rw" cached="false" setvar_vaddr="virtio_mmio_addr" />
+        <map mr="virtio_dma" vaddr="0x50004000" perms="rw" cached="false" setvar_vaddr="virtio_dma_addr" />
+        <setvar symbol="virtio_dma_phys" region_paddr="virtio_dma" />
+        <map mr="pcb_executor_page" vaddr="0x4000_0000" perms="r" setvar_vaddr="shared_page_addr" />
+    </protection_domain>
+
+    <channel>
+        <end pd="pcb" id="0" pp="true" />
+        <end pd="executor" id="0" notify="false" />
+    </channel>
+
+    <channel>
+        <end pd="pcb" id="1" pp="true" />
+        <end pd="lfs" id="0" notify="false" />
+    </channel>
+</system>
+

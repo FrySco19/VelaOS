@@ -1,0 +1,10 @@
+# Local integration image; reuses the pinned SDK/toolchain already built by E2E.
+ARG HARDWARE_BASE=velaos-executor-e2e:latest
+FROM ${HARDWARE_BASE}
+WORKDIR /repo/poc/m5_executor
+COPY poc/m5_executor/ ./
+COPY poc/storage-core/ /repo/poc/storage-core/
+RUN chmod +x app/rustc-wrapper.sh
+RUN --mount=type=secret,id=pcb_seed,required=true --mount=type=secret,id=lfs_seed,required=true \
+    VELA_PCB_SEED=/run/secrets/pcb_seed VELA_LFS_SEED=/run/secrets/lfs_seed \
+    sh -c 'rm -f build-hardware/cargo-target/.built && make build E2E=1 HARDWARE=1 BUILD=build-hardware'

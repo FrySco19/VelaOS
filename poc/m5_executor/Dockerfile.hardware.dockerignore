@@ -1,0 +1,13 @@
+**
+!poc/
+!poc/m5_executor/
+!poc/m5_executor/Makefile
+!poc/m5_executor/*.system
+!poc/m5_executor/check-wx.py
+!poc/m5_executor/app/
+!poc/m5_executor/app/**
+!poc/storage-core/
+!poc/storage-core/Cargo.toml
+!poc/storage-core/src/
+!poc/storage-core/src/**
+poc/m5_executor/app/target/

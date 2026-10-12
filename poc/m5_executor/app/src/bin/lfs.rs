@@ -8,8 +8,8 @@
 //! from the PCB it persists a successful result only if the admission frame on
 //! the page authenticates under the pinned PCB key, names the same request and
 //! carries the same authority digest; then it returns an Ed25519-signed receipt.
-//! Idempotency key (epoch, request_id). Storage is in memory (simulated): no
-//! durable medium, no cross-boot state.
+//! Idempotency key (epoch, request_id). Default E2E is in-memory; the hardware
+//! feature uses the dedicated VirtIO disk and authenticates recovery on boot.
 
 #[path = "../bridge.rs"]
 mod bridge;
@@ -24,6 +24,17 @@ use sel4_microkit::{
     with_msg_regs, with_msg_regs_mut,
 };
 
+#[cfg(feature = "hardware")]
+#[path = "../disk_ledger.rs"]
+mod disk_ledger;
+#[cfg(feature = "hardware")]
+#[allow(unused_attributes, dead_code)]
+#[path = "../../../../storage-core/src/lib.rs"]
+mod storage_core;
+#[cfg(feature = "hardware")]
+#[path = "../virtio_block.rs"]
+mod virtio_block;
+#[cfg(not(feature = "hardware"))]
 const CAPACITY: usize = 8;
 
 #[protection_domain]
@@ -31,24 +42,45 @@ fn init() -> impl Handler {
     // Local build secret (Docker BuildKit secret), never in Git.
     let seed: &[u8; 32] = include_bytes!(env!("VELA_LFS_SEED"));
     let key = KeyPair::from_seed(Seed::new(*seed));
+    #[cfg(not(feature = "hardware"))]
     debug_println!(
         "VelaOS E2E: LFS writer ready (simulated in-memory ledger, capacity={})",
         CAPACITY
     );
+    #[cfg(feature = "hardware")]
+    debug_println!("VelaOS E2E: LFS writer ready (VirtIO durable bounded ledger, capacity=8)");
+    #[cfg(feature = "hardware")]
+    let disk = disk_ledger::DiskLedger::new(&key);
     LfsWriter {
         page: memory_region_symbol!(shared_page_addr: *mut u8).as_ptr(),
         key,
+        #[cfg(not(feature = "hardware"))]
         ledger: lw::Ledger::new(),
+        #[cfg(feature = "hardware")]
+        disk,
     }
 }
 
 struct LfsWriter {
     page: *mut u8,
     key: KeyPair,
+    #[cfg(not(feature = "hardware"))]
     ledger: lw::Ledger<CAPACITY>,
+    #[cfg(feature = "hardware")]
+    disk: disk_ledger::DiskLedger,
 }
 
 impl LfsWriter {
+    fn len(&self) -> usize {
+        #[cfg(not(feature = "hardware"))]
+        {
+            self.ledger.len()
+        }
+        #[cfg(feature = "hardware")]
+        {
+            self.disk.len()
+        }
+    }
     fn status(status: lw::LfsStatus) -> MessageInfo {
         with_msg_regs_mut(|m| m[0] = status as u64 as _);
         MessageInfo::new(lw::RECEIPT_LABEL as _, 1)
@@ -84,7 +116,11 @@ impl Handler for LfsWriter {
         // private snapshot only.
         let snapshot = unsafe { bridge::snapshot(self.page) };
         let pcb = PublicKey::new(bridge::trusted_key::TRUSTED_PUBLIC_KEY);
-        match self.ledger.commit(&self.key.sk, pcb, &snapshot, &c) {
+        #[cfg(not(feature = "hardware"))]
+        let result = self.ledger.commit(&self.key.sk, pcb, &snapshot, &c);
+        #[cfg(feature = "hardware")]
+        let result = self.disk.commit(&self.key, pcb, &snapshot, &c);
+        match result {
             Ok(outcome) => {
                 let replayed = matches!(outcome, lw::CommitOutcome::Replayed(_));
                 let r = outcome.receipt();
@@ -94,7 +130,7 @@ impl Handler for LfsWriter {
                     r.body.epoch,
                     r.body.request_id,
                     r.body.seq,
-                    self.ledger.len()
+                    self.len()
                 );
                 let out = r.to_reply(replayed);
                 with_msg_regs_mut(|m| {
@@ -109,7 +145,7 @@ impl Handler for LfsWriter {
                     "VelaOS E2E: LFS refused request={} status={} persisted={}",
                     c.request_id,
                     status as u64,
-                    self.ledger.len()
+                    self.len()
                 );
                 Ok(Self::status(status))
             }

@@ -22,6 +22,7 @@ required-features = ["e2e"]
 [features]
 # verify-bridge-e2e: PCB e2e sequence + simulated LFS writer domain (Makefile E2E=1).
 e2e = []
+hardware = ["e2e"]
 
 [dependencies]
 sel4-microkit = { git = "https://github.com/seL4/rust-sel4", rev = "d441a880938209f661201704dfbee7b91c5aa905" }

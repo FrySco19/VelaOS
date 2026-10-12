@@ -87,6 +87,12 @@ fn main() {
     let candidates = MockPlanner::propose(intent, &index);
     let top: Handle = candidates[0].handle;
     let now = SystemTime::now();
+    let mut module = RETURN_21_MODULE.to_vec();
+    if std::env::var_os("VELA_HARDWARE").is_some() {
+        let name = b"vela.note"; let note = b"appunti: design bridge IPC";
+        module.extend_from_slice(&[0, (1+name.len()+note.len()) as u8, name.len() as u8]);
+        module.extend_from_slice(name); module.extend_from_slice(note);
+    }
     let base = TaskRequest {
         caller: USER.into(),
         requested: top,
@@ -95,7 +101,7 @@ fn main() {
         ttl: Duration::from_secs(120),
         planner_note: "AI: user surely wants this, proceed".into(),
         request_id: DENIED_ID,
-        module: RETURN_21_MODULE.to_vec(),
+        module,
         fuel: FUEL,
     };
 

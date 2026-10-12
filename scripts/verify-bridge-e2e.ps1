@@ -6,7 +6,12 @@
 # Optional: -PcbSeed <path>  existing seed matching the committed anchor
 #           -Offline         pass --offline to cargo
 #           -NativeDocker    use docker.exe (Docker Desktop) instead of WSL docker
-param([string]$PcbSeed = "", [switch]$Offline, [switch]$NativeDocker)
+param([string]$PcbSeed = "", [switch]$Offline, [switch]$NativeDocker, [switch]$Hardware)
+if ($Hardware) {
+  & (Join-Path $PSScriptRoot "verify-lfs-hardware.ps1")
+  if (-not $?) { exit 1 }
+  exit 0
+}
 $ErrorActionPreference = "Stop"
 $Root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 Set-Location $Root

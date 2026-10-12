@@ -1,6 +1,7 @@
 MICROKIT_SDK ?= /microkit
 BOARD ?= qemu_virt_aarch64
 CONFIG ?= debug
+HARDWARE ?= 0
 BUILD ?= build
 # E2E=1 builds the verify-bridge-e2e image: PCB e2e sequence + simulated LFS domain.
 E2E ?= 0
@@ -29,6 +30,12 @@ endif
 all: build
 
 build: $(LOADER)
+
+ifeq ($(HARDWARE),1)
+SYSTEM_FILE := hardware.system
+CARGO_FEATURES := --features hardware
+E2E_INPUTS += app/src/disk_ledger.rs app/src/virtio_block.rs ../storage-core/src/lib.rs
+endif
 
 $(BUILD)/cargo-target/.built: app/Cargo.toml app/Cargo.lock app/src/main.rs app/src/bridge.rs app/src/ledger_wire.rs app/src/trusted_key.rs app/src/bin/pcb.rs app/rust-toolchain.toml app/rustc-wrapper.sh app/.cargo/config.toml app/targets/aarch64-sel4-microkit.json $(E2E_INPUTS)
 	mkdir -p $(BUILD)

@@ -5,11 +5,11 @@
 #[path = "../bridge.rs"]
 mod bridge;
 #[cfg(feature = "e2e")]
-#[path = "../ledger_wire.rs"]
-mod ledger_wire;
-#[cfg(feature = "e2e")]
 #[path = "../guest_clock.rs"]
 mod guest_clock;
+#[cfg(feature = "e2e")]
+#[path = "../ledger_wire.rs"]
+mod ledger_wire;
 use core::sync::atomic::{Ordering, fence};
 use ed25519_compact::{KeyPair, Seed};
 use sel4_microkit::{
@@ -116,7 +116,8 @@ fn init() -> impl Handler {
     let max_fuel_loop = bridge::signed_frame(&key.sk, 9, bridge::LOOP_MODULE, bridge::MAX_FUEL);
     exchange(page, &max_fuel_loop, bridge::Status::Fuel, 4);
     debug_println!("VelaOS Phase 3: MAX_FUEL stack-safe status=6");
-    let after_max_fuel = bridge::signed_frame(&key.sk, 10, bridge::RETURN_7_MODULE, bridge::MAX_FUEL);
+    let after_max_fuel =
+        bridge::signed_frame(&key.sk, 10, bridge::RETURN_7_MODULE, bridge::MAX_FUEL);
     exchange(page, &after_max_fuel, bridge::Status::Success, 5);
     debug_println!("VelaOS Phase 2/3: ALL CHECKS PASSED; authenticated Wasm returned 7 via IPC");
     #[cfg(feature = "e2e")]
@@ -173,7 +174,8 @@ mod e2e {
                 m[i] = *v as _;
             }
         });
-        let reply = Channel::new(1).pp_call(MessageInfo::new(lw::COMMIT_LABEL as _, lw::COMMIT_REGS));
+        let reply =
+            Channel::new(1).pp_call(MessageInfo::new(lw::COMMIT_LABEL as _, lw::COMMIT_REGS));
         assert_eq!(reply.label(), lw::RECEIPT_LABEL as _);
         let n = reply.count().min(lw::RECEIPT_REGS);
         let mut out = [0u64; lw::RECEIPT_REGS];
@@ -191,10 +193,7 @@ mod e2e {
 
     /// PCB -> LFS commit gated by the in-guest monotonic deadline: an expired
     /// (or untrustworthy-time) grant never reaches the writer.
-    fn commit_if_alive(
-        dl: &gc::Deadline,
-        c: &lw::Commit,
-    ) -> Result<(lw::Receipt, bool, u64), u64> {
+    fn commit_if_alive(dl: &gc::Deadline, c: &lw::Commit) -> Result<(lw::Receipt, bool, u64), u64> {
         let remaining = dl.remaining_ms(gc::now()).ok_or(EXPIRED)?;
         commit(c).map(|(r, replayed)| (r, replayed, remaining))
     }
@@ -271,7 +270,9 @@ mod e2e {
         let mut notary: lw::Notary<4> = lw::Notary::new(PublicKey::new(lfs_key));
         let (receipt, replayed, remaining) =
             commit_if_alive(&deadline, &c).expect("grant alive in-guest -> LFS commit");
+        #[cfg(not(feature = "hardware"))]
         assert!(!replayed);
+
         debug_println!(
             "VelaOS E2E CLK [1]: request={} grant ttl={}s alive in-guest remaining_ms={} -> commit allowed",
             admitted,
@@ -279,12 +280,18 @@ mod e2e {
             remaining
         );
         debug_println!(
-            "VelaOS E2E [6]: LFS receipt epoch={} request={} seq={} replayed=0",
+            "VelaOS E2E [6]: LFS receipt epoch={} request={} seq={} replayed={}",
             receipt.body.epoch,
             receipt.body.request_id,
-            receipt.body.seq
+            receipt.body.seq,
+            replayed as u8
         );
         assert_eq!(notary.accept(&c, &receipt), Ok(true));
+        #[cfg(feature = "hardware")]
+        debug_println!(
+            "VelaOS DISK: PCB receipt verified after cold boot replayed={}",
+            replayed as u8
+        );
         debug_println!(
             "VelaOS E2E [7]: PCB notary verified+stored receipt request={} value={} seq={}",
             receipt.body.request_id,
@@ -300,13 +307,19 @@ mod e2e {
             again.body.seq
         );
         let conflict = lw::Commit { value: 22, ..c };
-        assert_eq!(commit(&conflict).unwrap_err(), lw::LfsStatus::IdempotencyConflict as u64);
+        assert_eq!(
+            commit(&conflict).unwrap_err(),
+            lw::LfsStatus::IdempotencyConflict as u64
+        );
         debug_println!("VelaOS E2E N2: same key different result -> status=13 not persisted");
         let unauthorized = lw::Commit {
             request_id: denied as u64,
             ..c
         };
-        assert_eq!(commit(&unauthorized).unwrap_err(), lw::LfsStatus::PolicyDenied as u64);
+        assert_eq!(
+            commit(&unauthorized).unwrap_err(),
+            lw::LfsStatus::PolicyDenied as u64
+        );
         debug_println!(
             "VelaOS E2E N3: output for AI-only request={} -> status=10 not persisted",
             denied
@@ -355,7 +368,10 @@ mod e2e {
             value: r[1] as u32,
             authority_digest: short_digest,
         };
-        assert_eq!(commit_if_alive(&short_deadline, &late).unwrap_err(), EXPIRED);
+        assert_eq!(
+            commit_if_alive(&short_deadline, &late).unwrap_err(),
+            EXPIRED
+        );
         debug_println!(
             "VelaOS E2E CLK [2]: request={} grant ttl={}s expired in-guest after {}ms -> EXPIRED code=7, result discarded, no LFS commit",
             short_id,
