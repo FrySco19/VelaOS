@@ -11,7 +11,7 @@ Questo documento distingue ciò che è stato **eseguito oggi** da ciò che è **
 | Branch / HEAD | `codex/lfs-neural-m1` / `47bb466` — "test(m5): reproduce bridge boot and specify ownership and remaining gates" |
 | Modifiche locali | nessuna (worktree pulito) |
 | Altri worktree (non toccati) | `VelaOS-m3-m4-design` (`codex/m3-m4-design` @ 110a596), `VelaOS-runtime` (`docs/qemu-preview-boot` @ 95885c2), pool kilo `solstice-power` (detached @ 4a4de8f) |
-| Questo worktree | `outputs/VelaOS-gate0-contracts`, branch `grok/gate0-contracts` da `47bb466` (solo documenti) |
+| Questo worktree | `outputs/VelaOS-gate0-contracts`, branch `vela/gate0-contracts` da `47bb466` (solo documenti) |
 
 Commit recenti rilevanti: `53a873d` (M2 Biscuit endpoint authority + opaque handles) → `ff6cba9` (M5 Gate D Wasmi in QEMU) → `278a0df` (M5 unsafe review, Phase 1 IPC) → `3e8cfe1` (M5 PCB auth + Wasm bounded over IPC) → `47bb466` (riproduzione boot bridge + contratto ownership).
 

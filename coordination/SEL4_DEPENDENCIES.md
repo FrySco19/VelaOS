@@ -1,6 +1,6 @@
 # Dipendenze dalla piattaforma seL4 — cosa serve agli altri agenti
 
-Owner: agente seL4/piattaforma · Branch `grok/sel4-platform` · Data: 2026-10-12.
+Owner: agente seL4/piattaforma · Branch `vela/sel4-platform` · Data: 2026-10-12.
 Riferimenti: `docs/PLATFORM_SEL4.md`, `docs/SEL4_GATE1_SLICE.md`, `docs/CONTRACTS_v0.md` (C2, C3, C6).
 
 ## Cosa la piattaforma fornisce oggi (QEMU virt AArch64)
