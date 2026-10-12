@@ -66,3 +66,7 @@ Notes / limits:
 * Not wired to M1 `Lfs::open` (M1 authorizes `right(caller, kind, "read")` without
   `handle`/`object_version` facts, so these grants would be denied there by design);
   no QEMU, wire v2 or `app/` change; clock is host wall clock (no trusted clock yet).
+
+## Assistant UX levels (v0)
+
+Side-panel levels (`full` / `reduced` / `hidden`) are chrome visibility only; see `docs/policy/ASSISTANT_UX_LEVELS_v0.md`.
