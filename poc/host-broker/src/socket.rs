@@ -155,11 +155,22 @@ pub fn serve(
     pcb_public: &Path,
     lfs_public: &Path,
     credential: &Path,
+    dev_virtual: bool,
 ) -> Result<(), String> {
+    if dev_virtual {
+        hello::dev_warning();
+    }
     let pcb = VerifyingKey::from_bytes(&key(pcb_public)?).map_err(|e| e.to_string())?;
     let lfs = VerifyingKey::from_bytes(&key(lfs_public)?).map_err(|e| e.to_string())?;
     let listener = TcpListener::bind("127.0.0.1:7990").map_err(|e| e.to_string())?;
-    println!("BROKER: ws://127.0.0.1:7990 ; guest=127.0.0.1:7991 ; FIDO2 USB HID required");
+    println!(
+        "BROKER: ws://127.0.0.1:7990 ; guest=127.0.0.1:7991 ; consent={}",
+        if dev_virtual {
+            "DEV VIRTUAL FIDO (interactive Enter)"
+        } else {
+            "FIDO2 USB HID required"
+        }
+    );
     let mut last_id = 0u64;
     for connection in listener.incoming() {
         let stream = connection.map_err(|e| e.to_string())?;
@@ -209,7 +220,7 @@ pub fn serve(
             let request: Value = serde_json::from_str(&text).map_err(|e| e.to_string())?;
             if request["type"] == "ListRequest" {
                 let plan = digest(b"Vela.List.AllImmutableNotes.v1");
-                let presence = hello::verify(credential, plan)?;
+                let presence = hello::authorize(credential, plan, dev_virtual)?;
                 if !presence.permits(&plan) {
                     return Err("FIDO2 plan mismatch".into());
                 }
@@ -233,7 +244,7 @@ pub fn serve(
                 let mut plan_bytes = b"Vela.Read.ImmutableVersion.v1".to_vec();
                 plan_bytes.extend_from_slice(&target);
                 let plan = digest(&plan_bytes);
-                let presence = hello::verify(credential, plan)?;
+                let presence = hello::authorize(credential, plan, dev_virtual)?;
                 if !presence.permits(&plan) {
                     return Err("FIDO2 plan mismatch".into());
                 }
@@ -288,12 +299,12 @@ pub fn serve(
             // FIDO covers session, revision, document, parent and exact bytes.
             // No Ed25519 signing key is loaded before successful verification.
             let plan = digest(&approval.signing_bytes());
-            let presence = hello::verify(credential, plan)?;
+            let presence = hello::authorize(credential, plan, dev_virtual)?;
             if !presence.permits(&plan) {
                 return Err("FIDO2 plan mismatch".into());
             }
             let pair = KeyPair::from_seed(Seed::new(key(seed)?));
-            let consent = "HardwareFido2Verified";
+            let consent = presence.consent();
             let signature = pair.sk.sign(approval.signing_bytes(), None);
             approval.signature.copy_from_slice(signature.as_ref());
             let address = guest_address()?;

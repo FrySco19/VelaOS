@@ -1,5 +1,5 @@
 //! Native development broker. `serve` performs consent and receipt verification.
-//! No transport test harness or synthetic consent exists in this executable.
+//! Interactive development touch exists only behind --dev-virtual-fido.
 //! Local plaintext seeds are development custody, not a TPM/FIDO2 enclave.
 mod hello;
 mod socket;
@@ -41,7 +41,7 @@ fn keygen(seed_path: &Path, public_path: &Path) -> Result<(), Box<dyn Error>> {
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = env::args().collect();
     match args.get(1).map(String::as_str) {
-        Some("serve") if args.len()==6 => socket::serve(Path::new(&args[2]),Path::new(&args[3]),Path::new(&args[4]),Path::new(&args[5])).map_err(Into::into),
+        Some("serve") if args.len()==6 || (args.len()==7 && args[6]=="--dev-virtual-fido") => socket::serve(Path::new(&args[2]),Path::new(&args[3]),Path::new(&args[4]),Path::new(&args[5]),args.len()==7).map_err(Into::into),
         Some("enroll-fido") if args.len()==3 || (args.len()==4 && args[3]=="--ctap1") => hello::enroll(Path::new(&args[2]),args.len()==4).map_err(Into::into),
         Some("keygen") if args.len() == 4 => keygen(Path::new(&args[2]), Path::new(&args[3])),
         Some("public") if args.len() == 4 => {
@@ -51,6 +51,6 @@ fn main() -> Result<(), Box<dyn Error>> {
             file.write_all(pair.pk.as_ref())?;file.sync_all()?;Ok(())
         },
 
-        _ => Err("usage: serve <broker.seed> <pcb.public> <lfs.public> <fido.json> | enroll-fido <fido.json> [--ctap1] | keygen <seed> <public.rs> | public <seed> <public.bin>".into()),
+        _ => Err("usage: serve <broker.seed> <pcb.public> <lfs.public> <fido.json> [--dev-virtual-fido] | enroll-fido <fido.json> [--ctap1] | keygen <seed> <public.rs> | public <seed> <public.bin>".into()),
     }
 }

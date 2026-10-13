@@ -1,4 +1,4 @@
-//! USB-HID only FIDO gate. No OS, console or synthetic consent fallback.
+//! USB HID in production; explicit interactive virtual-touch development mode.
 use authenticator::{
     StatusUpdate,
     authenticatorservice::{AuthenticatorService, RegisterArgs, SignArgs},
@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{
     fs::{self, OpenOptions},
-    io::Write,
+    io::{self, IsTerminal, Write},
     path::{Path, PathBuf},
     sync::mpsc,
     thread,
@@ -167,8 +167,16 @@ fn load(path: &Path) -> Result<(Credential, u32), String> {
 }
 pub struct HumanPresence {
     plan: [u8; 32],
+    virtual_touch: bool,
 }
 impl HumanPresence {
+    pub fn consent(&self) -> &'static str {
+        if self.virtual_touch {
+            "DevelopmentVirtualFido"
+        } else {
+            "HardwareFido2Verified"
+        }
+    }
     pub fn permits(&self, plan: &[u8; 32]) -> bool {
         &self.plan == plan
     }
@@ -194,7 +202,41 @@ pub fn verify(path: &Path, plan: [u8; 32]) -> Result<HumanPresence, String> {
         .map_err(err)?;
     file.write_all(&next.to_le_bytes()).map_err(err)?;
     file.sync_all().map_err(err)?;
-    Ok(HumanPresence { plan })
+    Ok(HumanPresence {
+        plan,
+        virtual_touch: false,
+    })
+}
+/// CLI mode only. No environment switch, automatic success or piped approval.
+pub fn authorize(path: &Path, plan: [u8; 32], dev_virtual: bool) -> Result<HumanPresence, String> {
+    if !dev_virtual {
+        return verify(path, plan);
+    }
+    if !io::stdin().is_terminal() || !io::stdout().is_terminal() {
+        return Err(
+            "Dev virtual FIDO requires an interactive terminal; redirected input is denied".into(),
+        );
+    }
+    println!(
+        "[DEV VIRTUAL FIDO — NOT HARDWARE] Piano SHA-256: {}",
+        plan.iter().map(|b| format!("{b:02x}")).collect::<String>()
+    );
+    print!("Premi [INVIO] per simulare il tocco; qualsiasi altro testo rifiuta: ");
+    io::stdout().flush().map_err(err)?;
+    let mut line = String::new();
+    let count = io::stdin().read_line(&mut line).map_err(err)?;
+    if count == 0 || !matches!(line.as_str(), "\n" | "\r\n") {
+        return Err("Dev virtual touch denied (input or EOF)".into());
+    }
+    Ok(HumanPresence {
+        plan,
+        virtual_touch: true,
+    })
+}
+pub fn dev_warning() {
+    eprintln!(
+        "\x1b[1;31m\n============================================================\n!!! DEV VIRTUAL FIDO ATTIVO — NESSUNA AUTENTICAZIONE HARDWARE !!!\nINVIO SIMULA IL TOCCO. SOLO SVILUPPO. NON USARE IN PRODUZIONE.\nFIRME Ed25519 REALI; CONSENSO FIDO2 SIMULATO.\n============================================================\n\x1b[0m"
+    );
 }
 pub fn enroll(path: &Path, ctap1: bool) -> Result<(), String> {
     if path.exists() || journal(path).exists() {
