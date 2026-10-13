@@ -1,145 +1,312 @@
 <!doctype html>
 <html lang="it">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self' ws://127.0.0.1:7990; img-src 'none'; base-uri 'none'; form-action 'none'">
-<title>Vela — Intent Console</title>
-<style>
-:root{color-scheme:dark;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;--bg:#111315;--panel:#181b1e;--line:#353b41;--text:#e8eaed;--muted:#a0a7ae;--accent:#3264d4}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);min-height:100svh}button,input,textarea,select{font:inherit}button{cursor:pointer}button:disabled{cursor:default;opacity:.45}button,input,textarea,select{border-radius:0}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:4px}[hidden]{display:none!important}
-header{height:72px;padding:0 40px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{font-size:18px;font-weight:750;letter-spacing:.1em}.system-state{font-size:12px;color:var(--muted)}.mono,code,time{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}.layout{max-width:1360px;margin:auto;display:grid;grid-template-columns:330px 1fr;min-height:calc(100svh - 72px)}aside{border-right:1px solid var(--line);padding:36px 24px}.aside-title{font-size:12px;font-weight:700;letter-spacing:.08em;margin:0 0 20px;text-transform:uppercase}.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px}.tab{background:none;color:var(--muted);border:0;border-bottom:2px solid transparent;padding:12px 9px;font-size:12px}.tab[aria-selected=true]{color:var(--text);border-bottom-color:var(--accent);font-weight:700}.caption{font-size:11px;line-height:1.65;color:var(--muted)}.feed{list-style:none;padding:0;margin:22px 0;max-height:calc(100svh - 280px);overflow:auto}.entry{padding:20px 0;border-top:1px solid var(--line)}.entry-title{font-size:14px;font-weight:650;margin:0 0 9px}.entry-meta{display:flex;gap:10px;align-items:center;font-size:10px;color:var(--muted);margin:10px 0}.tag{border:1px solid var(--line);padding:3px 6px;color:var(--text);font-weight:700}.entry code{font-size:11px;display:block;overflow-wrap:anywhere;color:var(--muted)}details{margin-top:12px;font-size:11px}summary{cursor:pointer;color:var(--muted)}details pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:10px;line-height:1.6;border:1px solid var(--line);padding:12px;max-height:180px;overflow:auto}.empty{font-size:13px;color:var(--muted);line-height:1.8;padding:16px 0}main{padding:80px 56px}.section-label{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 18px}.input-form{display:flex;border:1px solid var(--line);background:var(--panel)}.intent{min-width:0;flex:1;padding:25px 22px;border:0;background:none;color:var(--text);font-size:24px;font-weight:450;outline-offset:0}.intent::placeholder{color:#7d858d}.input-submit{border:0;border-left:1px solid var(--line);padding:0 24px;background:none;color:var(--text);font-size:12px;font-weight:700}.input-submit:hover{background:#252a30}.input-hint{display:flex;justify-content:space-between;gap:16px;font-size:11px;color:var(--muted);margin:14px 0 38px;line-height:1.7}.approval{border:1px solid var(--line);background:var(--panel);padding:28px;margin-top:34px}.approval-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;border-bottom:1px solid var(--line);padding-bottom:20px}.approval h1{font-size:20px;font-weight:700;margin:0 0 9px}.approval-sub{font-size:12px;color:var(--muted);margin:0;line-height:1.7}.sequence{font-size:10px;color:var(--muted);white-space:nowrap}.field-label{display:block;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin:24px 0 10px}.draft{width:100%;min-height:155px;background:var(--bg);color:var(--text);border:1px solid var(--line);padding:16px;line-height:1.7;resize:vertical;font-size:14px}.scope{display:grid;grid-template-columns:100px 1fr;gap:10px;font-size:11px;margin:20px 0;line-height:1.8}.scope dt{color:var(--muted)}.scope dd{margin:0;overflow-wrap:anywhere}.hash{display:block;border:1px solid var(--line);background:var(--bg);padding:14px;font-size:12px;line-height:1.8;overflow-wrap:anywhere}.controls{display:flex;gap:12px;justify-content:flex-end;margin-top:26px}.button{padding:13px 18px;border:1px solid var(--line);background:none;color:var(--text);font-size:11px;font-weight:750;letter-spacing:.04em}.button:hover{background:#252a30}.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.primary:hover{background:#3869d9}.context-select{background:var(--bg);color:var(--text);border:1px solid var(--line);padding:5px 9px;font-size:11px}.status{font-size:12px;line-height:1.8;margin:24px 0;color:var(--muted);min-height:24px}.status strong{color:var(--text)}.boundary{padding-top:20px;border-top:1px solid var(--line);font-size:11px;color:var(--muted);line-height:1.8;margin-top:40px}.loading{font-size:12px;border-top:1px solid var(--line);padding-top:20px;margin-top:24px}
-@media(min-width:1100px){main{padding-top:150px}main:has(#approval:not([hidden])){padding-top:32px}main:has(#approval:not([hidden])) .intent{font-size:20px;padding:16px 22px}}
-main:has(#approval:not([hidden])) .input-hint{margin-bottom:18px}.approval{padding:24px;margin-top:24px}.approval-head{padding-bottom:16px}.draft{min-height:110px}.field-label{margin-top:16px}.scope{gap:4px;margin:14px 0}.hash{padding:10px;font-size:11px;line-height:1.6}.controls{margin-top:18px}.primary:hover{background:#2853b5}
-@media(max-width:850px){header{padding:0 20px}.layout{grid-template-columns:1fr}main{grid-row:1;padding:48px 20px}aside{border-right:0;border-top:1px solid var(--line);padding:28px 20px}.feed{max-height:350px}.intent{font-size:18px;padding:20px 15px}.input-submit{padding:0 16px}.approval{padding:20px}.controls{flex-wrap:wrap}.system-state{max-width:180px;text-align:right}.input-hint{flex-direction:column;gap:4px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self' ws://127.0.0.1:7990; img-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Vela</title>
+  <style>
+    /* Tokens */
+    :root {
+      color-scheme: dark;
+      --canvas: #0a0d12;
+      --surface: #121720;
+      --elevated: #151b26;
+      --hash-surface: #0d1118;
+      --button-surface: #1a212d;
+      --border: rgba(255,255,255,.06);
+      --highlight: inset 0 1px 0 rgba(255,255,255,.04);
+      --text: #e8ebf1;
+      --secondary: #8a93a6;
+      --tertiary: #788398;
+      --accent: #8fa8d9;
+      --focus: rgba(143,168,217,.55);
+      --success: #6fb58f;
+      --error: #d9776f;
+      --sans: -apple-system,"SF Pro Text","Inter",system-ui,sans-serif;
+      --mono: ui-monospace,"SF Mono","JetBrains Mono","Cascadia Mono",monospace;
+      --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px;
+      --s5: 24px; --s6: 32px; --s7: 48px;
+      --bar-radius: 14px; --card-radius: 12px; --button-radius: 10px;
+      --row-radius: 8px; --pill-radius: 999px;
+      --bar-shadow: 0 1px 2px rgba(0,0,0,.30),0 8px 24px rgba(0,0,0,.28),0 24px 64px rgba(0,0,0,.22);
+      --modal-shadow: 0 2px 4px rgba(0,0,0,.35),0 16px 40px rgba(0,0,0,.40),0 48px 120px rgba(0,0,0,.50);
+      --enter: cubic-bezier(.2,.8,.2,1);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; height: 100dvh; overflow: hidden; background: var(--canvas); color: var(--text); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+    button,input,textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: default; opacity: .45; }
+    [hidden] { display: none; }
+    :focus-visible { outline: 1px solid var(--accent); outline-offset: var(--s1); }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+    /* Canvas and command surface */
+    .shell { width: min(640px,calc(100% - 32px)); margin: 0 auto; padding-top: min(31dvh,280px); }
+    .command { position: relative; height: 56px; border: 1px solid var(--border); border-radius: var(--bar-radius); background: var(--surface); box-shadow: var(--highlight),var(--bar-shadow); overflow: hidden; }
+    .command:focus-within { box-shadow: 0 0 0 1px var(--focus),var(--highlight),var(--bar-shadow); }
+    .intent { width: 100%; height: 100%; border: 0; outline: 0; background: transparent; color: var(--text); padding: 0 20px; font-size: 18px; font-weight: 400; letter-spacing: -.01em; caret-color: var(--accent); }
+    .intent::placeholder { color: var(--tertiary); opacity: 1; }
+    .processing { position: absolute; right: 20px; top: 25px; display: flex; gap: var(--s1); pointer-events: none; }
+    .processing[hidden] { display: none; }
+    .processing i { width: 4px; height: 4px; border-radius: var(--pill-radius); background: var(--secondary); animation: pulse 800ms ease-out infinite alternate; }
+    .processing i:nth-child(2) { animation-delay: 120ms; }
+    .processing i:nth-child(3) { animation-delay: 240ms; }
+    .filters { display: flex; justify-content: center; gap: var(--s1); margin-top: var(--s4); }
+    .pill { height: 28px; padding: 0 14px; border: 1px solid transparent; border-radius: var(--pill-radius); background: transparent; color: var(--secondary); font-size: 12px; font-weight: 500; }
+    .pill:hover { background: rgba(255,255,255,.04); }
+    .pill[aria-selected="true"] { background: var(--surface); border-color: rgba(143,168,217,.18); color: var(--text); box-shadow: var(--highlight); }
+    .feed { list-style: none; padding: 0 0 var(--s7); margin: var(--s5) 0 0; max-height: min(528px,calc(69dvh - 148px)); overflow-y: auto; scrollbar-width: none; mask-image: linear-gradient(to bottom,#000 0%,#000 65%,transparent 100%); -webkit-mask-image: linear-gradient(to bottom,#000 0%,#000 65%,transparent 100%); }
+    .feed::-webkit-scrollbar { display: none; }
+    .entry { border-radius: var(--row-radius); }
+    .entry.new { animation: row-enter 200ms var(--enter); }
+    .entry:hover { background: rgba(255,255,255,.03); }
+    .entry details > summary { list-style: none; cursor: pointer; }
+    .entry details > summary::-webkit-details-marker { display: none; }
+    .entry-line { display: flex; align-items: center; gap: var(--s3); min-height: 44px; padding: 0 var(--s3); }
+    .dot { width: 6px; height: 6px; flex: 0 0 6px; border-radius: var(--pill-radius); background: var(--tertiary); }
+    .dot.success { background: var(--success); }
+    .entry-label { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+    .entry-time { color: var(--tertiary); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .receipt-detail { display: grid; grid-template-columns: 72px 1fr; gap: var(--s2); margin: 0; padding: var(--s3) var(--s5) var(--s4); font-size: 12px; line-height: 1.7; }
+    .receipt-detail dt { color: var(--secondary); }
+    .receipt-detail dd { margin: 0; overflow-wrap: anywhere; }
+    .receipt-detail code { font-family: var(--mono); font-size: 11px; }
+    .feed.exiting { animation: fade-out 120ms ease-out forwards; }
+    .feed.entering { animation: filter-enter 140ms var(--enter); }
+    .connection { position: fixed; top: 20px; right: 20px; width: 6px; height: 6px; border-radius: var(--pill-radius); background: var(--tertiary); }
+    .connection[data-state="connected"] { background: var(--success); }
+    .connection[data-state="failed"] { background: var(--error); }
+
+    /* Approval surface */
+    .approval { width: min(480px,calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow-y: auto; padding: 28px; border: 1px solid var(--border); border-radius: var(--card-radius); background: var(--elevated); color: var(--text); box-shadow: var(--highlight),var(--modal-shadow); animation: modal-enter 200ms var(--enter); }
+    .approval::backdrop { background: rgba(4,6,9,.66); backdrop-filter: blur(6px); animation: fade-in 180ms var(--enter); }
+    .approval.leaving { animation: fade-out 160ms ease-out forwards; }
+    .approval.leaving::backdrop { animation: fade-out 160ms ease-out forwards; }
+    .proposal-label { margin: 0 0 20px; color: var(--secondary); font-size: 11px; font-weight: 500; letter-spacing: .08em; }
+    .approval h1 { margin: 0 0 20px; font-size: 17px; font-weight: 600; line-height: 1.45; }
+    .draft { display: block; width: 100%; min-height: 88px; max-height: 160px; resize: vertical; border: 1px solid var(--border); border-radius: var(--row-radius); padding: var(--s3); background: var(--hash-surface); color: var(--text); caret-color: var(--accent); font-size: 13px; line-height: 1.7; margin-bottom: 20px; }
+    .parameters { display: grid; grid-template-columns: 64px 1fr; gap: var(--s2); font-size: 12px; color: var(--secondary); margin: 0 0 20px; }
+    .parameters dd { margin: 0; color: var(--text); }
+    .hash-label { display: block; color: var(--secondary); font-size: 11px; letter-spacing: .08em; margin-bottom: var(--s2); }
+    .hash { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: var(--s1); padding: 14px; border: 1px solid var(--border); border-radius: var(--row-radius); background: var(--hash-surface); font-family: var(--mono); font-size: 13px; line-height: 1.7; letter-spacing: .02em; user-select: all; margin-bottom: 20px; }
+    .hash span { white-space: nowrap; }
+    .buttons { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); }
+    .button { height: 48px; padding: 0 var(--s2); border: 1px solid rgba(255,255,255,.08); border-radius: var(--button-radius); background: var(--button-surface); color: var(--secondary); font-size: 12px; font-weight: 600; letter-spacing: .04em; box-shadow: inset 0 1px 0 rgba(255,255,255,.12),0 1px 2px rgba(0,0,0,.4); }
+    .button:hover { color: var(--text); }
+    .button:active { transform: translateY(1px); box-shadow: inset 0 1px 0 rgba(255,255,255,.12); }
+    .authorize { background: var(--text); color: var(--canvas); }
+    .authorize:hover { color: var(--canvas); }
+    .button-progress { width: 14px; height: 14px; display: inline-block; border: 1px solid var(--canvas); border-radius: var(--pill-radius); border-right-color: transparent; animation: spin 800ms linear infinite; }
+    .button-progress[hidden] { display: none; }
+    .toast { position: fixed; left: 50%; bottom: var(--s6); transform: translateX(-50%); max-width: calc(100% - 32px); min-height: 40px; display: flex; align-items: center; padding: var(--s2) var(--s4); border: 1px solid var(--border); border-radius: var(--button-radius); background: var(--surface); box-shadow: var(--bar-shadow); color: var(--text); font-size: 13px; animation: fade-in 160ms var(--enter); text-align: center; }
+    .toast[hidden] { display: none; }
+    .toast.leaving { animation: fade-out 160ms ease-out forwards; }
+    @keyframes pulse { from { opacity: .3; } to { opacity: 1; } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes modal-enter { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: scale(1); } }
+    @keyframes row-enter { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes filter-enter { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fade-out { to { opacity: 0; } }
+    @media(max-width:519px) { .approval { padding: var(--s4); } .hash { letter-spacing: 0; font-size: 12px; } .button { font-size: 11px; letter-spacing: 0; } }
+    @media(max-height:600px) { .shell { padding-top: 20dvh; } .feed { max-height: calc(80dvh - 148px); } }
+    @media(prefers-reduced-motion:reduce) { .entry.new,.approval,.feed.entering { animation: fade-in 60ms ease-out; } .approval::backdrop,.toast { animation-duration: 60ms; } .feed.exiting,.approval.leaving,.approval.leaving::backdrop,.toast.leaving { animation-duration: 60ms; } .button:active { transform: none; } .processing i,.button-progress { animation: none; } }
+  </style>
 </head>
 <body>
-<header><span class="brand">VELA</span><span class="system-state">Host di sviluppo · appunti su QEMU</span></header>
-<div class="layout">
-<aside aria-label="Timeline delle ricevute">
- <h2 class="aside-title">Timeline</h2>
- <div class="tabs" role="tablist" aria-label="Contesto">
-  <button class="tab" role="tab" aria-selected="true" data-context="Tutto">Tutto</button>
-  <button class="tab" role="tab" aria-selected="false" data-context="Lavoro">Lavoro</button>
-  <button class="tab" role="tab" aria-selected="false" data-context="Sistema">Sistema</button>
- </div>
- <p class="caption">Ricevute ottenute in questa sessione.<br>I contesti filtrano la UI, non concedono permessi.</p>
- <p class="empty" id="emptyFeed">Nessuna transazione completata.<br>Una ricevuta verificata apparirà qui.</p>
- <ol class="feed" id="timeline" aria-live="polite" aria-label="Transazioni completate"></ol>
-</aside>
-<main>
- <p class="section-label">Universal input</p>
- <form class="input-form" id="intentForm">
-  <label for="intent" hidden>Qual è il tuo intento?</label>
-  <input class="intent" id="intent" placeholder="Qual è il tuo intento?" autocomplete="off" maxlength="512" autofocus>
-  <button class="input-submit" type="submit" id="submitIntent">INVIO ↵</button>
- </form>
- <div class="input-hint"><span>Scrivi una proposta di appunto. Nessuna azione viene eseguita con Invio.</span><span class="mono">Alt + Space / Ctrl + K</span></div>
- <p class="status" id="status" role="status" aria-live="polite">Pronto.</p>
- <section class="approval" id="approval" aria-labelledby="approvalTitle" hidden>
-  <div class="approval-head"><div><h1 id="approvalTitle">Autorizzazione richiesta</h1><p class="approval-sub">Il salvataggio sostituisce la nota di test nella VM.<br>Controlla i byte prima di autorizzare.</p></div><span class="sequence mono" id="proposalRevision"></span></div>
-  <label class="field-label" for="draft">Payload · UTF-8</label>
-  <textarea class="draft" id="draft" maxlength="1024" spellcheck="false"></textarea>
-  <dl class="scope"><dt>Operazione</dt><dd class="mono">write-note</dd><dt>Oggetto</dt><dd class="mono">/lfs/notes/note1.txt</dd><dt>Dimensione</dt><dd class="mono" id="byteCount">0 / 1024 byte</dd><dt>Contesto UI</dt><dd><label for="proposalContext" hidden>Contesto della ricevuta</label><select class="context-select" id="proposalContext"><option>Lavoro</option><option>Sistema</option></select></dd></dl>
-  <span class="field-label">SHA-256 · byte esatti del payload</span>
-  <code class="hash" id="planDigest">Calcolo in corso.</code>
-  <p class="caption">La firma appartiene al broker. Il consenso può essere simulato solo in modalità di sviluppo esplicita; la ricevuta indica il metodo usato.</p>
-  <div class="controls"><button class="button" id="reject" type="button">RIFIUTA</button><button class="button primary" id="approve" type="button" disabled>AUTORIZZA E FIRMA</button></div>
-  <p class="loading" id="loading" role="status" hidden>Attesa firma host e ricevuta LFS...</p>
- </section>
- <p class="boundary">Ricerca e generazione IA non sono collegate a questa superficie: la preparazione della proposta è una simulazione locale. Solo gli appunti hanno un percorso di esecuzione. La timeline non è ancora un indice LFS persistente; ricaricando la pagina si perde la lista, non la nota salvata nel guest.</p>
-</main>
-</div>
-<script>
-'use strict';
-const $=id=>document.getElementById(id), encoder=new TextEncoder();
-const receipts=[], transactionIds=new Set();
-let phase='Idle', revision=0, digestRevision=0, filter='Tutto', currentIntent='', socket=null;
-const hex=bytes=>Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
-const sha=async bytes=>hex(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)));
-function status(text){$('status').textContent=text;}
-function lock(locked){for(const id of ['intent','submitIntent','draft','proposalContext','reject','approve'])$(id).disabled=locked;$('loading').hidden=!locked;}
-async function updateDigest(){
- const run=++digestRevision, bytes=encoder.encode($('draft').value);
- $('byteCount').textContent=bytes.length+' / 1024 byte';$('approve').disabled=true;
- if(bytes.length>1024){$('planDigest').textContent='Payload oltre il limite di 1024 byte UTF-8.';return;}
- const digest=await sha(bytes);
- if(run!==digestRevision||phase!=='Preview')return;
- $('planDigest').textContent=digest;$('approve').disabled=false;
-}
-function renderTimeline(){
- const items=receipts.filter(r=>filter==='Tutto'||r.context===filter);
- $('timeline').replaceChildren();$('emptyFeed').hidden=items.length>0;
- $('emptyFeed').textContent=receipts.length?'Nessuna ricevuta in questo contesto.':'Nessuna transazione completata. Una ricevuta verificata apparirà qui.';
- for(const item of items){
-  const li=document.createElement('li');li.className='entry';
-  const title=document.createElement('p');title.className='entry-title';title.textContent='Nota salvata · '+item.date;
-  const meta=document.createElement('div');meta.className='entry-meta';
-  const tag=document.createElement('span');tag.className='tag';tag.textContent='Completed';
-  const context=document.createElement('span');context.textContent=item.context;meta.append(tag,context);
-  const id=document.createElement('code');id.textContent='RECEIPT / '+item.request;
-  const details=document.createElement('details'),summary=document.createElement('summary'),data=document.createElement('pre');
-  summary.textContent='Verifica e ricevuta';data.textContent='SHA-256\n'+item.note_sha256+'\n\nCONSENSO\n'+item.consent+'\n\nRICEVUTA FIRMATA\n'+item.receipt_hex;
-  details.append(summary,data);li.append(title,meta,id,details);$('timeline').append(li);
- }
-}
-async function propose(event){
- event.preventDefault();if(phase==='Loading'||phase==='Interpreting')return;
- const intent=$('intent').value.trim();if(!intent)return;
- if(phase==='Preview'){status('Rifiuta la proposta attuale prima di sostituirla.');$('reject').focus();return;}
- currentIntent=intent;phase='Interpreting';revision++;status('Preparazione della proposta locale...');$('submitIntent').disabled=true;
- // Deliberately labelled simulation, not a hidden model call or authorization.
- await new Promise(resolve=>setTimeout(resolve,180));
- $('draft').value=intent;$('proposalRevision').textContent='PROPOSAL / '+String(revision).padStart(4,'0');
- $('proposalContext').value=filter==='Sistema'?'Sistema':'Lavoro';
- phase='Preview';$('approval').hidden=false;$('submitIntent').disabled=false;
- status('Proposal. Nessuna autorità emessa.');await updateDigest();$('draft').focus();
-}
-function reject(){if(phase==='Loading')return;++digestRevision;phase='Idle';$('approval').hidden=true;$('draft').value='';status('Proposta rifiutata. Nessun frame inviato.');$('intent').focus();}
-async function authorize(){
- if(phase!=='Preview')return;
- const note=$('draft').value, bytes=encoder.encode(note), context=$('proposalContext').value;
- if(bytes.length>1024){status('Payload troppo grande.');return;}
- // Freeze the exact displayed snapshot before hashing/signing; no edit races.
- phase='Loading';++digestRevision;lock(true);status('Loading · attesa firma host e ricevuta LFS...');
- let digest;
- try{
-  digest=await sha(bytes);$('planDigest').textContent=digest;
-  const receipt=await new Promise((resolve,rejectPromise)=>{
-   socket=new WebSocket('ws://127.0.0.1:7990/');let settled=false;
-   const finish=(error,value)=>{if(settled)return;settled=true;clearTimeout(timer);const active=socket;socket=null;active?.close();error?rejectPromise(error):resolve(value);};
-   const timer=setTimeout(()=>finish(new Error('Timeout: esito del salvataggio sconosciuto. Non ripetere automaticamente.')),180000);
-   socket.onopen=()=>socket.send(JSON.stringify({type:'Proposal',operation:'write-note',intent:currentIntent,note,note_sha256:digest}));
-   socket.onerror=()=>finish(new Error('Broker locale non disponibile.'));
-   socket.onclose=()=>finish(new Error('Connessione chiusa senza ricevuta: esito sconosciuto.'));
-   socket.onmessage=event=>{
-    let message;try{message=JSON.parse(event.data);}catch{finish(new Error('Risposta broker non valida.'));return;}
-    // ACK and progress events never constitute proof of a durable commit.
-    if(message.type==='Ack'||message.type==='Progress'){status('Loading · conferma di trasporto ricevuta; attesa ricevuta LFS.');return;}
-    if(message.type==='Denied'){finish(new Error(message.reason||'Richiesta negata.'));return;}
-    finish(null,message);
-   };
-  });
-  if(receipt.type!=='Receipt'||receipt.verified!==true||receipt.note_sha256!==digest||!/^\d+$/.test(receipt.request)||!/^[0-9a-f]{340}$/.test(receipt.receipt_hex)||!['WindowsVerified','ConsoleDevelopment','MockUnavailableDevelopment'].includes(receipt.consent))throw new Error('Ricevuta non coerente con la proposta.');
-  // Validate the signed-envelope identifiers and hash again in the renderer.
-  // Signature verification against pinned roots belongs to the native broker.
-  const raw=Uint8Array.from(receipt.receipt_hex.match(/../g),v=>parseInt(v,16)), view=new DataView(raw.buffer);
-  if(view.getUint16(0,true)!==1||view.getBigUint64(10,true).toString()!==receipt.request||view.getBigUint64(18,true)===0n||hex(raw.slice(26,58))!==digest)throw new Error('Identità della ricevuta non valida.');
-  if(transactionIds.has(receipt.request))throw new Error('Ricevuta duplicata.');
-  transactionIds.add(receipt.request);receipts.unshift({...receipt,context,date:new Date().toLocaleString('it-IT',{dateStyle:'short',timeStyle:'medium'})});
-  phase='Completed';$('approval').hidden=true;$('draft').value='';$('intent').value='';renderTimeline();
-  status(receipt.consent==='WindowsVerified'?'Completed · nota salvata; ricevuta verificata.':'Completed · nota salvata; ricevuta verificata. CONSENSO DI SVILUPPO, NON BIOMETRICO.');
-  window.dispatchEvent(new CustomEvent('vela:completed',{detail:receipt}));
- }catch(error){phase='Preview';status('Non completato · '+error.message);}
- finally{lock(false);if(phase==='Preview')await updateDigest();else $('intent').focus();}
-}
-$('intentForm').addEventListener('submit',propose);
-$('draft').addEventListener('input',()=>{if(phase==='Preview'){revision++;$('proposalRevision').textContent='PROPOSAL / '+String(revision).padStart(4,'0');updateDigest().catch(e=>status(e.message));}});
-$('approve').addEventListener('click',authorize);$('reject').addEventListener('click',reject);
-for(const tab of document.querySelectorAll('[data-context]'))tab.addEventListener('click',()=>{filter=tab.dataset.context;for(const t of document.querySelectorAll('[data-context]'))t.setAttribute('aria-selected',String(t===tab));renderTimeline();});
-document.addEventListener('keydown',event=>{if((event.altKey&&event.code==='Space')||((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k')){event.preventDefault();if(phase!=='Loading')$('intent').focus();}else if(event.key==='Escape'&&phase==='Preview'){event.preventDefault();reject();}});
-renderTimeline();
-</script>
+  <span id="connection" class="connection" data-state="idle" title="Disconnesso" role="img" aria-label="Disconnesso"></span>
+  <main class="shell" id="shell">
+    <form id="intentForm" class="command">
+      <input id="intent" class="intent" aria-label="Qual è il tuo intento?" placeholder="Qual è il tuo intento?" autocomplete="off" maxlength="512" autofocus>
+      <span id="processing" class="processing" hidden aria-hidden="true"><i></i><i></i><i></i></span>
+    </form>
+    <nav class="filters" role="tablist" aria-label="Contesti">
+      <button id="tab-all" class="pill" role="tab" aria-selected="true" aria-controls="timelinePanel" data-context="Tutto">Tutto</button>
+      <button id="tab-work" class="pill" role="tab" aria-selected="false" aria-controls="timelinePanel" data-context="Lavoro" tabindex="-1">Lavoro</button>
+      <button id="tab-system" class="pill" role="tab" aria-selected="false" aria-controls="timelinePanel" data-context="Sistema" tabindex="-1">Sistema</button>
+    </nav>
+    <section id="timelinePanel" role="tabpanel" aria-labelledby="tab-all"><ul id="timeline" class="feed" aria-label="Cronologia" aria-live="polite"></ul></section>
+  </main>
+  <dialog id="approval" class="approval" aria-modal="true" aria-labelledby="approvalTitle" aria-describedby="effect">
+    <p class="proposal-label">PROPOSTA</p>
+    <h1 id="approvalTitle">Salva la nota</h1>
+    <label for="draft" class="sr-only">Contenuto della nota</label>
+    <textarea id="draft" class="draft" maxlength="1024" spellcheck="false"></textarea>
+    <dl class="parameters"><dt>Effetto</dt><dd id="effect">Sostituisce la nota precedente</dd></dl>
+    <span class="hash-label">SHA-256</span><code id="planDigest" class="hash"></code>
+    <div class="buttons">
+      <button id="reject" class="button" type="button" autofocus>RIFIUTA</button>
+      <button id="approve" class="button authorize" type="button" aria-label="Autorizza e firma" disabled><span id="approveLabel">AUTORIZZA E FIRMA</span><span id="buttonProgress" class="button-progress" hidden aria-hidden="true"></span></button>
+    </div>
+  </dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <script>
+    'use strict';
+    /* Existing broker contract and cryptographic checks are unchanged. */
+    const $ = id => document.getElementById(id), encoder = new TextEncoder();
+    const receipts = [], transactionIds = new Set();
+    let phase = 'Idle', revision = 0, digestRevision = 0, filter = 'Tutto', currentIntent = '', socket = null;
+    let toastTimer, filterTimer, closing = false;
+    const hex = bytes => Array.from(bytes,b => b.toString(16).padStart(2,'0')).join('');
+    const sha = async bytes => hex(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)));
+    const duration = normal => matchMedia('(prefers-reduced-motion: reduce)').matches ? 60 : normal;
+
+    /* Presentation */
+    function toast(text) {
+      clearTimeout(toastTimer); $('toast').classList.remove('leaving'); $('toast').textContent = text; $('toast').hidden = false;
+      toastTimer = setTimeout(() => { $('toast').classList.add('leaving'); toastTimer = setTimeout(() => { $('toast').hidden = true; },duration(160)); },3000);
+    }
+    function connection(state) {
+      const label = state === 'connected' ? 'Connesso' : state === 'connecting' ? 'Riconnessione…' : 'Disconnesso';
+      $('connection').dataset.state = state; $('connection').title = label; $('connection').setAttribute('aria-label',label);
+    }
+    function showHash(digest) {
+      $('planDigest').replaceChildren(); $('planDigest').setAttribute('aria-label',digest);
+      for (const group of digest.match(/.{8}/g) || []) { const span = document.createElement('span'); span.textContent = group; $('planDigest').append(span); }
+    }
+    function lock(locked) {
+      $('intent').disabled = locked; $('draft').disabled = locked; $('approve').disabled = locked;
+      $('approve').setAttribute('aria-busy',String(locked)); $('approve').setAttribute('aria-label',locked ? 'Firma e salvataggio in corso' : 'Autorizza e firma'); $('approveLabel').hidden = locked; $('buttonProgress').hidden = !locked;
+      $('processing').hidden = !locked;
+    }
+    async function closeModal() {
+      if (!$('approval').open || closing) return;
+      closing = true; $('approval').classList.add('leaving');
+      await new Promise(resolve => setTimeout(resolve,duration(160)));
+      $('approval').close(); $('approval').classList.remove('leaving'); closing = false;
+      if (phase !== 'Loading') $('intent').focus();
+    }
+    function timeLabel(date) {
+      const now = new Date(), yesterday = new Date(now); yesterday.setDate(now.getDate()-1);
+      if (date.toDateString() === now.toDateString()) return date.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+      if (date.toDateString() === yesterday.toDateString()) return 'ieri';
+      return date.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'});
+    }
+    function renderTimeline(enterNew = false) {
+      $('timeline').replaceChildren();
+      for (const item of receipts.filter(r => filter === 'Tutto' || r.context === filter)) {
+        const li = document.createElement('li'); li.className = enterNew && item === receipts[0] ? 'entry new' : 'entry';
+        const details = document.createElement('details'), summary = document.createElement('summary'); summary.className = 'entry-line';
+        const dot = document.createElement('span'); dot.className = 'dot success'; dot.setAttribute('aria-hidden','true');
+        const label = document.createElement('span'); label.className = 'entry-label'; label.textContent = 'Nota salvata';
+        const time = document.createElement('time'); time.className = 'entry-time'; time.textContent = timeLabel(item.timestamp); time.dateTime = item.timestamp.toISOString();
+        summary.append(dot,label,time);
+        // Preserve the previous receipt-detail affordance without raw IDs/JSON.
+        const data = document.createElement('dl'); data.className = 'receipt-detail';
+        for (const [name,value,mono] of [['Esito','Eseguita',false],['Consenso',item.consent === 'WindowsVerified' ? 'Verificato sul dispositivo' : 'Di sviluppo',false],['SHA-256',item.note_sha256,true],['Firma',item.receipt_hex.slice(-128),true]]) {
+          const dt = document.createElement('dt'), dd = document.createElement('dd'); dt.textContent = name;
+          if (mono) { const code = document.createElement('code'); code.textContent = value; dd.append(code); } else dd.textContent = value;
+          data.append(dt,dd);
+        }
+        details.append(summary,data); li.append(details); $('timeline').append(li);
+      }
+    }
+    function selectTab(tab) {
+      filter = tab.dataset.context;
+      for (const item of document.querySelectorAll('[data-context]')) { item.setAttribute('aria-selected',String(item === tab)); item.tabIndex = item === tab ? 0 : -1; }
+      $('timelinePanel').setAttribute('aria-labelledby',tab.id);
+      clearTimeout(filterTimer); $('timeline').classList.remove('entering'); $('timeline').classList.add('exiting');
+      filterTimer = setTimeout(() => { renderTimeline(); $('timeline').classList.remove('exiting'); $('timeline').classList.add('entering'); filterTimer = setTimeout(() => $('timeline').classList.remove('entering'),duration(140)); },duration(120));
+    }
+    async function updateDigest() {
+      const run = ++digestRevision, bytes = encoder.encode($('draft').value); $('approve').disabled = true;
+      if (bytes.length > 1024) { $('planDigest').replaceChildren(); $('planDigest').removeAttribute('aria-label'); toast('La nota è troppo lunga.'); return; }
+      const digest = await sha(bytes);
+      if (run !== digestRevision || phase !== 'Preview') return;
+      showHash(digest); $('approve').disabled = false;
+    }
+
+    /* Proposal, rejection and the original one-shot transport */
+    async function propose(event) {
+      event.preventDefault(); if (event.isComposing || phase === 'Loading' || phase === 'Interpreting' || phase === 'Preview') return;
+      const intent = $('intent').value.trim(); if (!intent) return;
+      currentIntent = intent; phase = 'Interpreting'; revision++; $('intent').value = ''; $('intent').disabled = true; $('processing').hidden = false;
+      // No inbound Proposal exists in this protocol: preserve local preparation.
+      await new Promise(resolve => setTimeout(resolve,180));
+      $('draft').value = intent; phase = 'Preview'; $('processing').hidden = true; $('intent').disabled = false;
+      $('approval').showModal(); $('reject').focus();
+      await updateDigest();
+    }
+    async function reject() {
+      if (phase === 'Loading') { await closeModal(); toast('Operazione già inviata.'); return; }
+      ++digestRevision; phase = 'Idle'; await closeModal(); $('draft').value = ''; $('intent').value = ''; $('intent').focus();
+    }
+    async function authorize() {
+      if (phase !== 'Preview' || closing) return;
+      const note = $('draft').value, bytes = encoder.encode(note);
+      // Current operation is always write-note: it belongs to Lavoro. Filters
+      // are presentation only and cannot manufacture a system operation.
+      const context = 'Lavoro';
+      if (bytes.length > 1024) { toast('La nota è troppo lunga.'); return; }
+      phase = 'Loading'; ++digestRevision; lock(true);
+      let digest;
+      try {
+        digest = await sha(bytes); showHash(digest);
+        const receipt = await new Promise((resolve,rejectPromise) => {
+          socket = new WebSocket('ws://127.0.0.1:7990/'); connection('connecting'); let settled = false;
+          const finish = (error,value) => { if (settled) return; settled = true; clearTimeout(timer); const active = socket; socket = null; active?.close(); error ? rejectPromise(error) : resolve(value); };
+          const timer = setTimeout(() => { connection('failed'); finish(new Error('Timeout: esito del salvataggio sconosciuto. Non ripetere automaticamente.')); },180000);
+          socket.onopen = () => { connection('connected'); socket.send(JSON.stringify({type:'Proposal',operation:'write-note',intent:currentIntent,note,note_sha256:digest})); };
+          socket.onerror = () => { connection('failed'); finish(new Error('Broker locale non disponibile.')); };
+          socket.onclose = () => { if (!settled) connection('failed'); else if ($('connection').dataset.state !== 'failed') connection('idle'); finish(new Error('Connessione chiusa senza ricevuta: esito sconosciuto.')); };
+          socket.onmessage = event => {
+            let message; try { message = JSON.parse(event.data); } catch { finish(new Error('Risposta broker non valida.')); return; }
+            if (message.type === 'Ack' || message.type === 'Progress') return;
+            if (message.type === 'Denied') { finish(new Error(message.reason || 'Richiesta negata.')); return; }
+            finish(null,message);
+          };
+        });
+        if (receipt.type !== 'Receipt' || receipt.verified !== true || receipt.note_sha256 !== digest || !/^\d+$/.test(receipt.request) || !/^[0-9a-f]{340}$/.test(receipt.receipt_hex) || !['WindowsVerified','ConsoleDevelopment','MockUnavailableDevelopment'].includes(receipt.consent)) throw new Error('Ricevuta non coerente con la proposta.');
+        const raw = Uint8Array.from(receipt.receipt_hex.match(/../g),v => parseInt(v,16)), view = new DataView(raw.buffer);
+        if (view.getUint16(0,true) !== 1 || view.getBigUint64(10,true).toString() !== receipt.request || view.getBigUint64(18,true) === 0n || hex(raw.slice(26,58)) !== digest) throw new Error('Identità della ricevuta non valida.');
+        if (transactionIds.has(receipt.request)) throw new Error('Ricevuta duplicata.');
+        transactionIds.add(receipt.request); receipts.unshift({...receipt,context,timestamp:new Date()});
+        phase = 'Completed'; await closeModal(); $('draft').value = ''; $('intent').value = ''; renderTimeline(true);
+        if (receipt.consent !== 'WindowsVerified') toast('Salvato con consenso di sviluppo.');
+        window.dispatchEvent(new CustomEvent('vela:completed',{detail:receipt}));
+      } catch (error) {
+        phase = 'Preview';
+        const unavailable = error.message.includes('disponibile');
+        toast(unavailable ? 'Connessione non disponibile.' : 'Salvataggio non confermato.');
+      } finally {
+        lock(false);
+        if (phase === 'Preview' && $('approval').open) await updateDigest();
+        else if (phase === 'Preview') { phase = 'Idle'; $('intent').focus(); }
+        else $('intent').focus();
+      }
+    }
+
+    /* Keyboard and focus */
+    $('intentForm').addEventListener('submit',propose);
+    $('intent').addEventListener('keydown',event => {
+      if (event.key === 'Enter') { event.preventDefault(); if (!event.isComposing && event.keyCode !== 229) propose(event); }
+      if (event.key === 'Escape') { event.preventDefault(); $('intent').value = ''; }
+    });
+    $('draft').addEventListener('input',() => { if (phase === 'Preview') { revision++; updateDigest().catch(() => toast('Verifica non disponibile.')); } });
+    $('approve').addEventListener('click',authorize); $('reject').addEventListener('click',reject);
+    $('approval').addEventListener('cancel',event => { event.preventDefault(); reject(); });
+    $('approval').addEventListener('keydown',event => {
+      if (event.key === 'Enter' && event.target !== $('approve') && event.target !== $('reject') && event.target !== $('draft')) event.preventDefault();
+      if (event.key !== 'Tab') return;
+      const nodes = [...$('approval').querySelectorAll('button,textarea')].filter(node => !node.disabled);
+      const first = nodes[0], last = nodes.at(-1);
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    });
+    const tabs = [...document.querySelectorAll('[data-context]')];
+    for (const tab of tabs) {
+      tab.addEventListener('click',() => selectTab(tab));
+      tab.addEventListener('keydown',event => {
+        if (!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
+        event.preventDefault(); const index = tabs.indexOf(tab);
+        const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length-1 : (index+(event.key === 'ArrowRight' ? 1 : -1)+tabs.length)%tabs.length;
+        tabs[next].focus(); selectTab(tabs[next]);
+      });
+    }
+    document.addEventListener('keydown',event => { if ((event.altKey && event.code === 'Space') || ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k')) { event.preventDefault(); if (!$('approval').open && phase !== 'Loading') $('intent').focus(); } });
+    renderTimeline();
+  </script>
 </body>
 </html>
