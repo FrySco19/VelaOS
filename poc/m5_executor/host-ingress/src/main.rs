@@ -57,9 +57,38 @@ struct Ingress {
     rx: virtio_rx::Rx,
     decoder: Decoder,
     mailbox: Mailbox,
+    reply: Mailbox,
     state: State,
 }
 impl Ingress {
+    fn reply(&mut self) {
+        if self.reply.state().load(Ordering::Acquire) != READY {
+            return;
+        }
+        let length =
+            unsafe { u32::from_le(read_volatile(self.reply.0.add(4).cast::<u32>())) } as usize;
+        if !(vela_protocol::HEADER_SIZE..=MAX_FRAME).contains(&length) {
+            self.fail();
+            return;
+        }
+        let mut bytes = [0; MAX_FRAME];
+        for (i, b) in bytes[..length].iter_mut().enumerate() {
+            *b = unsafe { read_volatile(self.reply.0.add(8 + i)) };
+        }
+        if FrameRef::decode(&bytes[..length]).is_err() {
+            self.fail();
+            return;
+        }
+        match self.rx.try_send(&bytes[..length]) {
+            Ok(true) => {
+                self.reply.state().store(EMPTY, Ordering::Release);
+                Channel::new(PCB_CHANNEL).notify();
+                debug_println!("V1 INGRESS: response queued on real VirtIO TX");
+            }
+            Ok(false) => (),
+            Err(_) => self.fail(),
+        }
+    }
     fn fail(&mut self) {
         self.state = State::Faulted;
         self.rx.fail();
@@ -128,6 +157,7 @@ impl Handler for Ingress {
             self.rx.ack_interrupt();
         }
         if irq || channels.contains(Channel::new(PCB_CHANNEL)) {
+            self.reply();
             self.drain();
         }
         if irq {
@@ -148,6 +178,7 @@ fn init() -> impl Handler {
     let mmio = unsafe { mmio.add(0xe00) };
     let dma = memory_region_symbol!(ingress_dma_addr: *mut u8).as_ptr();
     let page = memory_region_symbol!(ingress_pcb_addr: *mut u8).as_ptr();
+    let reply = memory_region_symbol!(ingress_reply_addr: *mut u8).as_ptr();
     assert!(!page.is_null() && page as usize & 4095 == 0);
     let mailbox = Mailbox(page);
     assert!(mailbox.empty());
@@ -161,6 +192,7 @@ fn init() -> impl Handler {
         rx,
         decoder: Decoder::new(),
         mailbox,
+        reply: Mailbox(reply),
         state: State::Receiving,
     }
 }

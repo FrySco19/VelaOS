@@ -1,7 +1,11 @@
-//! TEST broker. No native human consent, Hello/FIDO2 or production key custody.
+//! Native development broker. `serve` performs consent and receipt verification.
+//! Legacy `send` is a TEST harness, never a production approval path.
+//! Local plaintext seeds are development custody, not a TPM/FIDO2 enclave.
 //! keygen <seed-file> <public-key.rs>, then send <endpoint> <seed-file> <mode>.
 //! Endpoints: pipe:<Windows name>, unix:<path>, tcp:127.0.0.1:<port>.
 //! TCP is the loopback adapter for QEMU inside WSL, not remote authorization.
+mod hello;
+mod socket;
 use ed25519_compact::{KeyPair, Seed};
 use sha2::{Digest, Sha256};
 use std::{
@@ -112,8 +116,15 @@ fn send(endpoint: &str, seed_path: &Path, mode: &str) -> Result<(), Box<dyn Erro
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = env::args().collect();
     match args.get(1).map(String::as_str) {
+        Some("serve") if args.len() == 5 || (args.len() == 6 && matches!(args[5].as_str(),"--console-development"|"--mock-unavailable")) => socket::serve(Path::new(&args[2]),Path::new(&args[3]),Path::new(&args[4]),args.get(5).is_some_and(|s|s=="--console-development"),args.get(5).is_some_and(|s|s=="--mock-unavailable")).map_err(Into::into),
         Some("keygen") if args.len() == 4 => keygen(Path::new(&args[2]), Path::new(&args[3])),
+        Some("public") if args.len() == 4 => {
+            let seed:[u8;32]=fs::read(&args[2])?.try_into().map_err(|_|"seed length")?;
+            let pair=KeyPair::from_seed(Seed::new(seed));
+            let mut file=OpenOptions::new().write(true).create_new(true).open(&args[3])?;
+            file.write_all(pair.pk.as_ref())?;file.sync_all()?;Ok(())
+        },
         Some("send") if args.len() == 5 => send(&args[2], Path::new(&args[3]), &args[4]),
-        _ => Err("usage: keygen <seed> <public.rs> | send <pipe:...|unix:...|tcp:...> <seed> <valid|bad-signature|bad-hash>".into()),
+        _ => Err("usage: serve <broker.seed> <pcb.public> <lfs.public> [--console-development|--mock-unavailable] | keygen <seed> <public.rs> | public <seed> <public.bin> | send <endpoint> <seed> <test-mode>".into()),
     }
 }

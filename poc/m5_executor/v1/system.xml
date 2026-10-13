@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<system>
+ <memory_region name="ingress_pcb" size="0x1000"/>
+ <memory_region name="pcb_exec" size="0x1000"/>
+ <memory_region name="exec_reply" size="0x1000"/>
+ <memory_region name="ingress_reply" size="0x1000"/>
+ <memory_region name="ingress_mmio" size="0x1000" phys_addr="0xa003000"/>
+ <memory_region name="ingress_dma" size="0x4000"/>
+ <!-- Eight preceding console devices put the block slot on another page. -->
+ <memory_region name="lfs_mmio" size="0x1000" phys_addr="0xa002000"/>
+ <memory_region name="lfs_dma" size="0x1000"/>
+ <protection_domain name="ingress" priority="100" stack_size="0x10000">
+  <program_image path="vela-host-ingress.elf"/>
+  <map mr="ingress_mmio" vaddr="0x50000000" perms="rw" cached="false" setvar_vaddr="ingress_mmio_addr"/>
+  <map mr="ingress_dma" vaddr="0x50004000" perms="rw" cached="false" setvar_vaddr="ingress_dma_addr"/>
+  <setvar symbol="ingress_dma_phys" region_paddr="ingress_dma"/>
+  <map mr="ingress_pcb" vaddr="0x40000000" perms="rw" setvar_vaddr="ingress_pcb_addr"/>
+  <map mr="ingress_reply" vaddr="0x40001000" perms="rw" setvar_vaddr="ingress_reply_addr"/>
+  <irq irq="79" id="0" trigger="edge"/>
+ </protection_domain>
+ <protection_domain name="pcb" priority="101" stack_size="0x20000">
+  <program_image path="vela-v1-pcb.elf"/>
+  <map mr="ingress_pcb" vaddr="0x40000000" perms="rw" setvar_vaddr="ingress_pcb_addr"/>
+  <map mr="pcb_exec" vaddr="0x40001000" perms="rw" setvar_vaddr="pcb_exec_addr"/>
+  <map mr="exec_reply" vaddr="0x40002000" perms="rw" setvar_vaddr="exec_reply_addr"/>
+  <map mr="ingress_reply" vaddr="0x40003000" perms="rw" setvar_vaddr="ingress_reply_addr"/>
+ </protection_domain>
+ <protection_domain name="executor" priority="102" stack_size="0x40000">
+  <program_image path="vela-v1-executor.elf"/>
+  <map mr="pcb_exec" vaddr="0x40000000" perms="rw" setvar_vaddr="pcb_exec_addr"/>
+  <map mr="exec_reply" vaddr="0x40001000" perms="rw" setvar_vaddr="exec_reply_addr"/>
+  <map mr="lfs_mmio" vaddr="0x50000000" perms="rw" cached="false" setvar_vaddr="lfs_mmio_addr"/>
+  <map mr="lfs_dma" vaddr="0x50004000" perms="rw" cached="false" setvar_vaddr="lfs_dma_addr"/>
+  <setvar symbol="lfs_dma_phys" region_paddr="lfs_dma"/>
+ </protection_domain>
+ <channel><end pd="ingress" id="1"/><end pd="pcb" id="1"/></channel>
+ <channel><end pd="pcb" id="2"/><end pd="executor" id="0"/></channel>
+</system>

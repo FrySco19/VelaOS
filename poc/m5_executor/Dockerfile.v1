@@ -1,0 +1,23 @@
+FROM velaos-executor-e2e:latest
+COPY poc/protocol/ /repo/poc/protocol/
+COPY poc/selection-contract/ /repo/poc/selection-contract/
+COPY poc/storage-core/ /repo/poc/storage-core/
+COPY poc/note-action/ /repo/poc/note-action/
+COPY poc/m5_executor/host-ingress/ /repo/poc/m5_executor/host-ingress/
+COPY poc/m5_executor/v1/ /repo/poc/m5_executor/v1/
+COPY poc/m5_executor/app/src/virtio_block.rs /repo/poc/m5_executor/app/src/virtio_block.rs
+RUN cp -r /work/app/.cargo /work/app/targets /repo/poc/m5_executor/v1/ \
+ && cp /work/app/rustc-wrapper.sh /work/app/rust-toolchain.toml /repo/poc/m5_executor/v1/ \
+ && chmod +x /repo/poc/m5_executor/v1/rustc-wrapper.sh /repo/poc/m5_executor/host-ingress/rustc-wrapper.sh
+WORKDIR /repo/poc/m5_executor/host-ingress
+RUN SEL4_INCLUDE_DIRS=/microkit/board/qemu_virt_aarch64/debug/include CARGO_TARGET_DIR=/work/build/cargo-target cargo build --locked --release --features qemu-port0
+WORKDIR /repo/poc/m5_executor/v1
+RUN --mount=type=secret,id=pcb_seed,required=true --mount=type=secret,id=lfs_seed,required=true --mount=type=secret,id=pcb_public,required=true --mount=type=secret,id=broker_public,required=true \
+ SEL4_INCLUDE_DIRS=/microkit/board/qemu_virt_aarch64/debug/include CARGO_TARGET_DIR=/work/build/cargo-target VELA_PCB_SEED=/run/secrets/pcb_seed VELA_LFS_SEED=/run/secrets/lfs_seed VELA_PCB_PUBLIC=/run/secrets/pcb_public VELA_TRUSTED_INPUT_PUBLIC_RS=/run/secrets/broker_public cargo build --locked --release
+RUN cp /work/build/cargo-target/aarch64-sel4-microkit/release/vela-host-ingress.elf /work/build/ \
+ && cp /work/build/cargo-target/aarch64-sel4-microkit/release/vela-v1-pcb.elf /work/build/ \
+ && cp /work/build/cargo-target/aarch64-sel4-microkit/release/vela-v1-executor.elf /work/build/ \
+ && python3 /work/check-wx.py /work/build/vela-v1-pcb.elf \
+ && python3 /work/check-wx.py /work/build/vela-v1-executor.elf \
+ && /microkit/bin/microkit system.xml --search-path /work/build --board qemu_virt_aarch64 --config debug --output /work/build/v1-loader.img
+WORKDIR /work

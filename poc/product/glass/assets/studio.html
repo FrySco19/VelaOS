@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; img-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self' ws://127.0.0.1:7990; img-src 'none'; base-uri 'none'; form-action 'none'">
 <title>Vela · Glass Studio</title>
 <style>
 :root{color-scheme:dark;--ink:#eef5f3;--muted:#adc1bf;--teal:#83d4c7;--amber:#e3a97e;--line:#ffffff20;--glass:#102a2bdd;--duration:180ms;font-family:Segoe UI,system-ui,sans-serif}
@@ -28,36 +28,50 @@ button,input,textarea{font:inherit}button{cursor:pointer;color:inherit;border:1p
 <div class="notice" role="status" aria-live="polite"><p id="notice">Anteprima interattiva: nessuna azione sul sistema.</p></div>
 <div id="discard" class="notice" hidden><p>La bozza vive solo in questa superficie. Vuoi scartarla?</p><div class="actions"><button id="keepEditing">Continua a scrivere</button><button id="discardDraft">Scarta bozza</button></div></div><div class="actions" id="cardActions"><button data-close>Annulla</button><button class="primary" id="approve">Approva proposta</button></div></section></template>
 </main><nav class="toolbar" aria-label="Controlli Vela"><button class="primary" id="toolbarSummon">◭ &nbsp; Chiedi a Vela</button><button data-intent="Appunta le idee per il bridge IPC">Appunti</button><button data-intent="Riproduci Red Rain">Audio</button><button data-intent="Connettiti al Wi-Fi dell'ufficio">Rete</button></nav>
-<div class="footnote">Studio di interazione · Nessun salvataggio, token o accesso ai dispositivi.</div><div class="phase" id="phase" role="status" aria-live="polite">Idle</div>
+<div class="footnote">Appunti salvabili sul disco della VM. Audio e rete sono ancora dimostrativi.</div><div class="phase" id="phase" role="status" aria-live="polite">Idle</div>
 <script>
 'use strict';
 const TOKEN='__VELA_TOKEN__';
 const templates=[document.getElementById('commandTemplate'),document.getElementById('cardTemplate')];const $=id=>document.getElementById(id)||templates.map(t=>t.content.querySelector('#'+id)).find(Boolean), wait=ms=>new Promise(r=>setTimeout(r,ms));
-let state={phase:'Idle',revision:0}, busy=false, dirty=false, query='', previousFocus=null;
-const describe={note:{title:'I tuoi appunti',desc:'Prepara la bozza. Il salvataggio richiederà una conferma sul contenuto esatto.',op:'Crea una nota',scope:'Nuovo oggetto LFS · non ancora collegato'},media:{title:'Un momento per ascoltare',desc:'La proposta deve identificare il brano prima di autorizzarne la lettura.',op:'Leggi e riproduci',scope:'Handle media · non ancora disponibile'},network:{title:'Troviamo una connessione',desc:'Il servizio di rete dovrà mostrare connessioni vere e un riepilogo del cambio.',op:'Connetti a una rete',scope:'Rete selezionata · nessuna scansione attiva'}};
+let state={phase:'Idle',revision:0}, busy=false, dirty=false, completed=false, query='', previousFocus=null;
+const describe={note:{title:'I tuoi appunti',desc:'Controlla i byte della bozza: il salvataggio sostituisce la nota di test nella VM.',op:'Salva la nota',scope:'Nota di test · /lfs/notes/note1.txt'},media:{title:'Un momento per ascoltare',desc:'La proposta deve identificare il brano prima di autorizzarne la lettura.',op:'Leggi e riproduci',scope:'Handle media · non ancora disponibile'},network:{title:'Troviamo una connessione',desc:'Il servizio di rete dovrà mostrare connessioni vere e un riepilogo del cambio.',op:'Connetti a una rete',scope:'Rete selezionata · nessuna scansione attiva'}};
 async function event(name){const response=await fetch('/studio/event',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:TOKEN,event:name,revision:state.revision})});const result=await response.json();if(!response.ok)throw new Error(result.error||'Sessione non disponibile');state=result;$('phase').textContent=state.phase;$('revision').textContent=String(state.revision);return state;}
 function show(id){for(const n of ['commandBar','card'])if(n!==id)document.getElementById(n)?.remove();if(id!=='welcome'&&!document.getElementById(id)){const t=document.getElementById(id==='card'?'cardTemplate':'commandTemplate');document.querySelector('main').append(t.content.cloneNode(true));}$('welcome').hidden=id!=='welcome';if(id!=='welcome')$(id).hidden=false;}
-function buttons(disabled){document.querySelectorAll('button,input,textarea').forEach(b=>b.disabled=disabled);}
-async function action(fn){if(busy)return;busy=true;buttons(true);try{await fn();}catch(e){$('notice').textContent='Sessione non sincronizzata. Ricarica la pagina prima di continuare.';$('phase').textContent=e.message;}finally{busy=false;buttons(false);if(document.activeElement===document.body && !$('card').hidden){(!$('discard').hidden?$('keepEditing'):!$('noteWidget').hidden?$('draft'):$('approve')).focus();}}}
+function buttons(disabled){document.querySelectorAll('button,input,textarea').forEach(b=>b.disabled=disabled);if(completed&&document.getElementById('approve'))$('approve').disabled=true;}
+async function action(fn){if(busy)return;busy=true;buttons(true);try{await fn();}catch(e){$('notice').textContent='Azione non confermata: '+e.message;$('phase').textContent='Failed';}finally{busy=false;buttons(false);if(document.activeElement===document.body && !$('card').hidden){(!$('discard').hidden?$('keepEditing'):!$('noteWidget').hidden?$('draft'):$('approve')).focus();}}}
 async function open(intent=''){if(state.phase!=='Idle'){await close();if(state.phase!=='Idle')return;}previousFocus=document.activeElement;await event('summon');show('commandBar');$('intent').value=intent;$('intent').focus();}
-async function close(force=false){if(!force && !$('card').hidden && !$('noteWidget').hidden && $('draft').value){$('discard').hidden=false;$('cardActions').hidden=true;$('keepEditing').focus();return;}if(state.phase==='Idle')return;await event('cancel');const panel=$('card').hidden?$('commandBar'):$('card');panel.classList.add('out');await wait(matchMedia('(prefers-reduced-motion: reduce)').matches?0:180);panel.classList.remove('out');await event('reset');$('draft').value='';$('intent').value='';query='';dirty=false;$('discard').hidden=true;$('cardActions').hidden=false;show('welcome');}
+async function close(force=false){if(!force && !completed && !$('card').hidden && !$('noteWidget').hidden && $('draft').value){$('discard').hidden=false;$('cardActions').hidden=true;$('keepEditing').focus();return;}if(state.phase==='Idle')return;await event('cancel');const panel=$('card').hidden?$('commandBar'):$('card');panel.classList.add('out');await wait(matchMedia('(prefers-reduced-motion: reduce)').matches?0:180);panel.classList.remove('out');await event('reset');$('draft').value='';$('intent').value='';query='';dirty=false;completed=false;$('discard').hidden=true;$('cardActions').hidden=false;show('welcome');}
 async function submit(){query=$('intent').value.trim();if(!query)return;await event('submit');$('phase').textContent='Interpreting · classificazione dimostrativa';await wait(180);const q=query.toLowerCase();const kind=/appunt|note|scriv|write/.test(q)?'note':/audio|riprodu|play/.test(q)?'media':/wifi|wi-fi|rete|network/.test(q)?'network':null;if(!kind){await event('clarify');$('intent').value='';$('intent').placeholder='Prova un intento per appunti, audio o Wi-Fi';$('intent').focus();return;}await event('preview');show('card');const d=describe[kind];$('cardTitle').textContent=d.title;$('description').textContent=d.desc;$('operation').textContent=d.op;$('scope').textContent=d.scope;for(const k of ['note','media','network'])$(k+'Widget').hidden=k!==kind;$('notice').textContent='Anteprima interattiva: nessuna azione sul sistema.';$('reviewDetails').hidden=true;$('approve').textContent='Approva proposta';show('card');(kind==='note'?$('draft'):$('approve')).focus();}
 const toHex=bytes=>Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
 async function approve(){
+ if($('noteWidget').hidden)throw new Error('Il bridge operativo supporta solo gli appunti.');
  if(dirty){await event('edit');dirty=false;}
- const revision=state.revision;
- const planBytes=new TextEncoder().encode(JSON.stringify(['VelaOS Glass plan v1',$('cardTitle').textContent,$('description').textContent,$('operation').textContent,$('scope').textContent,$('noteWidget').hidden?null:$('draft').value]));
- if(planBytes.length>4096)throw new Error('Bozza oltre il limite autorizzabile.');
- const digest=toHex(new Uint8Array(await crypto.subtle.digest('SHA-256',planBytes)));
+ const note=$('draft').value, bytes=new TextEncoder().encode(note);
+ if(bytes.length>1024)throw new Error('Limite: 1024 byte UTF-8.');
+ const digest=toHex(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)));
  $('planDigest').textContent=digest;
- $('notice').textContent='Verifica del piano · attestazione nativa non disponibile';
- // No web signer: native trusted-input integration must live outside this DOM.
- const response=await fetch('/studio/approve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:TOKEN,revision,plan_bytes_hex:toHex(planBytes),plan_sha256:digest,signature:''})});
- const result=await response.json();
- if(result.state){state=result.state;$('phase').textContent=state.phase;$('revision').textContent=String(state.revision);}
- if(result.decision==='denied'){$('notice').textContent='Richiesta negata ('+result.reason+'). Nessun token emesso.';$('approve').textContent='Rivedi prima di riprovare';return;}
- if(!response.ok)throw new Error(result.error||'PCB non disponibile');
- $('notice').textContent='Selezione inoltrata al PCB; nessuna autorità è stata emessa dalla Glass.';
+ $('phase').textContent='Authorizing';$('notice').textContent='Verifica nel broker nativo. In attesa della ricevuta LFS.';
+ $('draft').readOnly=true;
+ try{
+  const result=await new Promise((resolve,reject)=>{
+   const socket=new WebSocket('ws://127.0.0.1:7990/');
+   let settled=false;
+   const finish=(error,value)=>{if(settled)return;settled=true;clearTimeout(timer);socket.close();error?reject(error):resolve(value);};
+   const timer=setTimeout(()=>finish(new Error('Ricevuta non ricevuta: esito del salvataggio sconosciuto.')),180000);
+   socket.onopen=()=>socket.send(JSON.stringify({type:'Proposal',operation:'write-note',intent:query,note,note_sha256:digest}));
+   socket.onerror=()=>finish(new Error('Broker locale non disponibile.'));
+   socket.onclose=()=>finish(new Error('Connessione chiusa senza ricevuta.'));
+   socket.onmessage=event=>{try{finish(null,JSON.parse(event.data));}catch{finish(new Error('Risposta broker non valida.'));}};
+  });
+  if(result.type==='Denied')throw new Error(result.reason);
+  // The native broker verifies the pinned PCB and LFS signatures before this
+  // response. The DOM cannot mint consent or claim TCP delivery is persistence.
+  if(result.type!=='Receipt'||result.verified!==true||result.note_sha256!==digest||!/^[0-9a-f]{340}$/.test(result.receipt_hex)||!/^\d+$/.test(result.request))throw new Error('Ricevuta incoerente.');
+  completed=true;
+  $('phase').textContent='Completed';$('notice').textContent='Salvato su LFS · ricevuta verificata dal broker · '+result.consent;
+  $('approve').textContent='Ricevuta '+result.request;
+  $('cardActions').querySelector('[data-close]').textContent='Chiudi';
+ }finally{$('draft').readOnly=completed;}
 }
 document.addEventListener('submit',e=>{if(e.target.id==='intentForm'){e.preventDefault();action(submit);}});
 for(const id of ['summon','toolbarSummon'])$(id).addEventListener('click',()=>action(()=>open()));

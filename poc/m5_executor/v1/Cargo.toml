@@ -1,0 +1,20 @@
+[package]
+name = "vela-v1-domains"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+sel4-microkit = { git = "https://github.com/seL4/rust-sel4", rev = "d441a880938209f661201704dfbee7b91c5aa905" }
+vela-protocol = { path = "../../protocol" }
+vela-selection-contract = { path = "../../selection-contract" }
+vela-note-action = { path = "../../note-action" }
+vela-storage-core = { path = "../../storage-core" }
+ed25519-dalek = { version = "=2.2.0", default-features = false }
+
+[[bin]]
+name = "vela-v1-pcb"
+path = "src/pcb.rs"
+[[bin]]
+name = "vela-v1-executor"
+path = "src/executor.rs"

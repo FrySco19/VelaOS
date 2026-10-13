@@ -22,12 +22,12 @@ RUN python3 - <<'PY'
 import xml.etree.ElementTree as E
 tree = E.parse('/work/executor-e2e.system')
 root = tree.getroot()
-for name, size, physical in [('host_mailbox','0x1000',None),('selection_output','0x1000',None),('ingress_mmio','0x1000','0xa003000'),('ingress_dma','0x2000',None)]:
+for name, size, physical in [('host_mailbox','0x1000',None),('selection_output','0x1000',None),('ingress_reply','0x1000',None),('ingress_mmio','0x1000','0xa003000'),('ingress_dma','0x4000',None)]:
     attrs={'name':name,'size':size}
     if physical: attrs['phys_addr']=physical
     E.SubElement(root,'memory_region',**attrs)
 for name,priority,image,maps in [
-    ('ingress','111','vela-host-ingress.elf',[('ingress_mmio','0x50000000','ingress_mmio_addr',False),('ingress_dma','0x50004000','ingress_dma_addr',False),('host_mailbox','0x40000000','ingress_pcb_addr',True)]),
+    ('ingress','111','vela-host-ingress.elf',[('ingress_mmio','0x50000000','ingress_mmio_addr',False),('ingress_dma','0x50004000','ingress_dma_addr',False),('host_mailbox','0x40000000','ingress_pcb_addr',True),('ingress_reply','0x40002000','ingress_reply_addr',True)]),
     ('selection_pcb','110','selection-pcb-framed.elf',[('host_mailbox','0x40000000','ingress_pcb_addr',True),('selection_output','0x40001000','selection_output_addr',True)]),
     ('selection_sink','112','selection-sink.elf',[('selection_output','0x40000000','selection_output_addr',True)]),
 ]:

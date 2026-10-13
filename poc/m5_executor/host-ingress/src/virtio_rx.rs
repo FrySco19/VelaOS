@@ -8,7 +8,11 @@ const BUFFER: usize = 512;
 const AVAIL: usize = 256;
 const USED: usize = 512;
 const DATA: usize = 4096;
-pub const DMA_BYTES: usize = 8192;
+pub const DMA_BYTES: usize = 16384;
+const TX_DESC: usize = 8192;
+const TX_AVAIL: usize = 8448;
+const TX_USED: usize = 8704;
+const TX_DATA: usize = 12288;
 
 #[derive(Clone, Copy, Debug)]
 pub enum Error {
@@ -33,6 +37,9 @@ pub struct Rx {
     consumed: u16,
     posted: u16,
     current: Option<(u16, usize, usize)>,
+    tx_index: u16,
+    tx_busy: bool,
+    physical: u64,
 }
 
 impl Rx {
@@ -82,6 +89,9 @@ impl Rx {
             consumed: 0,
             posted: 0xff,
             current: None,
+            tx_index: 0,
+            tx_busy: false,
+            physical,
         };
         if rx.reg(0) != 0x74726976 || rx.reg(4) != 2 || rx.reg(8) != 3 {
             return Err(Error::Device);
@@ -127,6 +137,16 @@ impl Rx {
         rx.address(0x80, physical);
         rx.address(0x90, physical + AVAIL as u64);
         rx.address(0xa0, physical + USED as u64);
+        barrier();
+        rx.set(0x44, 1);
+        rx.set(0x30, 1);
+        if rx.reg(0x34) < u32::from(QUEUE) || rx.reg(0x44) != 0 {
+            return Err(Error::Queue);
+        }
+        rx.set(0x38, u32::from(QUEUE));
+        rx.address(0x80, physical + TX_DESC as u64);
+        rx.address(0x90, physical + TX_AVAIL as u64);
+        rx.address(0xa0, physical + TX_USED as u64);
         barrier();
         rx.set(0x44, 1);
         rx.set(0x70, 15); // DRIVER_OK
@@ -189,6 +209,47 @@ impl Rx {
         if pending != 0 {
             self.set(0x64, pending);
         }
+    }
+    pub fn try_send(&mut self, bytes: &[u8]) -> Result<bool, Error> {
+        if bytes.len() > 2048 || bytes.is_empty() {
+            return Err(Error::Descriptor);
+        }
+        if self.tx_busy {
+            let completed = self.get16(TX_USED + 2);
+            barrier();
+            if completed == self.tx_index.wrapping_sub(1) {
+                return Ok(false);
+            }
+            let slot = TX_USED + 4 + usize::from(self.tx_index.wrapping_sub(1) % QUEUE) * 8;
+            if completed != self.tx_index || self.get32(slot) != 0 {
+                return Err(Error::Descriptor);
+            }
+            self.tx_busy = false;
+        }
+        for (i, b) in bytes.iter().enumerate() {
+            unsafe {
+                write(self.dma.add(TX_DATA + i), *b);
+            }
+        }
+        unsafe {
+            write(
+                self.dma.add(TX_DESC).cast::<u64>(),
+                (self.physical + TX_DATA as u64).to_le(),
+            );
+            write(
+                self.dma.add(TX_DESC + 8).cast::<u32>(),
+                (bytes.len() as u32).to_le(),
+            );
+        }
+        self.put16(TX_DESC + 12, 0);
+        self.put16(TX_AVAIL + 4 + usize::from(self.tx_index % QUEUE) * 2, 0);
+        self.tx_index = self.tx_index.wrapping_add(1);
+        barrier();
+        self.put16(TX_AVAIL + 2, self.tx_index);
+        barrier();
+        self.tx_busy = true;
+        self.set(0x50, 1);
+        Ok(true)
     }
     pub fn fail(&self) {
         self.set(0x70, self.reg(0x70) | 128);

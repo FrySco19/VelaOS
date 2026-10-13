@@ -1,0 +1,12 @@
+[package]
+name = "vela-note-action"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+vela-storage-core = { path = "../storage-core" }
+vela-selection-contract = { path = "../selection-contract" }
+ed25519-dalek = { version = "=2.2.0", default-features = false }
+sha2 = { version = "=0.10.9", default-features = false }
+wasmi = { version = "=2.0.0", default-features = false, features = ["stable", "validate", "prefer-btree-collections", "portable-dispatch"] }

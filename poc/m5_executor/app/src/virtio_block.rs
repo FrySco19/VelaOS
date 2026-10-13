@@ -37,6 +37,22 @@ impl VirtioBlock {
     /// Exclusive uncached writable mappings: 0x4000 MMIO scanning window and
     /// 0x1000 contiguous DMA, with the actual DMA physical address from Microkit.
     pub unsafe fn new(mmio: *mut u8, dma: *mut u8, phys: u64) -> Result<Self, &'static str> {
+        unsafe { Self::new_slots(mmio, dma, phys, 32) }
+    }
+    /// Exclusive single selected slot; never scans outside its mapped page.
+    pub unsafe fn new_selected(
+        mmio: *mut u8,
+        dma: *mut u8,
+        phys: u64,
+    ) -> Result<Self, &'static str> {
+        unsafe { Self::new_slots(mmio, dma, phys, 1) }
+    }
+    unsafe fn new_slots(
+        mmio: *mut u8,
+        dma: *mut u8,
+        phys: u64,
+        slots: usize,
+    ) -> Result<Self, &'static str> {
         let mut s = Self {
             mmio,
             dma,
@@ -47,7 +63,7 @@ impl VirtioBlock {
         };
         let base = mmio;
         let mut found = false;
-        for i in 0..32 {
+        for i in 0..slots {
             s.mmio = unsafe { base.add(i * 0x200) };
             if unsafe { s.reg(0) } == 0x74726976 && unsafe { s.reg(8) } == 2 {
                 found = true;
