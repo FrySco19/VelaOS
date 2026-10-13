@@ -23,7 +23,9 @@ async function ready(port){for(let i=0;i<100;i++){if(await new Promise(resolve=>
  const keepLog=fs.openSync(path.join(dir,'wsl-keepalive.log'),'a');
  const keeper=spawn(wsl,['-d','Debian','--','sleep','infinity'],{detached:true,windowsHide:true,stdio:['ignore',keepLog,keepLog]});keeper.unref();fs.closeSync(keepLog);
  const required=['pcb.public','lfs.public','pcb.seed','lfs.seed'];for(const f of required)if(!fs.existsSync(path.join(dir,f)))throw new Error('Enrollment missing: '+f);
- const disk=path.join(dir,'disk.img');if(!fs.existsSync(disk)){const fd=fs.openSync(disk,'wx');fs.ftruncateSync(fd,4096);fs.fsyncSync(fd);fs.closeSync(fd);}else if(fs.statSync(disk).size!==4096)throw new Error('Only dedicated 4096-byte development disks are accepted');
+ const activeBeforeMigration=docker(['ps','--filter','name=^vela-v1-vm$','--format','{{.Names}}']);
+ if(activeBeforeMigration && fs.statSync(path.join(dir,'disk.img')).size===4096)throw new Error('Stop vela-v1-vm before archive migration');
+ const disk=path.join(dir,'disk.img');if(!fs.existsSync(disk)){const fd=fs.openSync(disk,'wx');fs.ftruncateSync(fd,131072);fs.fsyncSync(fd);fs.closeSync(fd);}else if(fs.statSync(disk).size===4096){fs.copyFileSync(disk,disk+'.pre-archive.bak',fs.constants.COPYFILE_EXCL);const fd=fs.openSync(disk,'r+');fs.ftruncateSync(fd,131072);fs.fsyncSync(fd);fs.closeSync(fd);}else if(fs.statSync(disk).size!==131072)throw new Error('Only dedicated archive disks are accepted');
  const running=docker(['ps','--filter','name=^vela-v1-vm$','--format','{{.Names}}']);
  if(!running){
   const args=['run','-d','--rm','--name','vela-v1-vm','-p','127.0.0.1:7991:7991','-v',linuxPath(dir)+':/data','velaos-v1','qemu-system-aarch64','-machine','virt,virtualization=on,gic-version=2','-cpu','cortex-a53','-m','2G','-display','none','-monitor','none','-serial','file:/data/boot-final.log','-net','none','-kernel','/work/build/v1-loader.img','-global','virtio-mmio.force-legacy=false','-chardev','socket,id=host,host=0.0.0.0,port=7991,server=on,wait=off','-device','virtio-serial-device,id=v0','-device','virtconsole,chardev=host,bus=v0.0'];

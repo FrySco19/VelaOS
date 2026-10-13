@@ -115,7 +115,7 @@ impl Ingress {
                 let frame = FrameRef::decode(wire).expect("validated decoder");
                 if !matches!(
                     frame.header.kind,
-                    MessageType::Proposal | MessageType::Approval | MessageType::Cancel
+                    MessageType::Proposal | MessageType::Approval | MessageType::Cancel | MessageType::ListRequest | MessageType::ReadRequest
                 ) {
                     self.fail();
                     return;

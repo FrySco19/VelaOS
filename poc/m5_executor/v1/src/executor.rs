@@ -12,6 +12,9 @@ use vela_v1_domains::{Slot, now_ns};
 mod storage_core {
     pub use vela_storage_core::*;
 }
+mod broker_key {
+    include!(env!("VELA_TRUSTED_INPUT_PUBLIC_RS"));
+}
 #[path = "../../app/src/virtio_block.rs"]
 mod virtio_block;
 #[unsafe(no_mangle)]
@@ -26,21 +29,71 @@ struct Executor {
 impl Executor {
     fn run(&mut self, bytes: &[u8]) -> Result<(), &'static str> {
         let frame = FrameRef::decode(bytes).map_err(|_| "FRAME")?;
+        if matches!(
+            frame.header.kind,
+            MessageType::ListRequest | MessageType::ReadRequest
+        ) && frame.header.sequence == 0
+        {
+            let root =
+                VerifyingKey::from_bytes(&broker_key::TRUSTED_PUBLIC_KEY).map_err(|_| "ROOT")?;
+            let read = frame.header.kind == MessageType::ReadRequest;
+            let (nonce, target) = vela_note_action::catalog::verify_request(
+                read,
+                frame.header.transaction,
+                frame.payload,
+                &root,
+            )
+            .map_err(|_| "READ_AUTHORITY")?;
+            let mut payload = [0; vela_note_action::catalog::RESPONSE_SIZE];
+            let n = vela_note_action::catalog::response(
+                &mut self.store,
+                &self.lfs,
+                read,
+                frame.header.transaction,
+                &nonce,
+                &target,
+                &mut payload,
+            )
+            .map_err(|_| "INDEX")?;
+            let response = Frame::new(
+                if read {
+                    MessageType::ReadResponse
+                } else {
+                    MessageType::ListResponse
+                },
+                frame.header.transaction,
+                0,
+                &payload[..n],
+            )
+            .map_err(|_| "FRAME")?;
+            let mut wire = [0; MAX_FRAME];
+            self.reply
+                .publish(response.encode(&mut wire).map_err(|_| "ENCODE")?)?;
+            debug_println!("SOFT LFS: authenticated current index returned");
+            return Ok(());
+        }
         if frame.header.kind != MessageType::Approval || frame.header.sequence != 0 {
             return Err("KIND");
         }
         let b = frame.payload;
-        if b.len() < 18 + CAP_SIZE {
+        if b.len() < 50 + CAP_SIZE {
             return Err("LENGTH");
         }
         let epoch = u64::from_le_bytes(b[..8].try_into().unwrap());
         let id = u64::from_le_bytes(b[8..16].try_into().unwrap());
         let n = u16::from_le_bytes(b[16..18].try_into().unwrap()) as usize;
-        if n > MAX_NOTE || b.len() != 18 + CAP_SIZE + n || id != frame.header.transaction {
+        if n > MAX_NOTE || b.len() != 50 + CAP_SIZE + n || id != frame.header.transaction {
             return Err("CONTEXT");
         }
-        let op = Operation::new(epoch, id, &b[18 + CAP_SIZE..]).map_err(|_| "NOTE")?;
-        let cap = Capability(b[18..18 + CAP_SIZE].try_into().unwrap());
+        let op = Operation::document(
+            epoch,
+            id,
+            b[18..34].try_into().unwrap(),
+            b[34..50].try_into().unwrap(),
+            &b[50 + CAP_SIZE..],
+        )
+        .map_err(|_| "NOTE")?;
+        let cap = Capability(b[50..50 + CAP_SIZE].try_into().unwrap());
         let receipt = execute_timed(&mut self.store, &op, &cap, now_ns, &self.pcb, &self.lfs)
             .map_err(|_| "WASM_OR_DURABILITY")?;
         debug_println!(
@@ -82,17 +135,8 @@ fn init() -> impl Handler {
     let physical = unsafe { core::ptr::read_volatile(&raw const lfs_dma_phys) };
     let device = unsafe { virtio_block::VirtioBlock::new_selected(mmio.add(0xe00), dma, physical) }
         .expect("dedicated disk");
-    let mut store = ObjectStore::open(device).expect("LFS recovery");
+    let store = ObjectStore::open_archive(device).expect("LFS recovery");
     let lfs = SigningKey::from_bytes(include_bytes!(env!("VELA_LFS_SEED")));
-    let mut recovered = [0; MAX_NOTE];
-    let n = vela_note_action::recover(&mut store, &lfs.verifying_key(), &mut recovered)
-        .expect("signed persisted state");
-    if store.version().is_some() {
-        debug_println!(
-            "V1 LFS: AUTHENTICATED AFTER REBOOT note={}",
-            core::str::from_utf8(&recovered[..n]).expect("UTF8")
-        );
-    }
     debug_println!(
         "V1 LFS: recovered generation={}",
         store.version().map_or(0, |v| v.generation)

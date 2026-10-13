@@ -121,8 +121,8 @@ impl VirtioBlock {
                     break;
                 }
             }
-            if !stable || s.capacity != 8 {
-                return Err("expected a dedicated eight-sector test disk");
+            if !stable || s.capacity != 8 && s.capacity != 256 {
+                return Err("expected a dedicated 8- or 256-sector test disk");
             }
         }
         Ok(s)
@@ -145,7 +145,7 @@ impl VirtioBlock {
         if self.poisoned {
             return Err("device poisoned");
         }
-        if op != 4 && sector >= 8 {
+        if op != 4 && sector >= self.capacity {
             return Err("outside dedicated extent");
         }
         unsafe {

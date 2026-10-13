@@ -46,7 +46,9 @@
     .shell { width: min(640px,calc(100% - 32px)); margin: 0 auto; padding-top: min(31dvh,280px); }
     .command { position: relative; height: 56px; border: 1px solid var(--border); border-radius: var(--bar-radius); background: var(--surface); box-shadow: var(--highlight),var(--bar-shadow); overflow: hidden; }
     .command:focus-within { box-shadow: 0 0 0 1px var(--focus),var(--highlight),var(--bar-shadow); }
-    .intent { width: 100%; height: 100%; border: 0; outline: 0; background: transparent; color: var(--text); padding: 0 20px; font-size: 18px; font-weight: 400; letter-spacing: -.01em; caret-color: var(--accent); }
+    .command.document { height: 200px; }
+    .document-context { font-size: 12px; color: var(--secondary); overflow-wrap: anywhere; margin-bottom: 16px; }
+    .intent { font-family: inherit; line-height: 1.5; resize: none;  width: 100%; height: 100%; border: 0; outline: 0; background: transparent; color: var(--text); padding: 14px 20px; font-size: 18px; font-weight: 400; letter-spacing: -.01em; caret-color: var(--accent); }
     .intent::placeholder { color: var(--tertiary); opacity: 1; }
     .processing { position: absolute; right: 20px; top: 25px; display: flex; gap: var(--s1); pointer-events: none; }
     .processing[hidden] { display: none; }
@@ -119,7 +121,7 @@
   <span id="connection" class="connection" data-state="idle" title="Disconnesso" role="img" aria-label="Disconnesso"></span>
   <main class="shell" id="shell">
     <form id="intentForm" class="command">
-      <input id="intent" class="intent" aria-label="Qual è il tuo intento?" placeholder="Qual è il tuo intento?" autocomplete="off" maxlength="512" autofocus>
+      <textarea rows="2" id="intent" class="intent" aria-label="Qual è il tuo intento?" placeholder="Qual è il tuo intento?" autocomplete="off" maxlength="1024" autofocus></textarea>
       <span id="processing" class="processing" hidden aria-hidden="true"><i></i><i></i><i></i></span>
     </form>
     <nav class="filters" role="tablist" aria-label="Contesti">
@@ -132,6 +134,7 @@
   <dialog id="approval" class="approval" aria-modal="true" aria-labelledby="approvalTitle" aria-describedby="effect">
     <p class="proposal-label">PROPOSTA</p>
     <h1 id="approvalTitle">Salva la nota</h1>
+    <p id="documentContext" class="document-context"></p>
     <label for="draft" class="sr-only">Contenuto della nota</label>
     <textarea id="draft" class="draft" maxlength="1024" spellcheck="false"></textarea>
     <dl class="parameters"><dt>Effetto</dt><dd id="effect">Sostituisce la nota precedente</dd></dl>
@@ -147,6 +150,7 @@
     /* Existing broker contract and cryptographic checks are unchanged. */
     const $ = id => document.getElementById(id), encoder = new TextEncoder();
     const receipts = [], transactionIds = new Set();
+    let editing = null;
     let phase = 'Idle', revision = 0, digestRevision = 0, filter = 'Tutto', currentIntent = '', socket = null;
     let toastTimer, filterTimer, closing = false;
     const hex = bytes => Array.from(bytes,b => b.toString(16).padStart(2,'0')).join('');
@@ -187,15 +191,17 @@
     function renderTimeline(enterNew = false) {
       $('timeline').replaceChildren();
       for (const item of receipts.filter(r => filter === 'Tutto' || r.context === filter)) {
-        const li = document.createElement('li'); li.className = enterNew && item === receipts[0] ? 'entry new' : 'entry';
+        const li = document.createElement('li'); li.dataset.id=item.id; li.className = enterNew && item === receipts[0] ? 'entry new' : 'entry';
         const details = document.createElement('details'), summary = document.createElement('summary'); summary.className = 'entry-line';
         const dot = document.createElement('span'); dot.className = 'dot success'; dot.setAttribute('aria-hidden','true');
-        const label = document.createElement('span'); label.className = 'entry-label'; label.textContent = 'Nota salvata';
+        const label = document.createElement('span'); label.className = 'entry-label'; label.textContent = item.preview || 'Nota salvata';
         const time = document.createElement('time'); time.className = 'entry-time'; time.textContent = timeLabel(item.timestamp); time.dateTime = item.timestamp.toISOString();
+        label.textContent=(item.parent_id && !/^0+$/.test(item.parent_id)?'Versione aggiornata · ':'')+label.textContent;
         summary.append(dot,label,time);
+        summary.addEventListener('click',event=>{event.preventDefault();openNote(item).catch(()=>toast('Documento non disponibile.'));});
         // Preserve the previous receipt-detail affordance without raw IDs/JSON.
         const data = document.createElement('dl'); data.className = 'receipt-detail';
-        for (const [name,value,mono] of [['Esito','Eseguita',false],['Consenso',item.consent === 'WindowsVerified' ? 'Verificato sul dispositivo' : 'Di sviluppo',false],['SHA-256',item.note_sha256,true],['Firma',item.receipt_hex.slice(-128),true]]) {
+        for (const [name,value,mono] of [['Esito','Eseguita',false],['Consenso',item.consent === 'Unrecorded' ? 'Non registrato' : item.consent === 'WindowsVerified' ? 'Verificato sul dispositivo' : 'Di sviluppo',false],['SHA-256',item.note_sha256,true],['Firma',item.receipt_hex.slice(-128),true]]) {
           const dt = document.createElement('dt'), dd = document.createElement('dd'); dt.textContent = name;
           if (mono) { const code = document.createElement('code'); code.textContent = value; dd.append(code); } else dd.textContent = value;
           data.append(dt,dd);
@@ -220,18 +226,19 @@
 
     /* Proposal, rejection and the original one-shot transport */
     async function propose(event) {
-      event.preventDefault(); if (event.isComposing || phase === 'Loading' || phase === 'Interpreting' || phase === 'Preview') return;
-      const intent = $('intent').value.trim(); if (!intent) return;
-      currentIntent = intent; phase = 'Interpreting'; revision++; $('intent').value = ''; $('intent').disabled = true; $('processing').hidden = false;
+      event.preventDefault(); if (event.isComposing || phase === 'Loading' || phase === 'Reading' || phase === 'Interpreting' || phase === 'Preview') return;
+      const intent = $('intent').value; if (!intent.trim()) return;
+      currentIntent = editing ? 'Aggiorna documento selezionato' : 'Crea una nota'; phase = 'Interpreting'; revision++; $('intent').value = ''; $('intent').disabled = true; $('processing').hidden = false;
       // No inbound Proposal exists in this protocol: preserve local preparation.
       await new Promise(resolve => setTimeout(resolve,180));
+      $('documentContext').textContent=editing ? 'Aggiornamento immutabile · Documento '+editing.document_id+' · Versione di origine '+editing.id : 'Nuovo documento · La nota esistente non viene sostituita';
       $('draft').value = intent; phase = 'Preview'; $('processing').hidden = true; $('intent').disabled = false;
       $('approval').showModal(); $('reject').focus();
       await updateDigest();
     }
     async function reject() {
       if (phase === 'Loading') { await closeModal(); toast('Operazione già inviata.'); return; }
-      ++digestRevision; phase = 'Idle'; await closeModal(); $('draft').value = ''; $('intent').value = ''; $('intent').focus();
+      editing=null;$('intentForm').classList.remove('document'); ++digestRevision; phase = 'Idle'; await closeModal(); $('draft').value = ''; $('intent').value = ''; $('intent').focus();
     }
     async function authorize() {
       if (phase !== 'Preview' || closing) return;
@@ -248,11 +255,12 @@
           socket = new WebSocket('ws://127.0.0.1:7990/'); connection('connecting'); let settled = false;
           const finish = (error,value) => { if (settled) return; settled = true; clearTimeout(timer); const active = socket; socket = null; active?.close(); error ? rejectPromise(error) : resolve(value); };
           const timer = setTimeout(() => { connection('failed'); finish(new Error('Timeout: esito del salvataggio sconosciuto. Non ripetere automaticamente.')); },180000);
-          socket.onopen = () => { connection('connected'); socket.send(JSON.stringify({type:'Proposal',operation:'write-note',intent:currentIntent,note,note_sha256:digest})); };
+          socket.onopen = () => { connection('connected'); socket.send(JSON.stringify({type:'Proposal',operation:'write-note',intent:currentIntent,note,note_sha256:digest,...(editing?{document_id:editing.document_id,parent_id:editing.id}:{})})); };
           socket.onerror = () => { connection('failed'); finish(new Error('Broker locale non disponibile.')); };
           socket.onclose = () => { if (!settled) connection('failed'); else if ($('connection').dataset.state !== 'failed') connection('idle'); finish(new Error('Connessione chiusa senza ricevuta: esito sconosciuto.')); };
           socket.onmessage = event => {
             let message; try { message = JSON.parse(event.data); } catch { finish(new Error('Risposta broker non valida.')); return; }
+            if (message.type === 'ListResponse') { try { hydrate(message); } catch { finish(new Error('Indice non valido')); } return; }
             if (message.type === 'Ack' || message.type === 'Progress') return;
             if (message.type === 'Denied') { finish(new Error(message.reason || 'Richiesta negata.')); return; }
             finish(null,message);
@@ -263,7 +271,7 @@
         if (view.getUint16(0,true) !== 1 || view.getBigUint64(10,true).toString() !== receipt.request || view.getBigUint64(18,true) === 0n || hex(raw.slice(26,58)) !== digest) throw new Error('Identità della ricevuta non valida.');
         if (transactionIds.has(receipt.request)) throw new Error('Ricevuta duplicata.');
         transactionIds.add(receipt.request); receipts.unshift({...receipt,context,timestamp:new Date()});
-        phase = 'Completed'; await closeModal(); $('draft').value = ''; $('intent').value = ''; renderTimeline(true);
+        editing=null;$('intentForm').classList.remove('document'); phase = 'Completed'; await closeModal(); $('draft').value = ''; $('intent').value = ''; renderTimeline(true);
         if (receipt.consent !== 'WindowsVerified') toast('Salvato con consenso di sviluppo.');
         window.dispatchEvent(new CustomEvent('vela:completed',{detail:receipt}));
       } catch (error) {
@@ -281,8 +289,8 @@
     /* Keyboard and focus */
     $('intentForm').addEventListener('submit',propose);
     $('intent').addEventListener('keydown',event => {
-      if (event.key === 'Enter') { event.preventDefault(); if (!event.isComposing && event.keyCode !== 229) propose(event); }
-      if (event.key === 'Escape') { event.preventDefault(); $('intent').value = ''; }
+      if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); if (!event.isComposing && event.keyCode !== 229) propose(event); }
+      if (event.key === 'Escape') { event.preventDefault(); $('intent').value = ''; editing=null;$('intentForm').classList.remove('document'); }
     });
     $('draft').addEventListener('input',() => { if (phase === 'Preview') { revision++; updateDigest().catch(() => toast('Verifica non disponibile.')); } });
     $('approve').addEventListener('click',authorize); $('reject').addEventListener('click',reject);
@@ -306,7 +314,43 @@
       });
     }
     document.addEventListener('keydown',event => { if ((event.altKey && event.code === 'Space') || ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k')) { event.preventDefault(); if (!$('approval').open && phase !== 'Loading') $('intent').focus(); } });
-    renderTimeline();
+    async function openNote(item) {
+      if(phase!=='Idle' && phase!=='Completed')return;
+      phase='Reading';lock(true);
+      try {
+        const result=await new Promise((resolve,reject)=>{
+          const ws=new WebSocket('ws://127.0.0.1:7990/');let done=false;
+          const finish=(error,value)=>{if(done)return;done=true;clearTimeout(timer);ws.close();error?reject(error):resolve(value);};
+          const timer=setTimeout(()=>finish(new Error('Read timeout')),30000);
+          ws.onopen=()=>ws.send(JSON.stringify({type:'ReadRequest',id:item.id}));
+          ws.onerror=()=>finish(new Error('Broker unavailable'));
+          ws.onclose=()=>finish(new Error('Read disconnected'));
+          ws.onmessage=e=>{try{const m=JSON.parse(e.data);if(m.type==='ListResponse'){hydrate(m);return;}if(m.type!=='ReadResponse'||m.verified!==true||!m.entry)throw new Error('Read denied');finish(null,m.entry);}catch(error){finish(error);}};
+        });
+        if(result.id!==item.id || result.receipt_hex!==item.receipt_hex || typeof result.note!=='string' || encoder.encode(result.note).length>1024 || await sha(encoder.encode(result.note))!==item.note_sha256)throw new Error('Read proof mismatch');
+        editing=result;$('intentForm').classList.add('document');$('intent').dataset.document=result.document_id;$('intent').value=result.note;$('intent').scrollTop=0;$('intent').focus();
+        window.dispatchEvent(new CustomEvent('vela:opened',{detail:{id:result.id}}));
+      } finally {phase='Idle';lock(false);$('intent').focus();}
+    }
+    function hydrate(message) {
+      if(message.verified!==true||!Array.isArray(message.notes)||message.notes.length>64)throw new Error('Indice non valido');
+      for(const note of message.notes){
+        if(!/^[0-9a-f]{32}$/.test(note.document_id)||!/^[0-9a-f]{32}$/.test(note.parent_id)||note.verified!==true||!/^\d+$/.test(note.request)||!/^[0-9a-f]{340}$/.test(note.receipt_hex)||!/^[0-9a-f]{64}$/.test(note.note_sha256)||typeof note.preview!=='string'||note.preview.length>240||!/^\d+$/.test(note.timestamp_ms))throw new Error('Metadati non validi');
+        const raw=Uint8Array.from(note.receipt_hex.match(/../g),v=>parseInt(v,16)),view=new DataView(raw.buffer);
+        if(view.getUint16(0,true)!==1||view.getBigUint64(10,true).toString()!==note.request||view.getBigUint64(18,true)===0n||hex(raw.slice(26,58))!==note.note_sha256||hex(raw.slice(90,106))!==note.id)throw new Error('Ricevuta storica non valida');
+        const timestamp=new Date(Number(note.timestamp_ms));if(!Number.isFinite(timestamp.getTime()))throw new Error('Data non valida');
+        if(!transactionIds.has(note.request)){transactionIds.add(note.request);receipts.unshift({...note,context:'Lavoro',timestamp});}
+      }
+      renderTimeline();window.dispatchEvent(new CustomEvent('vela:hydrated',{detail:{count:receipts.length}}));
+    }
+    function syncTimeline() {
+      const channel=new WebSocket('ws://127.0.0.1:7990/');connection('connecting');
+      const timeout=setTimeout(()=>{channel.close();connection('failed');toast('Cronologia non disponibile.');},20000);
+      channel.onopen=()=>connection('connected');
+      channel.onmessage=event=>{try{const message=JSON.parse(event.data);if(message.type!=='ListResponse')throw new Error('Sincronizzazione non disponibile');hydrate(message);clearTimeout(timeout);channel.close();connection('idle');}catch{clearTimeout(timeout);channel.close();connection('failed');toast('Cronologia non disponibile.');}};
+      channel.onerror=()=>{clearTimeout(timeout);connection('failed');toast('Cronologia non disponibile.');};
+    }
+    renderTimeline();syncTimeline();
   </script>
 </body>
 </html>

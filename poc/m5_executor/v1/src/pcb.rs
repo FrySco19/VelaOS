@@ -33,12 +33,29 @@ impl Pcb {
             return Err("CHUNKS_UNSUPPORTED");
         }
         match frame.header.kind {
+            MessageType::ListRequest | MessageType::ReadRequest => {
+                if self.busy || self.pending.is_some() || !self.output.empty() {
+                    return Err("BUSY");
+                }
+                let root = ed25519_dalek::VerifyingKey::from_bytes(&key::TRUSTED_PUBLIC_KEY)
+                    .map_err(|_| "READ_ROOT")?;
+                vela_note_action::catalog::verify_request(
+                    frame.header.kind == MessageType::ReadRequest,
+                    frame.header.transaction,
+                    frame.payload,
+                    &root,
+                )
+                .map_err(|_| "READ_AUTHORITY")?;
+                self.output.publish(bytes)?;
+                self.busy = true;
+                Channel::new(2).notify();
+            }
             MessageType::Proposal => {
                 if self.busy || self.pending.is_some() {
                     return Err("BUSY");
                 }
                 let b = frame.payload;
-                if b.len() < 50 {
+                if b.len() < 82 {
                     return Err("PROPOSAL_LENGTH");
                 }
                 let epoch = u64::from_le_bytes(b[..8].try_into().unwrap());
@@ -48,11 +65,18 @@ impl Pcb {
                     || id <= self.last
                     || id != frame.header.transaction
                     || n > MAX_NOTE
-                    || b.len() != 50 + n
+                    || b.len() != 82 + n
                 {
                     return Err("CONTEXT");
                 }
-                let op = Operation::new(epoch, id, &b[50..]).map_err(|_| "NOTE")?;
+                let op = Operation::document(
+                    epoch,
+                    id,
+                    b[50..66].try_into().unwrap(),
+                    b[66..82].try_into().unwrap(),
+                    &b[82..],
+                )
+                .map_err(|_| "NOTE")?;
                 self.pending = Some(Pending {
                     op,
                     session: b[16..48].try_into().unwrap(),
@@ -78,18 +102,20 @@ impl Pcb {
                     &self.key,
                 )
                 .map_err(|_| "CRYPTO")?;
-                let mut payload = [0; 18 + CAP_SIZE + MAX_NOTE];
+                let mut payload = [0; 50 + CAP_SIZE + MAX_NOTE];
                 payload[..8].copy_from_slice(&pending.op.epoch.to_le_bytes());
                 payload[8..16].copy_from_slice(&pending.op.request.to_le_bytes());
                 payload[16..18].copy_from_slice(&(pending.op.note().len() as u16).to_le_bytes());
-                payload[18..18 + CAP_SIZE].copy_from_slice(&cap.0);
-                payload[18 + CAP_SIZE..18 + CAP_SIZE + pending.op.note().len()]
+                payload[18..34].copy_from_slice(&pending.op.root);
+                payload[34..50].copy_from_slice(&pending.op.parent);
+                payload[50..50 + CAP_SIZE].copy_from_slice(&cap.0);
+                payload[50 + CAP_SIZE..50 + CAP_SIZE + pending.op.note().len()]
                     .copy_from_slice(pending.op.note());
                 let admitted = Frame::new(
                     MessageType::Approval,
                     pending.op.request,
                     0,
-                    &payload[..18 + CAP_SIZE + pending.op.note().len()],
+                    &payload[..50 + CAP_SIZE + pending.op.note().len()],
                 )
                 .map_err(|_| "FRAME")?;
                 let mut wire = [0; MAX_FRAME];

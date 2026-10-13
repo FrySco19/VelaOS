@@ -2,6 +2,8 @@
 //! Storage is the repository's LFS ObjectStore, NOT LittleFS.
 //! This library does not provision roots, establish sessions or wire Microkit IPC.
 #![no_std]
+pub mod catalog;
+pub mod sync;
 
 use ed25519_dalek::Signer;
 use ed25519_dalek::{Signature, SigningKey, VerifyingKey};
@@ -42,6 +44,14 @@ pub fn digest(bytes: &[u8]) -> [u8; 32] {
 pub fn object_id() -> [u8; 16] {
     digest(RESOURCE)[..16].try_into().unwrap()
 }
+pub fn version_id(root: &[u8; 16], parent: &[u8; 16], request: u64, hash: &[u8; 32]) -> [u8; 16] {
+    let mut bytes = [0; 72];
+    bytes[..16].copy_from_slice(root);
+    bytes[16..32].copy_from_slice(parent);
+    bytes[32..40].copy_from_slice(&request.to_le_bytes());
+    bytes[40..].copy_from_slice(hash);
+    digest(&bytes)[..16].try_into().unwrap()
+}
 fn u64at(bytes: &[u8], offset: usize) -> u64 {
     u64::from_le_bytes(bytes[offset..offset + 8].try_into().unwrap())
 }
@@ -55,6 +65,8 @@ fn message<const N: usize>(domain: &[u8], body: &[u8], out: &mut [u8; N]) -> usi
 pub struct Operation {
     pub epoch: u64,
     pub request: u64,
+    pub root: [u8; 16],
+    pub parent: [u8; 16],
     len: usize,
     note: [u8; MAX_NOTE],
 }
@@ -70,11 +82,40 @@ impl Operation {
         let mut op = Self {
             epoch,
             request,
+            root: [0; 16],
+            parent: [0; 16],
             len: note.len(),
             note: [0; MAX_NOTE],
         };
         op.note[..note.len()].copy_from_slice(note);
         Ok(op)
+    }
+    pub fn document(
+        epoch: u64,
+        request: u64,
+        root: [u8; 16],
+        parent: [u8; 16],
+        note: &[u8],
+    ) -> Result<Self, Error> {
+        let mut op = Self::new(epoch, request, note)?;
+        op.root = if root == [0; 16] {
+            digest(&request.to_le_bytes())[..16].try_into().unwrap()
+        } else {
+            root
+        };
+        op.parent = parent;
+        if (parent == [0; 16] && root != [0; 16] && root != digest(&request.to_le_bytes())[..16])
+            || (parent != [0; 16] && root == [0; 16])
+        {
+            return Err(Error::Bounds);
+        }
+        Ok(op)
+    }
+    pub fn object(&self) -> [u8; 16] {
+        if self.root == [0; 16] {
+            return object_id();
+        }
+        version_id(&self.root, &self.parent, self.request, &digest(self.note()))
     }
     pub fn note(&self) -> &[u8] {
         &self.note[..self.len]
@@ -84,7 +125,7 @@ impl Operation {
         body[..2].copy_from_slice(&1u16.to_le_bytes());
         body[2..10].copy_from_slice(&self.epoch.to_le_bytes());
         body[10..18].copy_from_slice(&self.request.to_le_bytes());
-        body[18..34].copy_from_slice(&object_id());
+        body[18..34].copy_from_slice(&self.object());
         body[34..66].copy_from_slice(&digest(self.note()));
         body[66..98].copy_from_slice(&digest(NOTE_WASM));
         body
@@ -117,9 +158,10 @@ impl Capability {
         bytes[18..26].copy_from_slice(&expires.to_le_bytes());
         bytes[26..58].copy_from_slice(&digest(op.note()));
         bytes[58..90].copy_from_slice(&digest(NOTE_WASM));
-        bytes[90..106].copy_from_slice(&object_id());
+        bytes[90..106].copy_from_slice(&op.object());
         bytes[106..110].copy_from_slice(&(op.len as u32).to_le_bytes());
-        // Domain fixes right("write", RESOURCE); no caller-controlled rights.
+        // Right is write; the signed object binds the approved document, parent,
+        // request and exact note bytes. No caller-controlled extra rights.
         let mut signed = [0; 160];
         let n = message(b"VelaOS.write-note.v1\0", &bytes[..CAP_BODY], &mut signed);
         bytes[CAP_BODY..].copy_from_slice(&issuer.sign(&signed[..n]).to_bytes());
@@ -146,7 +188,7 @@ impl Capability {
             || u64at(b, 10) != op.request
             || b[26..58] != digest(op.note())
             || b[58..90] != digest(NOTE_WASM)
-            || b[90..106] != object_id()
+            || b[90..106] != op.object()
             || u32::from_le_bytes(b[106..110].try_into().unwrap()) as usize != op.len
         {
             return Err(Error::Capability);
@@ -170,13 +212,13 @@ impl Receipt {
             || u64at(b, 18) == 0
             || b[26..58] != digest(op.note())
             || b[58..90] != digest(&cap.0)
-            || b[90..106] != object_id()
+            || b[90..106] != op.object()
         {
             return Err(Error::Receipt);
         }
         Ok(())
     }
-    fn authenticate(&self, lfs: &VerifyingKey) -> Result<(), Error> {
+    pub fn authenticate(&self, lfs: &VerifyingKey) -> Result<(), Error> {
         let mut signed = [0; 160];
         let n = message(
             b"VelaOS.durable-note.v1\0",
@@ -233,6 +275,12 @@ fn commit<D: BlockDevice>(
     cap: &Capability,
     lfs: &SigningKey,
 ) -> Result<Receipt, Error> {
+    if op.root != [0; 16] {
+        if !store.is_archive() {
+            return Err(Error::Storage);
+        }
+        return commit_document(store, op, cap, lfs);
+    }
     let mut previous = [0; MAX_BYTES];
     let count = store
         .read(object_id(), &mut previous)
@@ -261,7 +309,7 @@ fn commit<D: BlockDevice>(
     receipt[18..26].copy_from_slice(&next.to_le_bytes());
     receipt[26..58].copy_from_slice(&digest(op.note()));
     receipt[58..90].copy_from_slice(&digest(&cap.0));
-    receipt[90..106].copy_from_slice(&object_id());
+    receipt[90..106].copy_from_slice(&op.object());
     let mut signed = [0; 160];
     let n = message(
         b"VelaOS.durable-note.v1\0",
@@ -287,6 +335,110 @@ fn commit<D: BlockDevice>(
         return Err(Error::Storage);
     }
     Ok(Receipt(receipt))
+}
+
+fn commit_document<D: BlockDevice>(
+    store: &mut ObjectStore<D>,
+    op: &Operation,
+    cap: &Capability,
+    key: &SigningKey,
+) -> Result<Receipt, Error> {
+    // Authenticate the durable admission watermark before permitting another
+    // write. It survives guest restarts; failed/stale requests do not advance it.
+    for slot in 0..vela_storage_core::ARCHIVE_SLOTS {
+        if let Some(v) = store.entry(slot).map_err(|_| Error::Storage)? {
+            let mut record = [0; MAX_BYTES];
+            let n = store
+                .read(v.object, &mut record)
+                .map_err(|_| Error::Storage)?;
+            let (_, _, r, _) = document_record(&record[..n], &key.verifying_key())?;
+            if op.epoch < u64at(&r.0, 2)
+                || (op.epoch == u64at(&r.0, 2) && op.request <= u64at(&r.0, 10))
+            {
+                return Err(Error::Replay);
+            }
+        }
+    }
+    if op.parent != [0; 16] {
+        let mut old = [0; MAX_BYTES];
+        let n = store
+            .read(op.parent, &mut old)
+            .map_err(|_| Error::Storage)?;
+        let (root, _, receipt, _) = document_record(&old[..n], &key.verifying_key())?;
+        if root != op.root || u64at(&receipt.0, 10) >= op.request {
+            return Err(Error::Capability);
+        }
+        // Reject stale edits: no existing child may already name this parent.
+        for slot in 0..vela_storage_core::ARCHIVE_SLOTS {
+            if let Some(v) = store.entry(slot).map_err(|_| Error::Storage)? {
+                let n = store.read(v.object, &mut old).map_err(|_| Error::Storage)?;
+                if n >= 36 && &old[..4] == b"VNO2" && old[20..36] == op.parent {
+                    return Err(Error::Replay);
+                }
+            }
+        }
+    }
+    let generation = store.version().map_or(0, |v| v.generation);
+    let mut r = [0; RECEIPT_SIZE];
+    r[..2].copy_from_slice(&1u16.to_le_bytes());
+    r[2..10].copy_from_slice(&op.epoch.to_le_bytes());
+    r[10..18].copy_from_slice(&op.request.to_le_bytes());
+    r[18..26].copy_from_slice(&(generation.checked_add(1).ok_or(Error::Storage)?).to_le_bytes());
+    r[26..58].copy_from_slice(&digest(op.note()));
+    r[58..90].copy_from_slice(&digest(&cap.0));
+    r[90..106].copy_from_slice(&op.object());
+    let mut signed = [0; 160];
+    let n = message(b"VelaOS.durable-note.v1\0", &r[..RECEIPT_BODY], &mut signed);
+    r[RECEIPT_BODY..].copy_from_slice(&key.sign(&signed[..n]).to_bytes());
+    let mut record = [0; MAX_BYTES];
+    record[..4].copy_from_slice(b"VNO2");
+    record[4..20].copy_from_slice(&op.root);
+    record[20..36].copy_from_slice(&op.parent);
+    record[36..36 + RECEIPT_SIZE].copy_from_slice(&r);
+    record[36 + RECEIPT_SIZE..36 + RECEIPT_SIZE + op.len].copy_from_slice(op.note());
+    let len = 36 + RECEIPT_SIZE + op.len;
+    store
+        .save(op.object(), generation, &record[..len])
+        .map_err(|_| Error::Storage)?;
+    let mut back = [0; MAX_BYTES];
+    let n = store
+        .read(op.object(), &mut back)
+        .map_err(|_| Error::Storage)?;
+    if n != len || back[..n] != record[..len] {
+        return Err(Error::Storage);
+    }
+    Ok(Receipt(r))
+}
+pub fn document_record<'a>(
+    record: &'a [u8],
+    key: &VerifyingKey,
+) -> Result<([u8; 16], [u8; 16], Receipt, &'a [u8]), Error> {
+    let (offset, root, parent) = if record.len() >= 36 + RECEIPT_SIZE && &record[..4] == b"VNO2" {
+        (
+            36,
+            record[4..20].try_into().unwrap(),
+            record[20..36].try_into().unwrap(),
+        )
+    } else if record.len() >= 4 + RECEIPT_SIZE && &record[..4] == b"VNOT" {
+        (4, object_id(), [0; 16])
+    } else {
+        return Err(Error::Storage);
+    };
+    let r = Receipt(record[offset..offset + RECEIPT_SIZE].try_into().unwrap());
+    r.authenticate(key)?;
+    let note = &record[offset + RECEIPT_SIZE..];
+    if note.len() > MAX_NOTE || core::str::from_utf8(note).is_err() || r.0[26..58] != digest(note) {
+        return Err(Error::Receipt);
+    }
+    let expected = if offset == 4 {
+        object_id()
+    } else {
+        version_id(&root, &parent, u64at(&r.0, 10), &digest(note))
+    };
+    if r.0[90..106] != expected {
+        return Err(Error::Receipt);
+    }
+    Ok((root, parent, r, note))
 }
 
 struct State<'a, D: BlockDevice> {

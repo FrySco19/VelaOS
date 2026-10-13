@@ -15,6 +15,10 @@ pub enum MessageType {
     Receipt = 3,
     Ack = 4,
     Cancel = 5,
+    ListRequest = 6,
+    ListResponse = 7,
+    ReadRequest = 8,
+    ReadResponse = 9,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -56,6 +60,10 @@ impl Header {
             3 => MessageType::Receipt,
             4 => MessageType::Ack,
             5 => MessageType::Cancel,
+            6 => MessageType::ListRequest,
+            7 => MessageType::ListResponse,
+            8 => MessageType::ReadRequest,
+            9 => MessageType::ReadResponse,
             _ => return Err(Error::Kind),
         };
         let payload_len = u16::from_le_bytes([bytes[8], bytes[9]]);

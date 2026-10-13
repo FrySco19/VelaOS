@@ -7,6 +7,8 @@ pub const SECTOR: usize = 512;
 pub const DATA_SECTORS: usize = 3;
 pub const MAX_BYTES: usize = SECTOR * DATA_SECTORS;
 pub const EXTENT_SECTORS: u64 = 2 * (1 + DATA_SECTORS as u64);
+pub const ARCHIVE_SLOTS: u64 = 64;
+pub const ARCHIVE_SECTORS: u64 = ARCHIVE_SLOTS * 4;
 const MAGIC: &[u8; 8] = b"VOBJ0001";
 
 /// Adapter contract: writes may tear. Successful flush must order and persist
@@ -71,6 +73,7 @@ pub struct ObjectStore<D: BlockDevice> {
     device: D,
     current: Option<Candidate>,
     poisoned: bool,
+    archive: bool,
 }
 
 impl<D: BlockDevice> ObjectStore<D> {
@@ -139,9 +142,75 @@ impl<D: BlockDevice> ObjectStore<D> {
             device,
             current: selected,
             poisoned: false,
+            archive: false,
         })
     }
 
+    /// Dedicated append-only extent. Never overwrites a published record.
+    pub fn open_archive(device: D) -> Result<Self, Error<D::Error>> {
+        let mut store = Self {
+            device,
+            current: None,
+            poisoned: false,
+            archive: true,
+        };
+        let mut previous = 0;
+        for slot in 0..ARCHIVE_SLOTS {
+            if let Some(c) = store.candidate(slot)? {
+                if c.version.generation > previous {
+                    previous = c.version.generation;
+                    store.current = Some(c);
+                }
+            }
+        }
+        Ok(store)
+    }
+    fn candidate(&mut self, slot: u64) -> Result<Option<Candidate>, Error<D::Error>> {
+        let mut h = [0; SECTOR];
+        self.device.read(slot * 4, &mut h).map_err(Error::Io)?;
+        if h.iter().all(|b| *b == 0) {
+            return Ok(None);
+        }
+        // An unpublished/torn final header consumes no committed generation.
+        if &h[..8] != MAGIC || crc(&h[..508]) != u32::from_le_bytes(h[508..].try_into().unwrap()) {
+            return Ok(None);
+        }
+        let generation = u64::from_le_bytes(h[8..16].try_into().unwrap());
+        let len = u32::from_le_bytes(h[32..36].try_into().unwrap()) as usize;
+        if generation == 0 || len > MAX_BYTES || h[40..508].iter().any(|b| *b != 0) {
+            return Err(Error::Corrupt);
+        }
+        let checksum = u32::from_le_bytes(h[36..40].try_into().unwrap());
+        let mut data = [0; MAX_BYTES];
+        for i in 0..DATA_SECTORS {
+            let mut b = [0; SECTOR];
+            self.device
+                .read(slot * 4 + 1 + i as u64, &mut b)
+                .map_err(Error::Io)?;
+            data[i * SECTOR..(i + 1) * SECTOR].copy_from_slice(&b);
+        }
+        if crc(&data[..len]) != checksum || data[len..].iter().any(|b| *b != 0) {
+            return Err(Error::Corrupt);
+        }
+        Ok(Some(Candidate {
+            version: Version {
+                generation,
+                object: h[16..32].try_into().unwrap(),
+                len,
+            },
+            checksum,
+            slot,
+        }))
+    }
+    pub fn entry(&mut self, slot: u64) -> Result<Option<Version>, Error<D::Error>> {
+        if !self.archive || slot >= ARCHIVE_SLOTS {
+            return Err(Error::Conflict);
+        }
+        Ok(self.candidate(slot)?.map(|c| c.version))
+    }
+    pub fn is_archive(&self) -> bool {
+        self.archive
+    }
     pub fn version(&self) -> Option<Version> {
         self.current.as_ref().map(|v| v.version)
     }
@@ -150,6 +219,28 @@ impl<D: BlockDevice> ObjectStore<D> {
     pub fn read(&mut self, object: [u8; 16], out: &mut [u8]) -> Result<usize, Error<D::Error>> {
         if self.poisoned {
             return Err(Error::Poisoned);
+        }
+        if self.archive {
+            for slot in (0..ARCHIVE_SLOTS).rev() {
+                if let Some(c) = self.candidate(slot)? {
+                    if c.version.object == object {
+                        if out.len() < c.version.len {
+                            return Err(Error::TooLarge);
+                        }
+                        let mut data = [0; MAX_BYTES];
+                        for i in 0..DATA_SECTORS {
+                            let mut b = [0; SECTOR];
+                            self.device
+                                .read(slot * 4 + 1 + i as u64, &mut b)
+                                .map_err(Error::Io)?;
+                            data[i * SECTOR..(i + 1) * SECTOR].copy_from_slice(&b);
+                        }
+                        out[..c.version.len].copy_from_slice(&data[..c.version.len]);
+                        return Ok(c.version.len);
+                    }
+                }
+            }
+            return Ok(0);
         }
         let Some(ref c) = self.current else {
             return Ok(0);
@@ -192,11 +283,30 @@ impl<D: BlockDevice> ObjectStore<D> {
             return Err(Error::TooLarge);
         }
         let old = self.version();
-        if old.map_or(0, |v| v.generation) != expected || old.is_some_and(|v| v.object != object) {
+        if old.map_or(0, |v| v.generation) != expected
+            || (!self.archive && old.is_some_and(|v| v.object != object))
+        {
             return Err(Error::Conflict);
         }
         let generation = expected.checked_add(1).ok_or(Error::SequenceExhausted)?;
-        let slot = self.current.as_ref().map_or(0, |c| 1 - c.slot);
+        let slot = if self.archive {
+            let mut old_bytes = [0; MAX_BYTES];
+            if self.read(object, &mut old_bytes)? != 0 {
+                return Err(Error::Conflict);
+            }
+            let mut slot = 0;
+            for i in 0..ARCHIVE_SLOTS {
+                if self.candidate(i)?.is_some() {
+                    slot = i + 1;
+                }
+            }
+            if slot >= ARCHIVE_SLOTS {
+                return Err(Error::TooLarge);
+            }
+            slot
+        } else {
+            self.current.as_ref().map_or(0, |c| 1 - c.slot)
+        };
         let checksum = crc(bytes);
         let mut header = [0; SECTOR];
         header[..8].copy_from_slice(MAGIC);
