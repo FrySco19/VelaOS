@@ -16,7 +16,7 @@ function native(relative,args,label,port){
 async function ready(port){for(let i=0;i<100;i++){if(await new Promise(resolve=>{const s=net.connect(port,'127.0.0.1');s.setTimeout(200);s.once('connect',()=>{s.destroy();resolve(true);});s.once('error',()=>resolve(false));s.once('timeout',()=>{s.destroy();resolve(false);});}))return;await new Promise(r=>setTimeout(r,200));}throw new Error('Port unavailable: '+port);}
 (async()=>{
  if(process.platform!=='win32')throw new Error('This host launcher requires Windows + WSL Debian');
- const flags=process.argv.slice(2);if(flags.some(f=>!['--mock-unavailable','--console-development'].includes(f))||flags.length>1)throw new Error('Choose at most one development consent flag');
+ const flags=process.argv.slice(2);if(flags.length)throw new Error('Development consent flags are removed; USB FIDO2 is mandatory');
  fs.mkdirSync(dir,{recursive:true});
  // WSL may shut down its background daemon when its final foreground client
  // exits. Keep a detached client alive for this explicitly started dev stack.
@@ -34,9 +34,9 @@ async function ready(port){for(let i=0;i<100;i++){if(await new Promise(resolve=>
  }
  await ready(7991);
  // Reuse verified listeners rather than starting duplicate native processes.
- const brokerPid=native('poc/host-broker/target/debug/vela-host-broker.exe',['serve','.local/host-bridge/broker.seed','.local/v1/pcb.public','.local/v1/lfs.public',...flags],'broker-final',7990);
+ const brokerPid=native('poc/host-broker/target/debug/vela-host-broker.exe',['serve','.local/host-bridge/broker.seed','.local/v1/pcb.public','.local/v1/lfs.public','.local/host-bridge/fido.json'],'broker-final',7990);
  const glassPid=native('poc/product/glass/target/debug/vela-glass.exe',['--port','7882'],'glass-final',7882);
  await ready(7990);await ready(7882);
- fs.writeFileSync(path.join(dir,'running.json'),JSON.stringify({brokerPid,glassPid,wslKeeperPid:keeper.pid,consentMode:flags[0]||'native-only',url:'http://127.0.0.1:7882/studio'},null,2));
- console.log('READY http://127.0.0.1:7882/studio ; consent='+ (flags[0]||'native-only'));
+ fs.writeFileSync(path.join(dir,'running.json'),JSON.stringify({brokerPid,glassPid,wslKeeperPid:keeper.pid,consentMode:'hardware-fido2',fidoEnrolled:fs.existsSync(path.join(root,'.local/host-bridge/fido.json')),url:'http://127.0.0.1:7882/studio'},null,2));
+ console.log('READY http://127.0.0.1:7882/studio ; consent='+ 'hardware-fido2');
 })().catch(e=>{console.error(e.message);process.exitCode=1;});

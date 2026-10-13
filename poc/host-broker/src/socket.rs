@@ -28,6 +28,16 @@ fn unhex16(value: &str) -> Result<[u8; 16], String> {
     }
     Ok(out)
 }
+fn guest_address() -> Result<SocketAddr, String> {
+    let address: SocketAddr = std::env::var("VELA_GUEST_ENDPOINT")
+        .unwrap_or_else(|_| "127.0.0.1:7991".into())
+        .parse()
+        .map_err(|_| "Invalid guest endpoint")?;
+    if !address.ip().is_loopback() {
+        return Err("Guest endpoint must be loopback".into());
+    }
+    Ok(address)
+}
 fn query(
     pair: &KeyPair,
     lfs: &VerifyingKey,
@@ -42,7 +52,7 @@ fn query(
     payload[..32].copy_from_slice(&nonce);
     payload[32..48].copy_from_slice(&target);
     payload[48..].copy_from_slice(pair.sk.sign(&signed[..n], None).as_ref());
-    let address: SocketAddr = "127.0.0.1:7991".parse().unwrap();
+    let address = guest_address()?;
     let mut stream =
         TcpStream::connect_timeout(&address, Duration::from_secs(5)).map_err(|e| e.to_string())?;
     stream
@@ -144,16 +154,12 @@ pub fn serve(
     seed: &Path,
     pcb_public: &Path,
     lfs_public: &Path,
-    allow_console: bool,
-    mock_unavailable: bool,
+    credential: &Path,
 ) -> Result<(), String> {
-    let pair = KeyPair::from_seed(Seed::new(key(seed)?));
     let pcb = VerifyingKey::from_bytes(&key(pcb_public)?).map_err(|e| e.to_string())?;
     let lfs = VerifyingKey::from_bytes(&key(lfs_public)?).map_err(|e| e.to_string())?;
     let listener = TcpListener::bind("127.0.0.1:7990").map_err(|e| e.to_string())?;
-    println!(
-        "BROKER: ws://127.0.0.1:7990 ; guest=127.0.0.1:7991 ; console-development={allow_console}"
-    );
+    println!("BROKER: ws://127.0.0.1:7990 ; guest=127.0.0.1:7991 ; FIDO2 USB HID required");
     let mut last_id = 0u64;
     for connection in listener.incoming() {
         let stream = connection.map_err(|e| e.to_string())?;
@@ -192,33 +198,6 @@ pub fn serve(
                 continue;
             }
         };
-        let snapshot = match list_current(&pair, &lfs) {
-            Ok(value) => value,
-            Err(reason) => {
-                let _ = ws.send(Message::Text(
-                    json!({"type":"SyncFailed","reason":reason})
-                        .to_string()
-                        .into(),
-                ));
-                let _ = ws.close(None);
-                continue;
-            }
-        };
-        // Resume monotonic admission IDs from authenticated durable receipts,
-        // including when the host clock moved backwards across restarts.
-        if let Some(notes) = snapshot["notes"].as_array() {
-            for note in notes {
-                let persisted = note["request"]
-                    .as_str()
-                    .ok_or("Missing durable request")?
-                    .parse::<u64>()
-                    .map_err(|_| "Invalid durable request")?;
-                last_id = last_id.max(persisted);
-            }
-        }
-        if ws.send(Message::Text(snapshot.to_string().into())).is_err() {
-            continue;
-        }
         let result = (|| -> Result<Value, String> {
             let message = ws.read().map_err(|e| e.to_string())?;
             if matches!(message, Message::Close(_)) {
@@ -228,8 +207,37 @@ pub fn serve(
                 return Err("Expected JSON Proposal".into());
             };
             let request: Value = serde_json::from_str(&text).map_err(|e| e.to_string())?;
+            if request["type"] == "ListRequest" {
+                let plan = digest(b"Vela.List.AllImmutableNotes.v1");
+                let presence = hello::verify(credential, plan)?;
+                if !presence.permits(&plan) {
+                    return Err("FIDO2 plan mismatch".into());
+                }
+                let pair = KeyPair::from_seed(Seed::new(key(seed)?));
+                let snapshot = list_current(&pair, &lfs)?;
+                if let Some(notes) = snapshot["notes"].as_array() {
+                    for note in notes {
+                        last_id = last_id.max(
+                            note["request"]
+                                .as_str()
+                                .ok_or("Missing receipt request")?
+                                .parse::<u64>()
+                                .map_err(|_| "Invalid receipt request")?,
+                        );
+                    }
+                }
+                return Ok(snapshot);
+            }
             if request["type"] == "ReadRequest" {
                 let target = unhex16(request["id"].as_str().ok_or("Missing read ID")?)?;
+                let mut plan_bytes = b"Vela.Read.ImmutableVersion.v1".to_vec();
+                plan_bytes.extend_from_slice(&target);
+                let plan = digest(&plan_bytes);
+                let presence = hello::verify(credential, plan)?;
+                if !presence.permits(&plan) {
+                    return Err("FIDO2 plan mismatch".into());
+                }
+                let pair = KeyPair::from_seed(Seed::new(key(seed)?));
                 let (_, entry) = query(&pair, &lfs, true, target)?;
                 return Ok(
                     json!({"type":"ReadResponse","verified":true,"entry":entry.ok_or("Document not found")?}),
@@ -271,28 +279,24 @@ pub fn serve(
                 .map_err(|e| format!("{e:?}"))?;
             let mut session = [0; 32];
             getrandom::getrandom(&mut session).map_err(|e| e.to_string())?;
-            let prompt = format!(
-                "Write immutable note version\nDocument: {}\nParent: {}\nIntent: {intent}\nSHA-256: {}\nExact note:\n{note}",
-                hex(&op.root),
-                hex(&op.parent),
-                hex(&digest(note.as_bytes()))
-            );
-            let consent = if mock_unavailable {
-                hello::verify_mock_unavailable(&prompt)?
-            } else {
-                hello::verify(&prompt, allow_console)?
-            };
-            // Signature happens only after verified OS consent or explicitly
-            // enabled, labelled, interactive DEVELOPMENT approval.
             let mut approval = UserSelection {
                 session_binding: session,
                 revision: id,
                 plan_sha256: digest(&op.manifest()),
                 signature: [0; 64],
             };
+            // FIDO covers session, revision, document, parent and exact bytes.
+            // No Ed25519 signing key is loaded before successful verification.
+            let plan = digest(&approval.signing_bytes());
+            let presence = hello::verify(credential, plan)?;
+            if !presence.permits(&plan) {
+                return Err("FIDO2 plan mismatch".into());
+            }
+            let pair = KeyPair::from_seed(Seed::new(key(seed)?));
+            let consent = "HardwareFido2Verified";
             let signature = pair.sk.sign(approval.signing_bytes(), None);
             approval.signature.copy_from_slice(signature.as_ref());
-            let address: SocketAddr = "127.0.0.1:7991".parse().unwrap();
+            let address = guest_address()?;
             let mut guest = TcpStream::connect_timeout(&address, Duration::from_secs(5))
                 .map_err(|e| e.to_string())?;
             guest
@@ -335,7 +339,7 @@ pub fn serve(
                 .map_err(|e| format!("Receipt: {e:?}"))?;
             println!("BROKER: VERIFIED LFS RECEIPT request={id} consent={consent:?}");
             Ok(
-                json!({"type":"Receipt","id":hex(&op.object()),"document_id":hex(&op.root),"parent_id":hex(&op.parent),"preview":note.chars().take(120).collect::<String>(),"request":id.to_string(),"note_sha256":hex(&digest(note.as_bytes())),"receipt_hex":hex(&receipt.0),"verified":true,"consent":format!("{consent:?}")}),
+                json!({"type":"Receipt","id":hex(&op.object()),"document_id":hex(&op.root),"parent_id":hex(&op.parent),"preview":note.chars().take(120).collect::<String>(),"request":id.to_string(),"note_sha256":hex(&digest(note.as_bytes())),"receipt_hex":hex(&receipt.0),"verified":true,"consent":consent}),
             )
         })();
         if result

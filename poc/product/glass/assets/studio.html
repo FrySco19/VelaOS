@@ -137,8 +137,9 @@
     <p id="documentContext" class="document-context"></p>
     <label for="draft" class="sr-only">Contenuto della nota</label>
     <textarea id="draft" class="draft" maxlength="1024" spellcheck="false"></textarea>
-    <dl class="parameters"><dt>Effetto</dt><dd id="effect">Sostituisce la nota precedente</dd></dl>
+    <dl class="parameters"><dt>Effetto</dt><dd id="effect">Crea una nuova versione senza eliminare lo storico</dd></dl>
     <span class="hash-label">SHA-256</span><code id="planDigest" class="hash"></code>
+    <p id="authStatus" role="status" aria-live="polite"></p>
     <div class="buttons">
       <button id="reject" class="button" type="button" autofocus>RIFIUTA</button>
       <button id="approve" class="button authorize" type="button" aria-label="Autorizza e firma" disabled><span id="approveLabel">AUTORIZZA E FIRMA</span><span id="buttonProgress" class="button-progress" hidden aria-hidden="true"></span></button>
@@ -201,7 +202,7 @@
         summary.addEventListener('click',event=>{event.preventDefault();openNote(item).catch(()=>toast('Documento non disponibile.'));});
         // Preserve the previous receipt-detail affordance without raw IDs/JSON.
         const data = document.createElement('dl'); data.className = 'receipt-detail';
-        for (const [name,value,mono] of [['Esito','Eseguita',false],['Consenso',item.consent === 'Unrecorded' ? 'Non registrato' : item.consent === 'WindowsVerified' ? 'Verificato sul dispositivo' : 'Di sviluppo',false],['SHA-256',item.note_sha256,true],['Firma',item.receipt_hex.slice(-128),true]]) {
+        for (const [name,value,mono] of [['Esito','Eseguita',false],['Consenso',item.consent === 'Unrecorded' ? 'Non registrato' : item.consent === 'HardwareFido2Verified' ? 'Chiave USB FIDO2' : 'Di sviluppo',false],['SHA-256',item.note_sha256,true],['Firma',item.receipt_hex.slice(-128),true]]) {
           const dt = document.createElement('dt'), dd = document.createElement('dd'); dt.textContent = name;
           if (mono) { const code = document.createElement('code'); code.textContent = value; dd.append(code); } else dd.textContent = value;
           data.append(dt,dd);
@@ -247,7 +248,7 @@
       // are presentation only and cannot manufacture a system operation.
       const context = 'Lavoro';
       if (bytes.length > 1024) { toast('La nota è troppo lunga.'); return; }
-      phase = 'Loading'; ++digestRevision; lock(true);
+      phase = 'Loading'; ++digestRevision; lock(true);$('authStatus').textContent='Tocca la chiave USB FIDO2. Attesa autorizzazione hardware e ricevuta LFS…';
       let digest;
       try {
         digest = await sha(bytes); showHash(digest);
@@ -266,20 +267,20 @@
             finish(null,message);
           };
         });
-        if (receipt.type !== 'Receipt' || receipt.verified !== true || receipt.note_sha256 !== digest || !/^\d+$/.test(receipt.request) || !/^[0-9a-f]{340}$/.test(receipt.receipt_hex) || !['WindowsVerified','ConsoleDevelopment','MockUnavailableDevelopment'].includes(receipt.consent)) throw new Error('Ricevuta non coerente con la proposta.');
+        if (receipt.type !== 'Receipt' || receipt.verified !== true || receipt.note_sha256 !== digest || !/^\d+$/.test(receipt.request) || !/^[0-9a-f]{340}$/.test(receipt.receipt_hex) || !['HardwareFido2Verified'].includes(receipt.consent)) throw new Error('Ricevuta non coerente con la proposta.');
         const raw = Uint8Array.from(receipt.receipt_hex.match(/../g),v => parseInt(v,16)), view = new DataView(raw.buffer);
         if (view.getUint16(0,true) !== 1 || view.getBigUint64(10,true).toString() !== receipt.request || view.getBigUint64(18,true) === 0n || hex(raw.slice(26,58)) !== digest) throw new Error('Identità della ricevuta non valida.');
         if (transactionIds.has(receipt.request)) throw new Error('Ricevuta duplicata.');
         transactionIds.add(receipt.request); receipts.unshift({...receipt,context,timestamp:new Date()});
         editing=null;$('intentForm').classList.remove('document'); phase = 'Completed'; await closeModal(); $('draft').value = ''; $('intent').value = ''; renderTimeline(true);
-        if (receipt.consent !== 'WindowsVerified') toast('Salvato con consenso di sviluppo.');
+
         window.dispatchEvent(new CustomEvent('vela:completed',{detail:receipt}));
       } catch (error) {
         phase = 'Preview';
         const unavailable = error.message.includes('disponibile');
         toast(unavailable ? 'Connessione non disponibile.' : 'Salvataggio non confermato.');
       } finally {
-        lock(false);
+        $('authStatus').textContent='';lock(false);
         if (phase === 'Preview' && $('approval').open) await updateDigest();
         else if (phase === 'Preview') { phase = 'Idle'; $('intent').focus(); }
         else $('intent').focus();
@@ -321,7 +322,7 @@
         const result=await new Promise((resolve,reject)=>{
           const ws=new WebSocket('ws://127.0.0.1:7990/');let done=false;
           const finish=(error,value)=>{if(done)return;done=true;clearTimeout(timer);ws.close();error?reject(error):resolve(value);};
-          const timer=setTimeout(()=>finish(new Error('Read timeout')),30000);
+          const timer=setTimeout(()=>finish(new Error('Read timeout')),65000);
           ws.onopen=()=>ws.send(JSON.stringify({type:'ReadRequest',id:item.id}));
           ws.onerror=()=>finish(new Error('Broker unavailable'));
           ws.onclose=()=>finish(new Error('Read disconnected'));
@@ -345,8 +346,8 @@
     }
     function syncTimeline() {
       const channel=new WebSocket('ws://127.0.0.1:7990/');connection('connecting');
-      const timeout=setTimeout(()=>{channel.close();connection('failed');toast('Cronologia non disponibile.');},20000);
-      channel.onopen=()=>connection('connected');
+      const timeout=setTimeout(()=>{channel.close();connection('failed');toast('Cronologia non disponibile.');},65000);
+      channel.onopen=()=>{connection('connected');toast('Tocca la chiave FIDO2 per caricare la cronologia.');channel.send(JSON.stringify({type:'ListRequest'}));};
       channel.onmessage=event=>{try{const message=JSON.parse(event.data);if(message.type!=='ListResponse')throw new Error('Sincronizzazione non disponibile');hydrate(message);clearTimeout(timeout);channel.close();connection('idle');}catch{clearTimeout(timeout);channel.close();connection('failed');toast('Cronologia non disponibile.');}};
       channel.onerror=()=>{clearTimeout(timeout);connection('failed');toast('Cronologia non disponibile.');};
     }
