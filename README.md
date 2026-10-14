@@ -30,6 +30,10 @@ The [implementation proposal](docs/HOST_GUEST_BRIDGE.md) defines that next bridg
 
 ---
 
+## Vela Soft contextual interface
+
+The new Piega interface adapts to notes, study, audio, code and connection contexts. Notes use the signed native persistence flow; the other current tools have explicit host boundaries. See [implemented behavior and verification](docs/CONTEXTUAL_GLASS_STATUS.md). Start the configured Windows development environment with `vela-up.bat`. This is a working hosted MVP, not a complete laptop operating system.
+
 ## Vision
 
 Personal computing should feel like working with a competent colleague who **shows their work** — and who cannot sign for you.

@@ -1,152 +1,27 @@
-<!doctype html>
-<html lang="it">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self' ws://127.0.0.1:7990; img-src 'none'; base-uri 'none'; form-action 'none'">
-  <title>Vela</title>
-  <style>
-    /* Tokens */
-    :root {
-      color-scheme: dark;
-      --canvas: #0a0d12;
-      --surface: #121720;
-      --elevated: #151b26;
-      --hash-surface: #0d1118;
-      --button-surface: #1a212d;
-      --border: rgba(255,255,255,.06);
-      --highlight: inset 0 1px 0 rgba(255,255,255,.04);
-      --text: #e8ebf1;
-      --secondary: #8a93a6;
-      --tertiary: #788398;
-      --accent: #8fa8d9;
-      --focus: rgba(143,168,217,.55);
-      --success: #6fb58f;
-      --error: #d9776f;
-      --sans: -apple-system,"SF Pro Text","Inter",system-ui,sans-serif;
-      --mono: ui-monospace,"SF Mono","JetBrains Mono","Cascadia Mono",monospace;
-      --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px;
-      --s5: 24px; --s6: 32px; --s7: 48px;
-      --bar-radius: 14px; --card-radius: 12px; --button-radius: 10px;
-      --row-radius: 8px; --pill-radius: 999px;
-      --bar-shadow: 0 1px 2px rgba(0,0,0,.30),0 8px 24px rgba(0,0,0,.28),0 24px 64px rgba(0,0,0,.22);
-      --modal-shadow: 0 2px 4px rgba(0,0,0,.35),0 16px 40px rgba(0,0,0,.40),0 48px 120px rgba(0,0,0,.50);
-      --enter: cubic-bezier(.2,.8,.2,1);
-    }
-    * { box-sizing: border-box; }
-    body { margin: 0; height: 100dvh; overflow: hidden; background: var(--canvas); color: var(--text); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
-    button,input,textarea { font: inherit; }
-    button { cursor: pointer; }
-    button:disabled { cursor: default; opacity: .45; }
-    [hidden] { display: none; }
-    :focus-visible { outline: 1px solid var(--accent); outline-offset: var(--s1); }
-    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-
-    /* Canvas and command surface */
-    .shell { width: min(640px,calc(100% - 32px)); margin: 0 auto; padding-top: min(31dvh,280px); }
-    .command { position: relative; height: 56px; border: 1px solid var(--border); border-radius: var(--bar-radius); background: var(--surface); box-shadow: var(--highlight),var(--bar-shadow); overflow: hidden; }
-    .command:focus-within { box-shadow: 0 0 0 1px var(--focus),var(--highlight),var(--bar-shadow); }
-    .command.document { height: 200px; }
-    .document-context { font-size: 12px; color: var(--secondary); overflow-wrap: anywhere; margin-bottom: 16px; }
-    .intent { font-family: inherit; line-height: 1.5; resize: none;  width: 100%; height: 100%; border: 0; outline: 0; background: transparent; color: var(--text); padding: 14px 20px; font-size: 18px; font-weight: 400; letter-spacing: -.01em; caret-color: var(--accent); }
-    .intent::placeholder { color: var(--tertiary); opacity: 1; }
-    .processing { position: absolute; right: 20px; top: 25px; display: flex; gap: var(--s1); pointer-events: none; }
-    .processing[hidden] { display: none; }
-    .processing i { width: 4px; height: 4px; border-radius: var(--pill-radius); background: var(--secondary); animation: pulse 800ms ease-out infinite alternate; }
-    .processing i:nth-child(2) { animation-delay: 120ms; }
-    .processing i:nth-child(3) { animation-delay: 240ms; }
-    .filters { display: flex; justify-content: center; gap: var(--s1); margin-top: var(--s4); }
-    .pill { height: 28px; padding: 0 14px; border: 1px solid transparent; border-radius: var(--pill-radius); background: transparent; color: var(--secondary); font-size: 12px; font-weight: 500; }
-    .pill:hover { background: rgba(255,255,255,.04); }
-    .pill[aria-selected="true"] { background: var(--surface); border-color: rgba(143,168,217,.18); color: var(--text); box-shadow: var(--highlight); }
-    .feed { list-style: none; padding: 0 0 var(--s7); margin: var(--s5) 0 0; max-height: min(528px,calc(69dvh - 148px)); overflow-y: auto; scrollbar-width: none; mask-image: linear-gradient(to bottom,#000 0%,#000 65%,transparent 100%); -webkit-mask-image: linear-gradient(to bottom,#000 0%,#000 65%,transparent 100%); }
-    .feed::-webkit-scrollbar { display: none; }
-    .entry { border-radius: var(--row-radius); }
-    .entry.new { animation: row-enter 200ms var(--enter); }
-    .entry:hover { background: rgba(255,255,255,.03); }
-    .entry details > summary { list-style: none; cursor: pointer; }
-    .entry details > summary::-webkit-details-marker { display: none; }
-    .entry-line { display: flex; align-items: center; gap: var(--s3); min-height: 44px; padding: 0 var(--s3); }
-    .dot { width: 6px; height: 6px; flex: 0 0 6px; border-radius: var(--pill-radius); background: var(--tertiary); }
-    .dot.success { background: var(--success); }
-    .entry-label { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
-    .entry-time { color: var(--tertiary); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-    .receipt-detail { display: grid; grid-template-columns: 72px 1fr; gap: var(--s2); margin: 0; padding: var(--s3) var(--s5) var(--s4); font-size: 12px; line-height: 1.7; }
-    .receipt-detail dt { color: var(--secondary); }
-    .receipt-detail dd { margin: 0; overflow-wrap: anywhere; }
-    .receipt-detail code { font-family: var(--mono); font-size: 11px; }
-    .feed.exiting { animation: fade-out 120ms ease-out forwards; }
-    .feed.entering { animation: filter-enter 140ms var(--enter); }
-    .connection { position: fixed; top: 20px; right: 20px; width: 6px; height: 6px; border-radius: var(--pill-radius); background: var(--tertiary); }
-    .connection[data-state="connected"] { background: var(--success); }
-    .connection[data-state="failed"] { background: var(--error); }
-
-    /* Approval surface */
-    .approval { width: min(480px,calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow-y: auto; padding: 28px; border: 1px solid var(--border); border-radius: var(--card-radius); background: var(--elevated); color: var(--text); box-shadow: var(--highlight),var(--modal-shadow); animation: modal-enter 200ms var(--enter); }
-    .approval::backdrop { background: rgba(4,6,9,.66); backdrop-filter: blur(6px); animation: fade-in 180ms var(--enter); }
-    .approval.leaving { animation: fade-out 160ms ease-out forwards; }
-    .approval.leaving::backdrop { animation: fade-out 160ms ease-out forwards; }
-    .proposal-label { margin: 0 0 20px; color: var(--secondary); font-size: 11px; font-weight: 500; letter-spacing: .08em; }
-    .approval h1 { margin: 0 0 20px; font-size: 17px; font-weight: 600; line-height: 1.45; }
-    .draft { display: block; width: 100%; min-height: 88px; max-height: 160px; resize: vertical; border: 1px solid var(--border); border-radius: var(--row-radius); padding: var(--s3); background: var(--hash-surface); color: var(--text); caret-color: var(--accent); font-size: 13px; line-height: 1.7; margin-bottom: 20px; }
-    .parameters { display: grid; grid-template-columns: 64px 1fr; gap: var(--s2); font-size: 12px; color: var(--secondary); margin: 0 0 20px; }
-    .parameters dd { margin: 0; color: var(--text); }
-    .hash-label { display: block; color: var(--secondary); font-size: 11px; letter-spacing: .08em; margin-bottom: var(--s2); }
-    .hash { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: var(--s1); padding: 14px; border: 1px solid var(--border); border-radius: var(--row-radius); background: var(--hash-surface); font-family: var(--mono); font-size: 13px; line-height: 1.7; letter-spacing: .02em; user-select: all; margin-bottom: 20px; }
-    .hash span { white-space: nowrap; }
-    .buttons { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); }
-    .button { height: 48px; padding: 0 var(--s2); border: 1px solid rgba(255,255,255,.08); border-radius: var(--button-radius); background: var(--button-surface); color: var(--secondary); font-size: 12px; font-weight: 600; letter-spacing: .04em; box-shadow: inset 0 1px 0 rgba(255,255,255,.12),0 1px 2px rgba(0,0,0,.4); }
-    .button:hover { color: var(--text); }
-    .button:active { transform: translateY(1px); box-shadow: inset 0 1px 0 rgba(255,255,255,.12); }
-    .authorize { background: var(--text); color: var(--canvas); }
-    .authorize:hover { color: var(--canvas); }
-    .button-progress { width: 14px; height: 14px; display: inline-block; border: 1px solid var(--canvas); border-radius: var(--pill-radius); border-right-color: transparent; animation: spin 800ms linear infinite; }
-    .button-progress[hidden] { display: none; }
-    .toast { position: fixed; left: 50%; bottom: var(--s6); transform: translateX(-50%); max-width: calc(100% - 32px); min-height: 40px; display: flex; align-items: center; padding: var(--s2) var(--s4); border: 1px solid var(--border); border-radius: var(--button-radius); background: var(--surface); box-shadow: var(--bar-shadow); color: var(--text); font-size: 13px; animation: fade-in 160ms var(--enter); text-align: center; }
-    .toast[hidden] { display: none; }
-    .toast.leaving { animation: fade-out 160ms ease-out forwards; }
-    @keyframes pulse { from { opacity: .3; } to { opacity: 1; } }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes modal-enter { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: scale(1); } }
-    @keyframes row-enter { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes filter-enter { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes fade-out { to { opacity: 0; } }
-    @media(max-width:519px) { .approval { padding: var(--s4); } .hash { letter-spacing: 0; font-size: 12px; } .button { font-size: 11px; letter-spacing: 0; } }
-    @media(max-height:600px) { .shell { padding-top: 20dvh; } .feed { max-height: calc(80dvh - 148px); } }
-    @media(prefers-reduced-motion:reduce) { .entry.new,.approval,.feed.entering { animation: fade-in 60ms ease-out; } .approval::backdrop,.toast { animation-duration: 60ms; } .feed.exiting,.approval.leaving,.approval.leaving::backdrop,.toast.leaving { animation-duration: 60ms; } .button:active { transform: none; } .processing i,.button-progress { animation: none; } }
-  </style>
-</head>
-<body>
-  <span id="connection" class="connection" data-state="idle" title="Disconnesso" role="img" aria-label="Disconnesso"></span>
-  <main class="shell" id="shell">
-    <form id="intentForm" class="command">
-      <textarea rows="2" id="intent" class="intent" aria-label="Qual è il tuo intento?" placeholder="Qual è il tuo intento?" autocomplete="off" maxlength="1024" autofocus></textarea>
-      <span id="processing" class="processing" hidden aria-hidden="true"><i></i><i></i><i></i></span>
-    </form>
-    <nav class="filters" role="tablist" aria-label="Contesti">
-      <button id="tab-all" class="pill" role="tab" aria-selected="true" aria-controls="timelinePanel" data-context="Tutto">Tutto</button>
-      <button id="tab-work" class="pill" role="tab" aria-selected="false" aria-controls="timelinePanel" data-context="Lavoro" tabindex="-1">Lavoro</button>
-      <button id="tab-system" class="pill" role="tab" aria-selected="false" aria-controls="timelinePanel" data-context="Sistema" tabindex="-1">Sistema</button>
-    </nav>
-    <section id="timelinePanel" role="tabpanel" aria-labelledby="tab-all"><ul id="timeline" class="feed" aria-label="Cronologia" aria-live="polite"></ul></section>
-  </main>
-  <dialog id="approval" class="approval" aria-modal="true" aria-labelledby="approvalTitle" aria-describedby="effect">
-    <p class="proposal-label">PROPOSTA</p>
-    <h1 id="approvalTitle">Salva la nota</h1>
-    <p id="documentContext" class="document-context"></p>
-    <label for="draft" class="sr-only">Contenuto della nota</label>
-    <textarea id="draft" class="draft" maxlength="1024" spellcheck="false"></textarea>
-    <dl class="parameters"><dt>Effetto</dt><dd id="effect">Crea una nuova versione senza eliminare lo storico</dd></dl>
-    <span class="hash-label">SHA-256</span><code id="planDigest" class="hash"></code>
-    <p id="authStatus" role="status" aria-live="polite"></p>
-    <div class="buttons">
-      <button id="reject" class="button" type="button" autofocus>RIFIUTA</button>
-      <button id="approve" class="button authorize" type="button" aria-label="Autorizza e firma" disabled><span id="approveLabel">AUTORIZZA E FIRMA</span><span id="buttonProgress" class="button-progress" hidden aria-hidden="true"></span></button>
-    </div>
-  </dialog>
-  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
-  <script>
+<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self' ws://127.0.0.1:7990; media-src blob:; img-src 'none'; base-uri 'none'; form-action 'none'"><title>Vela — Una cosa alla volta</title><style>
+:root{color-scheme:light;--canvas:#f2f0e9;--surface:#faf9f4;--elevated:#faf9f4;--hash-surface:#eeece3;--button-surface:#eeece3;--text:#20231c;--secondary:#575c4e;--tertiary:#626759;--accent:#55633d;--success:#55633d;--error:#9c3829;--border:#d5d5c9;--sans:Inter,Segoe UI,system-ui,sans-serif;--mono:Cascadia Mono,ui-monospace,monospace;--enter:ease-out}
+body[data-theme=graphite]{color-scheme:dark;--canvas:#202322;--surface:#292e2b;--elevated:#292e2b;--hash-surface:#232725;--button-surface:#323a33;--text:#f2f0e9;--secondary:#bec5b8;--tertiary:#bac3b4;--border:#495046;--accent:#b5c39b;--success:#b5c39b;--error:#f09d88}
+body[data-theme=dawn]{--canvas:#efe7dc;--surface:#faf1e6;--hash-surface:#eadbca;--button-surface:#eadbca;--text:#35291f;--accent:#8c442f;--success:#7a4935;--secondary:#715d4d;--tertiary:#715d4d;--border:#d6c4b1}
+*{box-sizing:border-box}body{margin:0;min-height:100dvh;background:var(--canvas);color:var(--text);font-family:var(--sans)}button,input,textarea,select{font:inherit}button,a{touch-action:manipulation}button{cursor:pointer}button:disabled{cursor:default;opacity:.5}[hidden]{display:none!important}:focus-visible{outline:2px solid var(--accent);outline-offset:4px}button{border:1px solid var(--border);background:var(--surface);color:var(--text);padding:12px 18px;border-radius:2px}a{color:var(--accent)}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.header{height:88px;display:flex;align-items:center;justify-content:space-between;padding:0 5vw;border-bottom:1px solid var(--border)}.brand{display:flex;align-items:center;gap:14px;font-family:Georgia,serif;font-size:32px}.fold{width:28px;height:32px;background:var(--accent);clip-path:polygon(0 0,50% 30%,100% 0,72% 100%,48% 58%,24% 100%)}.status-line{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--secondary)}.connection{width:7px;height:7px;background:var(--tertiary);border-radius:50%}.connection[data-state=connected]{background:var(--success)}.connection[data-state=failed]{background:var(--error)}
+.shell{max-width:1480px;margin:auto;padding:72px 5vw 144px}.eyebrow,.proposal-label{letter-spacing:.16em;text-transform:uppercase;font-size:11px;color:var(--secondary)}.hero{font-family:Georgia,serif;font-weight:400;font-size:clamp(34px,4.5vw,64px);letter-spacing:-.04em;line-height:1.05;max-width:920px;margin:18px 0 22px}.subhead{color:var(--secondary);max-width:650px;line-height:1.6}.command{position:relative;max-width:1000px;border-bottom:1px solid var(--accent);margin:36px 0 40px;display:flex;align-items:stretch;background:var(--surface)}.command:after{content:'';width:24px;background:var(--accent);clip-path:polygon(100% 0,100% 100%,0 100%);pointer-events:none}.intent{width:100%;height:80px;padding:20px 24px;background:transparent;color:var(--text);border:0;resize:none;font-size:23px;line-height:1.6}.intent::placeholder{color:var(--tertiary)}.command.document .intent{height:260px;font-family:Georgia,serif;font-size:22px;line-height:1.8}.processing{position:absolute;right:32px;bottom:10px;font-size:11px;color:var(--secondary)}.processing:after{content:'In attesa…'}.processing i{display:none}
+.filters{display:flex;gap:12px;border-bottom:1px solid var(--border);margin-top:48px}.pill{background:transparent;border:0;border-bottom:2px solid transparent;padding:12px 20px;font-size:13px}.pill[aria-selected=true]{border-color:var(--accent);font-weight:600}.feed{list-style:none;padding:0;margin:0;max-height:480px;overflow:auto}.entry{border-bottom:1px solid var(--border)}.entry:hover{background:var(--hash-surface)}.entry details>summary{list-style:none;cursor:pointer}.entry details>summary::-webkit-details-marker{display:none}.entry-line{display:flex;align-items:center;gap:18px;min-height:74px;padding:18px 20px}.dot{width:5px;height:5px;background:var(--success);flex:0 0 5px}.entry-label{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:15px}.entry-time{font-family:var(--mono);font-size:11px;color:var(--secondary)}.receipt-detail{display:grid;grid-template-columns:80px 1fr;gap:10px;font-size:12px;padding:12px 40px}.receipt-detail dd{margin:0;overflow-wrap:anywhere}.receipt-detail code{font-family:var(--mono)}.empty{padding:28px 20px;color:var(--secondary);font-size:13px;line-height:1.6}.session{border-top:1px solid var(--border);margin:30px 0;padding:28px 0}.session h2{font-family:Georgia,serif;font-size:32px;font-weight:400;margin:0 0 16px}.session p{line-height:1.65}.session-controls{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}.reader{white-space:pre-wrap;font-family:Georgia,serif;font-size:21px;line-height:1.85;max-height:440px;overflow:auto;max-width:820px;margin:20px 0}.code-reader{font-family:var(--mono);font-size:14px;line-height:1.8;background:var(--hash-surface);padding:24px;white-space:pre-wrap;overflow-wrap:anywhere}.cloze{max-width:800px;border-left:3px solid var(--accent);padding:18px 24px;background:var(--hash-surface);font-family:Georgia,serif;font-size:22px;line-height:1.6}.meta{font-size:12px;color:var(--secondary);overflow-wrap:anywhere}.audio-surface{display:grid;grid-template-columns:180px minmax(0,620px);gap:40px;align-items:center;margin:30px 0}.record-mark{background:var(--accent);color:var(--canvas);height:180px;display:grid;place-items:center;font-family:Georgia,serif;font-size:56px;clip-path:polygon(0 0,100% 0,100% 85%,85% 100%,0 100%)}#audioSeek{width:100%;accent-color:var(--accent)}#audioVolume{accent-color:var(--accent);margin-left:16px;max-width:180px}.audio{width:min(800px,100%);margin:20px 0}.local-input{max-width:100%;margin:20px 0}.download{display:inline-block;padding:12px 18px;border:1px solid var(--border);text-decoration:none}
+.toolbar{position:fixed;bottom:0;left:0;right:0;min-height:72px;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px 5vw;background:var(--surface);border-top:1px solid var(--border);z-index:3}.toolbar nav{display:flex;gap:4px;flex-wrap:wrap}.toolbar button{border:0;background:transparent;font-size:13px;padding:12px 14px}.toolbar button[aria-current=true]{border-bottom:2px solid var(--accent)}.toolbar .brand{font-size:19px}.toolbar .fold{width:16px;height:20px}.themes{display:flex;gap:4px}.themes button{padding:10px;font-size:11px}
+.approval{width:min(720px,calc(100% - 32px));max-height:calc(100dvh - 32px);overflow:auto;padding:44px;border:1px solid var(--border);background:var(--elevated);color:var(--text);border-radius:2px}.approval::backdrop{background:rgba(15,18,12,.62)}.approval h1{font-family:Georgia,serif;font-weight:400;font-size:36px;margin:12px 0 24px}.document-context{font-size:12px;color:var(--secondary);overflow-wrap:anywhere}.draft{width:100%;min-height:140px;max-height:260px;resize:vertical;border:1px solid var(--border);padding:20px;background:var(--hash-surface);color:var(--text);font-family:Georgia,serif;font-size:18px;line-height:1.8;margin:20px 0}.parameters{display:grid;grid-template-columns:80px 1fr;gap:12px;font-size:12px}.parameters dd{margin:0}.hash-label{display:block;font-size:10px;letter-spacing:.15em;margin:24px 0 8px}.hash{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;border:1px solid var(--border);background:var(--hash-surface);font-family:var(--mono);font-size:12px;padding:18px;user-select:all}.hash span{white-space:nowrap}.buttons{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:30px}.button{min-height:50px;font-size:12px;letter-spacing:.05em}.authorize{background:var(--accent);border-color:var(--accent);color:var(--canvas)}#authStatus{font-size:12px;line-height:1.6}.button-progress:after{content:'ATTESA CONSENSO…';font-size:10px}.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);padding:16px 24px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;z-index:6;max-width:calc(100% - 32px)}
+body[data-view=study]{--accent:#94442d;--success:#94442d}body[data-view=media]{--accent:#914534}body[data-view=code]{--accent:#2858a1}body[data-theme=graphite][data-view=study],body[data-theme=graphite][data-view=media]{--accent:#e0a18a}body[data-theme=graphite][data-view=code]{--accent:#a3bae3}
+body[data-view=study] #studyPanel{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px 40px;align-items:start}body[data-view=study] #studyPanel>.eyebrow,body[data-view=study] #studyPanel>h2,body[data-view=study] #studyHint{grid-column:1 / -1}body[data-view=study] #studyText{grid-column:1;grid-row:4 / 8;margin:0;padding-right:32px;border-right:1px solid var(--border)}body[data-view=study] #studyCard,body[data-view=study] #studyPanel>.session-controls,body[data-view=study] #studyPanel>.meta{grid-column:2}body[data-view=study] #studyPanel>.session-controls{margin:0}body[data-view=study] #studyPanel>.meta{margin:0}
+@media(max-width:700px){.audio-surface{grid-template-columns:100px minmax(0,1fr);gap:20px}.record-mark{height:100px;font-size:32px}body[data-view=study] #studyPanel{display:block}body[data-view=study] #studyText{padding-right:0;border:0}.header{padding:0 24px;height:72px}.status-line{max-width:180px;font-size:10px}.shell{padding:36px 24px 174px}.hero{font-size:40px}.intent{font-size:18px}.toolbar{padding:12px 16px;display:block}.toolbar>.brand{display:none}.toolbar nav{justify-content:space-between}.themes{justify-content:end}.approval{padding:24px}.approval h1{font-size:28px}.hash{font-size:10px;gap:2px;padding:10px}.entry-line{padding:18px 0}.reader{font-size:18px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+</style></head><body data-theme="paper" data-view="home"><header class="header"><div class="brand"><span class="fold" aria-hidden="true"></span>Vela</div><div class="status-line"><span id="connection" class="connection" data-state="idle" role="img" aria-label="Disconnesso"></span><span id="connectionText">Cronologia da autorizzare</span><span id="dateLabel"></span></div></header>
+<main class="shell" id="shell"><p class="eyebrow" id="contextLabel">Il tuo spazio, una cosa alla volta</p><h1 class="hero" id="viewTitle">Da dove riprendiamo?</h1><p class="subhead" id="viewDescription">Un intento, uno strumento. I tuoi appunti restano, le interfacce cambiano.</p>
+<form id="intentForm" class="command"><label class="sr-only" for="intent">Qual è il tuo intento?</label><textarea rows="2" id="intent" class="intent" placeholder="Scrivi una nota, oppure chiedi di studiare…" maxlength="1024" autofocus></textarea><span id="processing" class="processing" hidden aria-hidden="true"></span></form>
+<section id="readerPanel" class="session" hidden><p class="eyebrow">Documento verificato</p><h2 id="readerTitle"></h2><p id="readerMeta" class="meta"></p><div id="readerText" class="reader"></div><div class="session-controls"><button id="studyDocument" type="button">Studia questo testo</button><button id="exportDocument" type="button">Esporta testo</button><button id="newDocument" type="button">Nuova nota</button></div></section>
+<section id="studyPanel" class="session" hidden><p class="eyebrow">Fonte esatta · ripasso locale</p><h2>Leggi. Richiama. Verifica.</h2><p id="studyHint">Apri un appunto dalla timeline per ripassare il suo contenuto completo.</p><div id="studyText" class="reader"></div><div id="studyCard" class="cloze" hidden></div><div class="session-controls"><button id="nextStudy" type="button" disabled>Prossimo passaggio</button><button id="revealStudy" type="button" disabled>Mostra il testo originale</button><button id="exitStudy" type="button">Chiudi il ripasso</button></div><p class="meta">Ripasso estrattivo sul testo scelto. Non sono risposte generate da un modello.</p></section>
+<section id="mediaPanel" class="session" hidden><p class="eyebrow">Sessione audio sul PC</p><h2 id="trackTitle">Scegli cosa ascoltare.</h2><label for="audioFile">Apri un file audio locale</label><input id="audioFile" class="local-input" type="file" accept="audio/*"><audio id="player" preload="metadata"></audio><div class="audio-surface"><div class="record-mark" aria-hidden="true">V / A</div><div><p class="eyebrow">Ritmo · audio locale</p><label for="audioSeek" class="sr-only">Posizione di riproduzione</label><input id="audioSeek" type="range" min="0" max="0" step="0.1" value="0" disabled><p id="audioClock" class="meta">00:00 / 00:00</p><label for="audioVolume" class="meta">Volume</label><input id="audioVolume" type="range" min="0" max="1" step="0.05" value="1"></div></div><div class="session-controls"><button id="startAudio" type="button" disabled>AVVIA RIPRODUZIONE</button><button id="closeAudio" type="button">Chiudi la sessione audio</button></div><p class="meta">Il file resta sul tuo PC. Riproduzione del browser, solo per questa sessione.</p></section>
+<section id="networkPanel" class="session" hidden><p class="eyebrow">Connessione del PC Windows</p><h2 id="networkTitle"></h2><p id="networkState"></p><a class="download" href="ms-settings:network-wifi">Apri Wi-Fi di Windows</a><p class="meta">Scelta delle reti e password restano nell'interfaccia protetta di Windows. Vela non vede le credenziali.</p></section>
+<section id="codePanel" class="session" hidden><p class="eyebrow">Officina · testo e frammenti</p><h2>Scrivi con precisione.</h2><label for="codeFile">Apri un file di testo o un frammento di codice</label><input id="codeFile" class="local-input" type="file" accept=".rs,.js,.ts,.txt,.md,.json"><pre id="codeText" class="code-reader">Apri un file per leggerlo. Puoi salvarne un frammento come appunto verificato.</pre><div class="session-controls"><button id="saveSnippet" type="button" disabled>Prepara un frammento da salvare</button><button id="closeCode" type="button">Chiudi Officina</button></div><p class="meta">L'esecuzione di codice arbitrario non è collegata. Nessun risultato di test viene simulato.</p></section>
+<nav class="filters" role="tablist" aria-label="Contesti"><button id="tab-all" class="pill" role="tab" aria-selected="true" aria-controls="timelinePanel" data-context="Tutto">Tutto</button><button id="tab-work" class="pill" role="tab" aria-selected="false" aria-controls="timelinePanel" data-context="Lavoro" tabindex="-1">Lavoro</button><button id="tab-system" class="pill" role="tab" aria-selected="false" aria-controls="timelinePanel" data-context="Sistema" tabindex="-1">Sistema</button></nav><section id="timelinePanel" role="tabpanel" aria-labelledby="tab-all"><p id="emptyState" class="empty">Autorizza il caricamento per ritrovare i tuoi appunti. Chiave USB, oppure Invio nel terminale DEV.</p><ul id="timeline" class="feed" aria-label="Cronologia" aria-live="polite"></ul></section></main>
+<footer class="toolbar"><div class="brand"><span class="fold" aria-hidden="true"></span>Vela</div><nav aria-label="Strumenti contestuali"><button data-view="home" aria-current="true">⌂ Spazio</button><button data-view="notes">▤ Tracce</button><button data-view="study">◇ Studio</button><button data-view="media">♫ Audio</button><button data-view="code">〈〉 Officina</button><button data-view="network">↔ Rete</button></nav><div class="themes" aria-label="Aspetto"><button data-theme="paper" aria-pressed="true">Carta</button><button data-theme="graphite" aria-pressed="false">Grafite</button><button data-theme="dawn" aria-pressed="false">Alba</button></div></footer>
+<dialog id="approval" class="approval" aria-modal="true" aria-labelledby="approvalTitle" aria-describedby="effect"><p class="proposal-label">Consenso vincolato al contenuto</p><h1 id="approvalTitle">Autorizza il salvataggio.</h1><p id="documentContext" class="document-context"></p><label for="draft" class="sr-only">Contenuto della nota</label><textarea id="draft" class="draft" maxlength="1024" spellcheck="false"></textarea><dl class="parameters"><dt>Effetto</dt><dd id="effect">Crea una nuova versione senza eliminare lo storico</dd></dl><span class="hash-label">SHA-256 del testo completo</span><code id="planDigest" class="hash"></code><p id="authStatus" role="status" aria-live="polite"></p><div class="buttons"><button id="reject" class="button" type="button" autofocus>RIFIUTA</button><button id="approve" class="button authorize" type="button" aria-label="Autorizza e firma" disabled><span id="approveLabel">AUTORIZZA E FIRMA</span><span id="buttonProgress" class="button-progress" hidden aria-hidden="true"></span></button></div></dialog><div id="toast" class="toast" role="status" aria-live="polite" hidden></div><script>
     'use strict';
     /* Existing broker contract and cryptographic checks are unchanged. */
     const $ = id => document.getElementById(id), encoder = new TextEncoder();
@@ -158,6 +33,79 @@
     const sha = async bytes => hex(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)));
     const duration = normal => matchMedia('(prefers-reduced-motion: reduce)').matches ? 60 : normal;
 
+
+    let activeDocument=null, audioUrl=null, loadedCode='', studyLines=[], studyIndex=0, selectedView='home';
+    const views={home:['Il tuo spazio, una cosa alla volta','Da dove riprendiamo?','Un intento, uno strumento. I tuoi appunti restano, le interfacce cambiano.'],notes:['Tracce · documenti e versioni','Il tuo lavoro lascia traccia.','Apri una versione, modifica il testo, autorizza. L’originale resta disponibile.'],study:['Margine · studio sul testo','Più spazio per capire.','Leggi un appunto verificato e ripassane il testo esatto.'],media:['Ritmo · sessione locale','Solo ciò che ascolti.','Un file scelto da te, i controlli essenziali. Chiudi la sessione quando hai finito.'],network:['Soglia · rete del PC','Una connessione, con chiarezza.','Stato del browser e accesso alle impostazioni protette di Windows.'],code:['Officina · frammenti di testo','Scrivi. Rileggi. Conserva.','Apri codice locale e conserva frammenti con lo stesso flusso di firma degli appunti.']};
+    function setView(view){
+      if(phase==='Loading'||phase==='Reading'||$('approval').open){toast('Concludi prima l’operazione corrente.');return;}
+      if(!views[view])return;
+      if(editing && $('intent').value!==editing.note && !confirm('La modifica non è ancora salvata. Vuoi lasciare questo testo?'))return;
+      selectedView=view;document.body.dataset.view=view;
+      if(view!=='notes'){editing=null;$('intent').value='';$('intentForm').classList.remove('document');}
+      else if(activeDocument){editing=activeDocument;$('intent').value=activeDocument.note;$('intentForm').classList.add('document');}
+      $('intentForm').hidden=!['home','notes'].includes(view);$('timelinePanel').hidden=!['home','notes','study'].includes(view);document.querySelector('.filters').hidden=!['home','notes','study'].includes(view);
+      window.scrollTo({top:0,behavior:'instant'});
+      const [label,title,description]=views[view];$('contextLabel').textContent=label;$('viewTitle').textContent=title;$('viewDescription').textContent=description;
+      for(const key of ['study','media','network','code'])$(key+'Panel').hidden=key!==view;
+      $('readerPanel').hidden=!(activeDocument && view==='notes');
+      document.querySelectorAll('.toolbar [data-view]').forEach(button=>button.setAttribute('aria-current',String(button.dataset.view===view)));
+      if(view==='study')prepareStudy();if(view==='network')networkStatus();
+      $('intent').placeholder=view==='code'?'Scrivi un frammento da conservare…':view==='study'?'Scrivi gli appunti del ripasso…':'Cosa vuoi fare?';
+    }
+    function routeIntent(text){
+      const q=text.trim().toLocaleLowerCase('it-IT'),words=q.match(/[\p{L}\p{N}-]+/gu)||[];
+      if(!words.length || /^(appunta|nota|scrivi|salva|idee|documento)\b/.test(q))return null;
+      const commands=/^(vorrei|voglio|puoi|devo|aiutami|fammi|mi|apri|mostra|cerca|riproduci|ascolta|ascoltare|studia|studiare|ripassa|connetti|coding|programma|codice|officina|cronologia|timeline|tracce|wifi|wi-fi|connessione|rete|audio|musica|studio)\b/;
+      if(!commands.test(q) && words.length>3)return null;
+      const lexicon={media:['riproduci','ascolta','ascoltare','musica','audio','canzone'],study:['studia','studiare','studio','ripassa','ripassare','capitolo'],network:['wifi','wi-fi','connetti','connessione','rete'],code:['coding','programma','programmare','codice','officina','rust'],notes:['cronologia','timeline','tracce','appunti','documenti']};
+      const scores=Object.entries(lexicon).map(([view,tokens])=>[view,words.filter(word=>tokens.includes(word)).length]).sort((a,b)=>b[1]-a[1]);
+      return scores[0][1] && scores[0][1]!==scores[1][1]?scores[0][0]:null;
+    }
+    function renderDocument(doc){
+      activeDocument=doc;$('readerTitle').textContent=doc.note.split('\n')[0]||'Appunto';$('readerText').textContent=doc.note;
+      $('readerMeta').textContent='Versione '+doc.id+' · Ricevuta verificata · '+doc.receipt_hex.slice(0,24)+'…';
+      if(selectedView==='study')prepareStudy();else setView('notes');
+    }
+    function resetDocument(){
+      if(phase==='Loading'||phase==='Reading')return;editing=null;activeDocument=null;$('intent').value='';$('intentForm').classList.remove('document');$('readerPanel').hidden=true;$('studyText').textContent='';$('studyCard').hidden=true;studyLines=[];setView('notes');$('intent').focus();
+    }
+    function prepareStudy(){
+      if(!activeDocument){$('studyHint').textContent='Apri un appunto dalla timeline per ripassare il suo contenuto completo.';$('studyText').textContent='';$('studyCard').hidden=true;$('nextStudy').disabled=true;$('revealStudy').disabled=true;return;}
+      $('studyHint').textContent='Fonte: '+activeDocument.note.split('\n')[0];$('studyText').textContent=activeDocument.note;
+      studyLines=activeDocument.note.split(/(?<=[.!?])\s+|\n/).map(line=>line.trim()).filter(Boolean);studyIndex=0;showStudy();
+    }
+    function showStudy(){
+      $('studyCard').hidden=!studyLines.length;$('nextStudy').disabled=!studyLines.length;$('revealStudy').disabled=!studyLines.length;
+      if(!studyLines.length)return;const words=studyLines[studyIndex].split(/\s+/),cut=Math.max(1,Math.floor(words.length*.55));
+      $('studyCard').textContent='Passaggio '+(studyIndex+1)+' / '+studyLines.length+' · '+words.slice(0,cut).join(' ')+' […]';
+    }
+    function networkStatus(){const available=navigator.onLine;$('networkTitle').textContent=available?'Il PC segnala una connessione.':'Connessione assente.';$('networkState').textContent=available?'È disponibile un’interfaccia di rete. Questo segnale non verifica l’accesso a Internet.':'Apri Wi-Fi di Windows per scegliere una rete. Nessuna password passa attraverso Vela.';}
+    function closeAudio(){const player=$('player');player.pause();player.removeAttribute('src');player.load();if(audioUrl)URL.revokeObjectURL(audioUrl);audioUrl=null;$('audioFile').value='';$('audioSeek').value=0;$('audioSeek').disabled=true;$('audioClock').textContent='00:00 / 00:00';$('startAudio').disabled=true;$('trackTitle').textContent='Scegli cosa ascoltare.';setView('home');}
+    for(const button of document.querySelectorAll('.toolbar [data-view]'))button.addEventListener('click',()=>setView(button.dataset.view));
+    for(const button of document.querySelectorAll('.themes [data-theme]'))button.addEventListener('click',()=>{document.body.dataset.theme=button.dataset.theme;document.querySelectorAll('.themes button').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));});
+    $('dateLabel').textContent=new Intl.DateTimeFormat('it-IT',{day:'numeric',month:'short'}).format(new Date());
+    $('studyDocument').addEventListener('click',()=>setView('study'));
+    $('newDocument').addEventListener('click',resetDocument);
+    $('nextStudy').addEventListener('click',()=>{studyIndex=(studyIndex+1)%studyLines.length;showStudy();});
+    $('revealStudy').addEventListener('click',()=>{if(studyLines.length)$('studyCard').textContent=studyLines[studyIndex];});
+    $('exitStudy').addEventListener('click',()=>setView('notes'));
+    $('exportDocument').addEventListener('click',()=>{if(!activeDocument)return;const url=URL.createObjectURL(new Blob([activeDocument.note],{type:'text/plain;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='vela-appunto-'+activeDocument.request+'.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+    $('audioFile').addEventListener('change',()=>{const file=$('audioFile').files[0];if(!file)return;if(audioUrl)URL.revokeObjectURL(audioUrl);$('player').pause();audioUrl=URL.createObjectURL(file);$('player').src=audioUrl;$('trackTitle').textContent=file.name;$('startAudio').disabled=false;});
+    $('startAudio').addEventListener('click',()=>{const p=$('player');if(!p.paused){p.pause();return;}p.play().catch(()=>toast('Questo formato audio non è riproducibile dal browser.'));});
+    const audioTime=n=>Number.isFinite(n)?String(Math.floor(n/60)).padStart(2,'0')+':'+String(Math.floor(n%60)).padStart(2,'0'):'00:00';
+    $('player').addEventListener('loadedmetadata',()=>{$('audioSeek').max=Number.isFinite($('player').duration)?$('player').duration:0;$('audioSeek').disabled=!Number.isFinite($('player').duration);$('audioClock').textContent=`${audioTime($('player').currentTime)} / ${audioTime($('player').duration)}`;});
+    $('player').addEventListener('timeupdate',()=>{const p=$('player');$('audioSeek').value=p.currentTime;$('audioClock').textContent=audioTime(p.currentTime)+' / '+audioTime(p.duration);});
+    $('player').addEventListener('play',()=>{$('startAudio').textContent='PAUSA';document.querySelector('.toolbar [data-view=media]').textContent='♫ Audio · attivo';});
+    $('player').addEventListener('pause',()=>{$('startAudio').textContent='RIPRODUCI';document.querySelector('.toolbar [data-view=media]').textContent='♫ Audio';});
+    $('audioSeek').addEventListener('input',()=>{if(Number.isFinite($('player').duration))$('player').currentTime=Number($('audioSeek').value);});
+    $('audioVolume').addEventListener('input',()=>{$('player').volume=Number($('audioVolume').value);});
+    $('player').addEventListener('error',()=>toast('Formato o file audio non disponibile.'));
+    $('closeAudio').addEventListener('click',closeAudio);
+    $('codeFile').addEventListener('change',async()=>{const file=$('codeFile').files[0];if(!file)return;if(file.size>256*1024){toast('Anteprima limitata a 256 KiB.');return;}loadedCode=await file.text();$('codeText').textContent=loadedCode;$('saveSnippet').disabled=false;});
+    $('saveSnippet').addEventListener('click',()=>{if(encoder.encode(loadedCode).length>1024){toast('Apri Tracce e incolla nella barra un frammento entro 1 KiB.');return;}editing=null;$('intent').value=loadedCode;propose({preventDefault(){}});});
+    $('closeCode').addEventListener('click',()=>{loadedCode='';$('codeText').textContent='Apri un file per leggerlo.';$('codeFile').value='';$('saveSnippet').disabled=true;setView('home');});
+    window.addEventListener('online',networkStatus);window.addEventListener('offline',networkStatus);
+    window.addEventListener('pagehide',()=>{const player=$('player');player.pause();if(audioUrl)URL.revokeObjectURL(audioUrl);});
     /* Presentation */
     function toast(text) {
       clearTimeout(toastTimer); $('toast').classList.remove('leaving'); $('toast').textContent = text; $('toast').hidden = false;
@@ -165,6 +113,7 @@
     }
     function connection(state) {
       const label = state === 'connected' ? 'Connesso' : state === 'connecting' ? 'Riconnessione…' : 'Disconnesso';
+      $('connectionText').textContent=state==='connected'?'Canale locale attivo':state==='connecting'?'Attesa consenso host':state==='failed'?'Canale non disponibile':'Canale pronto';
       $('connection').dataset.state = state; $('connection').title = label; $('connection').setAttribute('aria-label',label);
     }
     function showHash(digest) {
@@ -190,6 +139,7 @@
       return date.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'});
     }
     function renderTimeline(enterNew = false) {
+      receipts.sort((a,b)=>BigInt(a.request)>BigInt(b.request)?-1:BigInt(a.request)<BigInt(b.request)?1:0);
       $('timeline').replaceChildren();
       for (const item of receipts.filter(r => filter === 'Tutto' || r.context === filter)) {
         const li = document.createElement('li'); li.dataset.id=item.id; li.className = enterNew && item === receipts[0] ? 'entry new' : 'entry';
@@ -207,6 +157,7 @@
           if (mono) { const code = document.createElement('code'); code.textContent = value; dd.append(code); } else dd.textContent = value;
           data.append(dt,dd);
         }
+        const inspect=document.createElement('button');inspect.type='button';inspect.textContent='Ricevuta';inspect.addEventListener('click',event=>{event.stopPropagation();details.open=!details.open;});summary.append(inspect);
         details.append(summary,data); li.append(details); $('timeline').append(li);
       }
     }
@@ -229,6 +180,7 @@
     async function propose(event) {
       event.preventDefault(); if (event.isComposing || phase === 'Loading' || phase === 'Reading' || phase === 'Interpreting' || phase === 'Preview') return;
       const intent = $('intent').value; if (!intent.trim()) return;
+      if(!editing){const route=routeIntent(intent);if(route){setView(route);$('intent').value='';return;}}
       currentIntent = editing ? 'Aggiorna documento selezionato' : 'Crea una nota'; phase = 'Interpreting'; revision++; $('intent').value = ''; $('intent').disabled = true; $('processing').hidden = false;
       // No inbound Proposal exists in this protocol: preserve local preparation.
       await new Promise(resolve => setTimeout(resolve,180));
@@ -272,7 +224,8 @@
         if (view.getUint16(0,true) !== 1 || view.getBigUint64(10,true).toString() !== receipt.request || view.getBigUint64(18,true) === 0n || hex(raw.slice(26,58)) !== digest) throw new Error('Identità della ricevuta non valida.');
         if (transactionIds.has(receipt.request)) throw new Error('Ricevuta duplicata.');
         transactionIds.add(receipt.request); receipts.unshift({...receipt,context,timestamp:new Date()});
-        editing=null;$('intentForm').classList.remove('document'); phase = 'Completed'; await closeModal(); $('draft').value = ''; $('intent').value = ''; renderTimeline(true);
+        activeDocument=null;$('readerPanel').hidden=true;$('studyText').textContent='';studyLines=[];
+        editing=null;$('intentForm').classList.remove('document'); phase = 'Completed'; await closeModal(); $('draft').value = ''; $('intent').value = ''; $('emptyState').hidden=receipts.length>0;renderTimeline(true);
 
         if(receipt.consent==='DevelopmentVirtualFido')toast('Salvato · consenso virtuale di sviluppo, non FIDO2 hardware.');
         window.dispatchEvent(new CustomEvent('vela:completed',{detail:receipt}));
@@ -318,6 +271,7 @@
     document.addEventListener('keydown',event => { if ((event.altKey && event.code === 'Space') || ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k')) { event.preventDefault(); if (!$('approval').open && phase !== 'Loading') $('intent').focus(); } });
     async function openNote(item) {
       if(phase!=='Idle' && phase!=='Completed')return;
+      if(editing && $('intent').value!==editing.note && !confirm('La modifica non è salvata. Vuoi aprire un’altra versione?'))return;
       phase='Reading';lock(true);
       try {
         const result=await new Promise((resolve,reject)=>{
@@ -331,6 +285,7 @@
         });
         if(result.id!==item.id || result.receipt_hex!==item.receipt_hex || typeof result.note!=='string' || encoder.encode(result.note).length>1024 || await sha(encoder.encode(result.note))!==item.note_sha256)throw new Error('Read proof mismatch');
         editing=result;$('intentForm').classList.add('document');$('intent').dataset.document=result.document_id;$('intent').value=result.note;$('intent').scrollTop=0;$('intent').focus();
+        phase='Idle';renderDocument(result);
         window.dispatchEvent(new CustomEvent('vela:opened',{detail:{id:result.id}}));
       } finally {phase='Idle';lock(false);$('intent').focus();}
     }
@@ -343,6 +298,8 @@
         const timestamp=new Date(Number(note.timestamp_ms));if(!Number.isFinite(timestamp.getTime()))throw new Error('Data non valida');
         if(!transactionIds.has(note.request)){transactionIds.add(note.request);receipts.unshift({...note,context:'Lavoro',timestamp});}
       }
+      clearTimeout(toastTimer);$('toast').hidden=true;
+      $('emptyState').hidden=receipts.length>0;if(!receipts.length)$('emptyState').textContent='Nessun appunto salvato. Scrivi la tua prima nota nella barra.';
       renderTimeline();window.dispatchEvent(new CustomEvent('vela:hydrated',{detail:{count:receipts.length}}));
     }
     function syncTimeline() {
@@ -353,6 +310,5 @@
       channel.onerror=()=>{clearTimeout(timeout);connection('failed');toast('Cronologia non disponibile.');};
     }
     renderTimeline();syncTimeline();
-  </script>
-</body>
-</html>
+
+</script></body></html>
