@@ -1,4 +1,4 @@
-//! USB HID in production; explicit interactive virtual-touch development mode.
+//! Hardware-only USB HID approval. No software presence substitute.
 use authenticator::{
     StatusUpdate,
     authenticatorservice::{AuthenticatorService, RegisterArgs, SignArgs},
@@ -18,15 +18,15 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{
     fs::{self, OpenOptions},
-    io::{self, IsTerminal, Write},
+    io::Write,
     path::{Path, PathBuf},
     sync::mpsc,
     thread,
-    time::Duration,
+    time::{Duration, Instant},
 };
 const RP: &str = "vela.local";
 const ORIGIN: &str = "https://vela.local";
-const TIMEOUT: u64 = 60_000;
+const TIMEOUT: u64 = 15_000;
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Credential {
@@ -67,15 +67,21 @@ fn wait<T>(
     rx: mpsc::Receiver<authenticator::Result<T>>,
 ) -> Result<T, String> {
     let result = rx
-        .recv_timeout(Duration::from_millis(TIMEOUT + 2000))
+        .recv_timeout(Duration::from_millis(TIMEOUT))
         .map_err(|_| "FIDO2 timeout o canale chiuso".to_string())
         .and_then(|v| v.map_err(err));
     let _ = s.cancel();
     result
 }
-fn assertion(c: &Credential, hash: [u8; 32]) -> Result<authenticator::SignResult, String> {
+fn assertion_with_status(
+    c: &Credential,
+    hash: [u8; 32],
+    notify: &mut impl FnMut(&'static str) -> Result<(), String>,
+) -> Result<authenticator::SignResult, String> {
+    let deadline = Instant::now() + Duration::from_millis(TIMEOUT);
     let mut s = service()?;
     let (tx, rx) = mpsc::channel();
+    let (status_tx, status_rx) = mpsc::channel();
     let args = SignArgs {
         client_data_hash: hash,
         origin: ORIGIN.into(),
@@ -88,19 +94,75 @@ fn assertion(c: &Credential, hash: [u8; 32]) -> Result<authenticator::SignResult
         user_presence_req: true,
         extensions: AuthenticationExtensionsClientInputs::default(),
         pin: None,
-        use_ctap1_fallback: c.ctap1,
+        use_ctap1_fallback: false,
     };
     s.sign(
         TIMEOUT,
         args,
-        statuses(),
+        status_tx,
         StateCallback::new(Box::new(move |r| {
             let _ = tx.send(r);
         })),
     )
     .map_err(err)?;
-    wait(&mut s, rx)
+    let outcome = (|| {
+        let mut device_seen = false;
+        loop {
+            if Instant::now() >= deadline {
+                return Err(if device_seen {
+                    "timeout"
+                } else {
+                    "hardware_not_found"
+                }
+                .into());
+            }
+            while let Ok(status) = status_rx.try_recv() {
+                match status {
+                    StatusUpdate::PresenceRequired | StatusUpdate::SelectDeviceNotice => {
+                        device_seen = true;
+                        notify("waiting_for_touch")?;
+                    }
+                    StatusUpdate::PinUvError(_) => return Err("hardware_uv_required".into()),
+                    StatusUpdate::SelectResultNotice(_, _) => {
+                        return Err("ambiguous_credential".into());
+                    }
+                    _ => {}
+                }
+            }
+            let remaining = deadline.saturating_duration_since(Instant::now());
+            match rx.recv_timeout(remaining.min(Duration::from_millis(20))) {
+                Ok(result) => {
+                    // Completion after the deadline never yields an approval permit.
+                    if Instant::now() >= deadline {
+                        return Err("timeout".into());
+                    }
+                    return result.map_err(|e| match e {
+                        authenticator::errors::AuthenticatorError::U2FToken(
+                            authenticator::errors::U2FTokenError::NotAllowed,
+                        ) => {
+                            if device_seen {
+                                "timeout".into()
+                            } else {
+                                "hardware_not_found".into()
+                            }
+                        }
+                        other => err(other),
+                    });
+                }
+                Err(mpsc::RecvTimeoutError::Timeout) => {}
+                Err(mpsc::RecvTimeoutError::Disconnected) => {
+                    return Err("hardware_disconnected".into());
+                }
+            }
+        }
+    })();
+    let _ = s.cancel();
+    outcome
 }
+fn assertion(c: &Credential, hash: [u8; 32]) -> Result<authenticator::SignResult, String> {
+    assertion_with_status(c, hash, &mut |_| Ok(()))
+}
+
 fn check(
     c: &Credential,
     hash: &[u8; 32],
@@ -111,6 +173,7 @@ fn check(
     let data = a.auth_data.to_vec();
     if c.version != 1
         || c.rp != RP
+        || c.ctap1
         || c.id.is_empty()
         || c.id.len() > 1024
         || a.credentials.as_ref().is_some_and(|v| v.id != c.id)
@@ -167,23 +230,26 @@ fn load(path: &Path) -> Result<(Credential, u32), String> {
 }
 pub struct HumanPresence {
     plan: [u8; 32],
-    virtual_touch: bool,
 }
 impl HumanPresence {
     pub fn consent(&self) -> &'static str {
-        if self.virtual_touch {
-            "DevelopmentVirtualFido"
-        } else {
-            "HardwareFido2Verified"
-        }
+        "HardwareFido2Verified"
     }
+
     pub fn permits(&self, plan: &[u8; 32]) -> bool {
         &self.plan == plan
     }
 }
 /// A fresh assertion is verified before this opaque, non-cloneable permit exists.
-pub fn verify(path: &Path, plan: [u8; 32]) -> Result<HumanPresence, String> {
+pub fn verify_with_status(
+    path: &Path,
+    plan: [u8; 32],
+    mut notify: impl FnMut(&'static str) -> Result<(), String>,
+) -> Result<HumanPresence, String> {
     let (c, last) = load(path)?;
+    if c.ctap1 {
+        return Err("CTAP1 enrollment rejected: register a CTAP2 credential".into());
+    }
     let mut nonce = [0; 32];
     getrandom::getrandom(&mut nonce).map_err(err)?;
     let mut body = b"Vela.HardwareApproval.v1\0".to_vec();
@@ -194,7 +260,7 @@ pub fn verify(path: &Path, plan: [u8; 32]) -> Result<HumanPresence, String> {
         "[SECURITY] Richiesta tocco su token hardware FIDO2 per autorizzare l'hash: {}",
         plan.iter().map(|b| format!("{b:02x}")).collect::<String>()
     );
-    let result = assertion(&c, challenge)?;
+    let result = assertion_with_status(&c, challenge, &mut notify)?;
     let next = check(&c, &challenge, &result, last)?;
     let mut file = OpenOptions::new()
         .append(true)
@@ -202,43 +268,14 @@ pub fn verify(path: &Path, plan: [u8; 32]) -> Result<HumanPresence, String> {
         .map_err(err)?;
     file.write_all(&next.to_le_bytes()).map_err(err)?;
     file.sync_all().map_err(err)?;
-    Ok(HumanPresence {
-        plan,
-        virtual_touch: false,
-    })
+    Ok(HumanPresence { plan })
 }
-/// CLI mode only. No environment switch, automatic success or piped approval.
-pub fn authorize(path: &Path, plan: [u8; 32], dev_virtual: bool) -> Result<HumanPresence, String> {
-    if !dev_virtual {
-        return verify(path, plan);
-    }
-    if !io::stdin().is_terminal() || !io::stdout().is_terminal() {
-        return Err(
-            "Dev virtual FIDO requires an interactive terminal; redirected input is denied".into(),
-        );
-    }
-    println!(
-        "[DEV VIRTUAL FIDO — NOT HARDWARE] Piano SHA-256: {}",
-        plan.iter().map(|b| format!("{b:02x}")).collect::<String>()
-    );
-    print!("Premi [INVIO] per simulare il tocco; qualsiasi altro testo rifiuta: ");
-    io::stdout().flush().map_err(err)?;
-    let mut line = String::new();
-    let count = io::stdin().read_line(&mut line).map_err(err)?;
-    if count == 0 || !matches!(line.as_str(), "\n" | "\r\n") {
-        return Err("Dev virtual touch denied (input or EOF)".into());
-    }
-    Ok(HumanPresence {
-        plan,
-        virtual_touch: true,
-    })
+#[cfg(test)]
+pub fn verify(path: &Path, plan: [u8; 32]) -> Result<HumanPresence, String> {
+    verify_with_status(path, plan, |_| Ok(()))
 }
-pub fn dev_warning() {
-    eprintln!(
-        "\x1b[1;31m\n============================================================\n!!! DEV VIRTUAL FIDO ATTIVO — NESSUNA AUTENTICAZIONE HARDWARE !!!\nINVIO SIMULA IL TOCCO. SOLO SVILUPPO. NON USARE IN PRODUZIONE.\nFIRME Ed25519 REALI; CONSENSO FIDO2 SIMULATO.\n============================================================\n\x1b[0m"
-    );
-}
-pub fn enroll(path: &Path, ctap1: bool) -> Result<(), String> {
+pub fn enroll(path: &Path) -> Result<(), String> {
+    let ctap1 = false;
     if path.exists() || journal(path).exists() {
         return Err("Registrazione esistente: nessuna sovrascrittura automatica".into());
     }

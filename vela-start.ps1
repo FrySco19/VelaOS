@@ -39,7 +39,7 @@ function Wait-Port([int]$Port){
 try {
     foreach($relative in @('.local/host-bridge/broker.seed','.local/v1/pcb.public','.local/v1/lfs.public')){if(!(Test-Path -LiteralPath (Join-Path $root $relative))){throw "Local enrollment missing: $relative"}}
     if(!(Test-Path -LiteralPath $wsl)){throw 'WSL Debian is required by this launcher'}
-    if($Hardware -and !(Test-Path -LiteralPath (Join-Path $root '.local/host-bridge/fido.json'))){throw 'Register a USB key with enroll-fido before launching hardware mode'}
+    if(!(Test-Path -LiteralPath (Join-Path $root '.local/host-bridge/fido.json'))){throw 'Register a USB key with enroll-fido before launching hardware mode'}
     Docker-Vela @('image','inspect','velaos-v1') | Out-Null
     foreach($port in @(7990,7882)){
         foreach($l in @(Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue)){
@@ -84,7 +84,7 @@ try {
     $g=Start-Process -FilePath $glass -WindowStyle Hidden -PassThru -WorkingDirectory $root -ArgumentList @('--port','7882') -RedirectStandardOutput (Join-Path $runtime 'soft-glass.log') -RedirectStandardError (Join-Path $runtime 'soft-glass-error.log');$owned+=Identity $g $glass;Save-State
     Wait-Port 7882
     $brokerArgs=@('serve','.local/host-bridge/broker.seed','.local/v1/pcb.public','.local/v1/lfs.public','.local/host-bridge/fido.json')
-    if(!$Hardware){$brokerArgs+='--dev-virtual-fido';Write-Host '!!! SOLO SVILUPPO: INVIO SIMULA FIDO2. NESSUNA AUTENTICAZIONE HARDWARE !!!' -ForegroundColor Red}
+    Write-Host 'Hardware FIDO2 required; no virtual approval fallback.'
     Write-Host 'Lascia aperto il terminale per autorizzare. Ctrl+C o chiusura arrestano Vela.'
     $b=Start-Process -FilePath $broker -NoNewWindow -PassThru -WorkingDirectory $root -ArgumentList $brokerArgs;$owned+=Identity $b $broker;Save-State
     Wait-Port 7990

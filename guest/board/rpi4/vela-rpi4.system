@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- BCM2711 low-peripheral mode.
+     https://datasheets.raspberrypi.com/bcm2711/bcm2711-peripherals.pdf
+     https://docs.sel4.systems/projects/microkit/manual/latest/#raspberry-pi-4b
+     release kernel: UART0 has one user-domain owner after loader handoff.
+     This is a board bring-up image, NOT the complete Vela desktop. -->
+<system>
+    <memory_region name="pl011" size="0x1000" phys_addr="0xfe201000" />
+    <!-- Property mailbox registers share this page with interrupt registers.
+         Only the trusted board domain receives this page capability. -->
+    <memory_region name="videocore_mailbox" size="0x1000" phys_addr="0xfe00b000" />
+    <protection_domain name="uart" priority="100" budget="1000" period="10000" stack_size="0x4000">
+        <program_image path="uart.elf" />
+        <map mr="pl011" vaddr="0x40000000" perms="rw" cached="false" setvar_vaddr="uart_addr" />
+    </protection_domain>
+    <protection_domain name="video" priority="90" budget="1000" period="10000" stack_size="0x4000">
+        <program_image path="video.elf" />
+        <map mr="videocore_mailbox" vaddr="0x40000000" perms="rw" cached="false" setvar_vaddr="mailbox_page_addr" />
+        <!-- Framebuffer is firmware-allocated RAM, not fixed MMIO.
+             No guessed RAM mapping or unvalidated DMA request is granted.
+             A future allocation must reserve/map the exact firmware range. -->
+    </protection_domain>
+</system>

@@ -19,6 +19,14 @@ name = "velaos-lfs"
 path = "src/bin/lfs.rs"
 required-features = ["e2e"]
 
+[[bin]]
+name = "vela-rpi4-uart"
+path = "../../../guest/board/rpi4/uart.rs"
+
+[[bin]]
+name = "vela-rpi4-video"
+path = "../../../guest/board/rpi4/video.rs"
+
 [features]
 # verify-bridge-e2e: PCB e2e sequence + simulated LFS writer domain (Makefile E2E=1).
 e2e = []

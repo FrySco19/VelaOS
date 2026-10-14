@@ -150,27 +150,41 @@ fn receive(stream: &mut TcpStream) -> Result<([u8; MAX_FRAME], usize), String> {
         .map_err(|e| e.to_string())?;
     Ok((bytes, length))
 }
+fn hardware_approval(
+    ws: &mut tungstenite::WebSocket<TcpStream>,
+    path: &Path,
+    plan: [u8; 32],
+) -> Result<hello::HumanPresence, String> {
+    let mut emit = |state: &str| {
+        ws.send(Message::Text(
+            json!({"type":"Progress","state":state}).to_string().into(),
+        ))
+        .map_err(|e| e.to_string())
+    };
+    emit("waiting_for_touch")?;
+    match hello::verify_with_status(path, plan, |state| emit(state)) {
+        Ok(permit) => Ok(permit),
+        Err(reason) => {
+            let state = match reason.as_str() {
+                "timeout" => "timeout",
+                "hardware_not_found" => "hardware_not_found",
+                _ => "authentication_failed",
+            };
+            let _ = emit(state);
+            Err(reason)
+        }
+    }
+}
 pub fn serve(
     seed: &Path,
     pcb_public: &Path,
     lfs_public: &Path,
     credential: &Path,
-    dev_virtual: bool,
 ) -> Result<(), String> {
-    if dev_virtual {
-        hello::dev_warning();
-    }
     let pcb = VerifyingKey::from_bytes(&key(pcb_public)?).map_err(|e| e.to_string())?;
     let lfs = VerifyingKey::from_bytes(&key(lfs_public)?).map_err(|e| e.to_string())?;
     let listener = TcpListener::bind("127.0.0.1:7990").map_err(|e| e.to_string())?;
-    println!(
-        "BROKER: ws://127.0.0.1:7990 ; guest=127.0.0.1:7991 ; consent={}",
-        if dev_virtual {
-            "DEV VIRTUAL FIDO (interactive Enter)"
-        } else {
-            "FIDO2 USB HID required"
-        }
-    );
+    println!("BROKER: FIDO2 USB HID required; assertion deadline=15s");
     let mut last_id = 0u64;
     for connection in listener.incoming() {
         let stream = connection.map_err(|e| e.to_string())?;
@@ -223,7 +237,7 @@ pub fn serve(
             }
             if request["type"] == "ListRequest" {
                 let plan = digest(b"Vela.List.AllImmutableNotes.v1");
-                let presence = hello::authorize(credential, plan, dev_virtual)?;
+                let presence = hardware_approval(&mut ws, credential, plan)?;
                 if !presence.permits(&plan) {
                     return Err("FIDO2 plan mismatch".into());
                 }
@@ -247,7 +261,7 @@ pub fn serve(
                 let mut plan_bytes = b"Vela.Read.ImmutableVersion.v1".to_vec();
                 plan_bytes.extend_from_slice(&target);
                 let plan = digest(&plan_bytes);
-                let presence = hello::authorize(credential, plan, dev_virtual)?;
+                let presence = hardware_approval(&mut ws, credential, plan)?;
                 if !presence.permits(&plan) {
                     return Err("FIDO2 plan mismatch".into());
                 }
@@ -302,7 +316,7 @@ pub fn serve(
             // FIDO covers session, revision, document, parent and exact bytes.
             // No Ed25519 signing key is loaded before successful verification.
             let plan = digest(&approval.signing_bytes());
-            let presence = hello::authorize(credential, plan, dev_virtual)?;
+            let presence = hardware_approval(&mut ws, credential, plan)?;
             if !presence.permits(&plan) {
                 return Err("FIDO2 plan mismatch".into());
             }

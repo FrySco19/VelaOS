@@ -219,7 +219,7 @@ body[data-view=study] #studyPanel{display:grid;grid-template-columns:minmax(0,1f
       // are presentation only and cannot manufacture a system operation.
       const context = 'Lavoro';
       if (bytes.length > 1024) { toast('La nota è troppo lunga.'); return; }
-      phase = 'Loading'; ++digestRevision; lock(true);$('authStatus').textContent='Attesa consenso host: tocca la chiave FIDO2 oppure premi Invio nel terminale DEV. Poi verifica della ricevuta LFS…';
+      phase = 'Loading'; ++digestRevision; lock(true);$('authStatus').textContent='Tocca la chiave FIDO2 USB entro 15 secondi. Poi verifica della ricevuta LFS…';
       let digest;
       try {
         digest = await sha(bytes); showHash(digest);
@@ -233,12 +233,13 @@ body[data-view=study] #studyPanel{display:grid;grid-template-columns:minmax(0,1f
           socket.onmessage = event => {
             let message; try { message = JSON.parse(event.data); } catch { finish(new Error('Risposta broker non valida.')); return; }
             if (message.type === 'ListResponse') { try { hydrate(message); } catch { finish(new Error('Indice non valido')); } return; }
-            if (message.type === 'Ack' || message.type === 'Progress') return;
+            if (message.type === 'Progress') { $('authStatus').textContent=({waiting_for_touch:'Tocca la chiave FIDO2 USB entro 15 secondi.',timeout:'Tempo scaduto: nessuna firma emessa.',hardware_not_found:'Nessuna chiave USB utilizzabile rilevata.',authentication_failed:'Autenticazione hardware fallita.'})[message.state]||'Verifica hardware in corso.';return;}
+            if (message.type === 'Ack') return;
             if (message.type === 'Denied') { finish(new Error(message.reason || 'Richiesta negata.')); return; }
             finish(null,message);
           };
         });
-        if (receipt.type !== 'Receipt' || receipt.verified !== true || receipt.note_sha256 !== digest || !/^\d+$/.test(receipt.request) || !/^[0-9a-f]{340}$/.test(receipt.receipt_hex) || !['HardwareFido2Verified','DevelopmentVirtualFido'].includes(receipt.consent)) throw new Error('Ricevuta non coerente con la proposta.');
+        if (receipt.type !== 'Receipt' || receipt.verified !== true || receipt.note_sha256 !== digest || !/^\d+$/.test(receipt.request) || !/^[0-9a-f]{340}$/.test(receipt.receipt_hex) || receipt.consent !== 'HardwareFido2Verified') throw new Error('Ricevuta non coerente con la proposta.');
         const raw = Uint8Array.from(receipt.receipt_hex.match(/../g),v => parseInt(v,16)), view = new DataView(raw.buffer);
         if (view.getUint16(0,true) !== 1 || view.getBigUint64(10,true).toString() !== receipt.request || view.getBigUint64(18,true) === 0n || hex(raw.slice(26,58)) !== digest) throw new Error('Identità della ricevuta non valida.');
         if (transactionIds.has(receipt.request)) throw new Error('Ricevuta duplicata.');
@@ -250,10 +251,11 @@ body[data-view=study] #studyPanel{display:grid;grid-template-columns:minmax(0,1f
         window.dispatchEvent(new CustomEvent('vela:completed',{detail:receipt}));
       } catch (error) {
         phase = 'Preview';
+        $('authStatus').textContent=error.message;
         const unavailable = error.message.includes('disponibile');
         toast(unavailable ? 'Connessione non disponibile.' : 'Salvataggio non confermato.');
       } finally {
-        $('authStatus').textContent='';lock(false);
+        if(phase!=='Preview')$('authStatus').textContent='';lock(false);
         if (phase === 'Preview' && $('approval').open) await updateDigest();
         else if (phase === 'Preview') { phase = 'Idle'; $('intent').focus(); }
         else $('intent').focus();
