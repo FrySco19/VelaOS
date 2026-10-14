@@ -1,0 +1,9 @@
+# V1 Task 1 + Task 2 source delivery
+
+IntentRequest goes to the native broker, using a loopback OpenAI-compatible server. Configure VELA_LLM_ENDPOINT and VELA_LLM_MODEL before launch. In Glass, `/ai <request>` drafts a generated note; literal input keeps the manual workflow. Only write-note and clarify are admitted. Hashes are computed and independently checked after inference. All effects still require the separate consent and signed receipt flow. The system prompt is in src/intent.rs. A missing model is an error, never synthetic inference. No cloud fallback is enabled.
+
+Native Windows packaging: packager.ps1 requires a complete licensed native QEMU distribution, a verified matching guest loader image, its SHA-256 and Inno Setup ISCC. It builds release broker/Glass executables (UI embedded), stages no user secrets, and compiles vela-setup.iss into dist/Vela-Soft-Setup.exe. The launcher uses native QEMU, not WSL or Docker. It never enables virtual developer FIDO.
+
+This is not yet a Gold Master installer: per-machine guest/host enrollment is required before first boot. Current guest trust roots are compiled into the image, so distributing someone else's private key is forbidden. Native QEMU boot, installation/uninstallation, abrupt launcher closure cleanup and authenticated per-machine provisioning still need release validation. Closing the launcher normally terminates owned children; forced process death needs a production watchdog. Signing the installer and supplying QEMU corresponding sources/licenses remain release duties.
+
+Verified: cargo test for broker passed 5 tests including exact hash and rejection of model-supplied authority/hash. JavaScript syntax and PowerShell parser checks passed. No actual model inference or generated installer binary is claimed from these checks. FIDO2 changes and RPi4 drivers are deliberately deferred until the requested next approval.

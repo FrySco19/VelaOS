@@ -2,6 +2,7 @@
 //! Interactive development touch exists only behind --dev-virtual-fido.
 //! Local plaintext seeds are development custody, not a TPM/FIDO2 enclave.
 mod hello;
+mod intent;
 mod socket;
 use ed25519_compact::{KeyPair, Seed};
 

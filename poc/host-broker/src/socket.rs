@@ -218,6 +218,9 @@ pub fn serve(
                 return Err("Expected JSON Proposal".into());
             };
             let request: Value = serde_json::from_str(&text).map_err(|e| e.to_string())?;
+            if request["type"] == "IntentRequest" {
+                return crate::intent::compile(request["input"].as_str().ok_or("Missing input")?);
+            }
             if request["type"] == "ListRequest" {
                 let plan = digest(b"Vela.List.AllImmutableNotes.v1");
                 let presence = hello::authorize(credential, plan, dev_virtual)?;

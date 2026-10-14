@@ -177,14 +177,33 @@ body[data-view=study] #studyPanel{display:grid;grid-template-columns:minmax(0,1f
     }
 
     /* Proposal, rejection and the original one-shot transport */
+    async function generateIntent(input) {
+      return new Promise((resolve,reject)=>{
+        const ws=new WebSocket('ws://127.0.0.1:7990');
+        const timer=setTimeout(()=>{ws.close();reject(new Error('Modello locale non pronto.'));},50000);
+        let settled=false;
+        const finish=(err,value)=>{if(settled)return;settled=true;clearTimeout(timer);ws.close();err?reject(err):resolve(value);};
+        ws.onopen=()=>ws.send(JSON.stringify({type:'IntentRequest',input}));
+        ws.onerror=()=>finish(new Error('Broker non disponibile.'));
+        ws.onclose=()=>finish(new Error('Inferenza interrotta.'));
+        ws.onmessage=async e=>{try{const p=JSON.parse(e.data);
+          if(p.type!=='IntentProposal'||p.generated!==true||p.authority!==false)throw new Error(p.reason||'Proposta IA non valida.');
+          if(typeof p.note!=='string'||encoder.encode(p.note).length>1024||await sha(encoder.encode(p.note))!==p.note_sha256)throw new Error('Hash della proposta IA non valido.');
+          if(p.operation==='clarify')throw new Error(p.note);
+          if(p.operation!=='write-note')throw new Error('Azione IA non supportata.');
+          finish(null,p.note);
+        }catch(err){finish(err);}};
+      });
+    }
     async function propose(event) {
       event.preventDefault(); if (event.isComposing || phase === 'Loading' || phase === 'Reading' || phase === 'Interpreting' || phase === 'Preview') return;
-      const intent = $('intent').value; if (!intent.trim()) return;
-      if(!editing){const route=routeIntent(intent);if(route){setView(route);$('intent').value='';return;}}
+      let intent = $('intent').value; const generated=intent.startsWith('/ai '); if (!intent.trim()) return;
+        if(intent.startsWith('/ai ')){phase='Interpreting';$('intent').disabled=true;$('processing').hidden=false;try{intent=await generateIntent(intent.slice(4));}catch(err){toast(err.message);phase='Idle';return;}finally{$('intent').disabled=false;$('processing').hidden=true;}}
+      if(!editing && !generated){const route=routeIntent(intent);if(route){setView(route);$('intent').value='';return;}}
       currentIntent = editing ? 'Aggiorna documento selezionato' : 'Crea una nota'; phase = 'Interpreting'; revision++; $('intent').value = ''; $('intent').disabled = true; $('processing').hidden = false;
-      // No inbound Proposal exists in this protocol: preserve local preparation.
+      // Generated and literal drafts both require exact-byte human review.
       await new Promise(resolve => setTimeout(resolve,180));
-      $('documentContext').textContent=editing ? 'Aggiornamento immutabile · Documento '+editing.document_id+' · Versione di origine '+editing.id : 'Nuovo documento · La nota esistente non viene sostituita';
+      $('documentContext').textContent=(generated?'BOZZA GENERATA  -  verifica ogni contenuto. ':'')+(editing ? 'Aggiornamento immutabile · Documento '+editing.document_id+' · Versione di origine '+editing.id : 'Nuovo documento · La nota esistente non viene sostituita');
       $('draft').value = intent; phase = 'Preview'; $('processing').hidden = true; $('intent').disabled = false;
       $('approval').showModal(); $('reject').focus();
       await updateDigest();
