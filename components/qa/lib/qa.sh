@@ -1,13 +1,18 @@
 #!/bin/bash
 # Vela QA helpers — source me:  . components/qa/lib/qa.sh
 # Env (override as needed; defaults follow tools/vm.sh conventions announced by base component):
+#   QA_REPO    checkout under test (default: derived from this file's location)
 #   QA_BUILD   build name (evidence dir)          default: devvm-$(date +%Y%m%d-%H%M)
+#   QA_OUT     evidence dir (default: outside the checkout, never versioned)
 #   QA_QMP     QMP unix socket of the VM under test (if unset, falls back to tools/vm.sh screenshot/key/type)
 #   QA_SSH_PORT / QA_SSH_USER / QA_SSH_PASS / QA_SSH_KEY   guest SSH (default 2222 / vela / vela / none)
-QA_REPO=${QA_REPO:-/workspace/vela/v2}
+_qa_lib_dir=$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)
+_qa_default_repo=$(cd "$_qa_lib_dir/../../.." && pwd)
+QA_REPO=${QA_REPO:-$_qa_default_repo}
+unset _qa_lib_dir _qa_default_repo
 QA_LIB=$QA_REPO/components/qa/lib
 QA_BUILD=${QA_BUILD:-devvm-$(date +%Y%m%d-%H%M)}
-QA_OUT=${QA_OUT:-/workspace/vela/artifacts/qa/$QA_BUILD}
+QA_OUT=${QA_OUT:-${XDG_STATE_HOME:-$HOME/.local/state}/vela-qa/$QA_BUILD}
 # QA_TARGET=dev (installed dev VM, default) | iso (ISO test VM) — sets SSH/QMP defaults from status/base.md
 QA_TARGET=${QA_TARGET:-dev}
 if [ "$QA_TARGET" = iso ]; then
